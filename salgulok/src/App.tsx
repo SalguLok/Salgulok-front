@@ -1,19 +1,17 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import LoginPage from "./pages/auth/LoginPage";
-import KakaoRedirectPage from "./pages/auth/KakaoRedirectPage";
-import SignupPage from "./pages/auth/SignupPage";
-import MainPage from "./pages/main/MainPage";
+import { RouterProvider } from "react-router-dom";
+import { ThemeProvider } from "styled-components";
+import GlobalStyle from "./styles/GlobalStyle";
+import theme from "./styles/theme";
+import router from "./router";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/oauth/kakao" element={<KakaoRedirectPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/" element={<MainPage />} />
-      </Routes>
-    </BrowserRouter>
+    <ThemeProvider theme={theme}>
+      <>
+        <GlobalStyle />
+        <RouterProvider router={router} />
+      </>
+    </ThemeProvider>
   );
 }
 

@@ -13,13 +13,15 @@ const GlobalStyle = createGlobalStyle`
     padding: 0;
     display: flex;
     justify-content: center;
+    background: #f5f5f5;
   }
 
   #root {
-    background: #f5f5f5;
+    background: #FFFFFF;
     width: 375px;
     height: 800px;
     overflow: hidden;
+    padding: 20px;
   }
 `;
 

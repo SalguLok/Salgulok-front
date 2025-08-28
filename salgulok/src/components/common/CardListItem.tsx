@@ -77,6 +77,7 @@ const ImageContainer = styled.div`
   height: 150px;
   background-color: var(--gray-300);
   border-radius: 10px;
+  overflow: hidden;
 `;
 const CoverImg = styled.img`
   width: 100%;

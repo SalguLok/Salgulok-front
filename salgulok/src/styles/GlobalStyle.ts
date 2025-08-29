@@ -20,7 +20,7 @@ const GlobalStyle = createGlobalStyle`
     -ms-overflow-style: none;
 }
 * {
-  font-family: Presentation;
+  font-family: Pretendard;
 }
 
   body{

@@ -2,7 +2,7 @@ import styled from "styled-components";
 import KakaoLoginImg from "../../assets/auth/KakaoLoginButton.svg"
 import LogoImg from "../../assets/common/main_salgu.svg"
 
-function LoginPage() {
+const LoginPage: React.FC = () => {
   const REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
   const REDIRECT_URI = import.meta.env.VITE_KAKAO_REDIRECT_URI;
   const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/authorize?client_id=${REST_API_KEY}&redirect_uri=${REDIRECT_URI}&response_type=code`;

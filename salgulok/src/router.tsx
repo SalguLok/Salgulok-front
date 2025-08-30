@@ -7,6 +7,7 @@ import MapPage from "./pages/map/MapPage";
 import LogPage from "./pages/log/LogPage";
 import CommunityPage from "./pages/community/CommunityPage";
 import MyPage from "./pages/mypage/MyPage";
+import SelectDatePage from "./pages/log/SelectDatePage";
 
 const router = createBrowserRouter([
   {
@@ -35,6 +36,7 @@ const router = createBrowserRouter([
   },
   { path: "/community", element: <CommunityPage /> },
   { path: "/my", element: <MyPage /> },
+  { path: "/log/select-date", element: <SelectDatePage /> },
 ]);
 
 export default router;

@@ -1,10 +1,18 @@
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import LogoImg from "../../assets/common/main_salgu.svg";
 import FormField from "../../components/common/FormField";
 import ImageUpload from "../../components/common/ImageUpload";
+import BottomButton from "../../components/common/BottomButton";
 
 const SignupPage: React.FC = () => {
+  const navigate = useNavigate();
+
   const handleCheck = () => alert("중복 확인 버튼 클릭");
+  const handleSignup = () => {
+    // TODO: 회원가입 api 연결
+    navigate("/");
+  }
 
   return (
     <Container>
@@ -25,8 +33,13 @@ const SignupPage: React.FC = () => {
           placeholder="본인 한 줄 소개를 작성해주세요."
           variant="sm"
         />
-        <ImageUpload/>
+        <ImageUpload label="프로필 이미지"/>
       </FormWrapper>
+
+      <BottomButton
+        text="회원가입 완료하기"
+        onClick={handleSignup}
+      />
     </Container>
   );
 }
@@ -36,28 +49,30 @@ export default SignupPage;
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-  margin: 20px;
   gap: 8px;
   padding-top: 50px;  //임시
 `;
 
 const Logo = styled.img`
   width: 43px;
+  margin: 0 20px;
 `;
 
 const MainInfo = styled.div`
   font-weight: 600;
   font-size: 17px;
+  margin: 0 20px;
 `;
 
 const SubInfo = styled.div`
   font-weight: 500;
   font-size: 13px;
-  margin-bottom: 20px;
+  margin: 0 20px 20px 20px;
 `;
 
 const FormWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 25px;
+  margin: 0 20px;
 `;

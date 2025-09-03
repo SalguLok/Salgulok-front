@@ -2,12 +2,12 @@ import React from "react";
 import styled from "styled-components";
 
 interface RegionItemProps {
-  id: string;
+  id: number;
   nameKo: string;
   nameEn: string;
   imageUrl: string;
   selected: boolean;
-  onSelect: (id: string) => void;
+  onSelect: (id: number) => void;
 }
 
 const RegionItem: React.FC<RegionItemProps> = ({

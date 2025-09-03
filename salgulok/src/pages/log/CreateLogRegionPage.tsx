@@ -6,22 +6,24 @@ import BottomButton from "../../components/common/BottomButton";
 import { useCreateLogStore } from "../../stores/CreateLogStore";
 
 const regions = [
-  { id: "busan", nameKo: "부산", nameEn: "Busan", imageUrl: "/images/busan.jpg" },
-  { id: "seoul", nameKo: "서울", nameEn: "Seoul", imageUrl: "/images/seoul.jpg" },
-  { id: "jeju", nameKo: "제주", nameEn: "Jeju", imageUrl: "/images/jeju.jpg" },
+  { id: 1, nameKo: "부산", nameEn: "Busan", imageUrl: "/images/busan.jpg" },
+  { id: 2, nameKo: "서울", nameEn: "Seoul", imageUrl: "/images/seoul.jpg" },
+  { id: 3, nameKo: "제주", nameEn: "Jeju", imageUrl: "/images/jeju.jpg" },
 ];
 
 const CreateRegionPage: React.FC = () => {
   const navigate = useNavigate();
 
   const { setStep1 } = useCreateLogStore();
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<number | null>(null);
 
   const handleNextPage = () => {
-    if (!selectedId) return;
-
+    if (!selectedId) {
+      alert("여행 지역을 선택해주세요.");
+      return;
+    }
     setStep1(Number(selectedId));
-    navigate("/log/select-date");
+    navigate("/log/create/date");
   }
 
   return (

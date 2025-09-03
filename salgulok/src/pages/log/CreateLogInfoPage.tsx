@@ -5,16 +5,45 @@ import FormField from "../../components/common/FormField";
 import ImageUpload from "../../components/common/ImageUpload";
 import VisibilityToggle from "../../components/log/VisibilityTogle";
 import BottomButton from "../../components/common/BottomButton";
+import { useCreateLogStore } from "../../stores/CreateLogStore";
 
 const CreateLogInfoPage: React.FC = () => {
   const navigate = useNavigate();
+  const { setStep3, regionId, startDate, endDate } = useCreateLogStore();
+
+  const [title, setTitle] = useState("");
+  const [oneReview, setOneReview] = useState("");
+  const [visibility, setVisibility] = useState<"public" | "private">("public");
+  const [imgFile, setImgFile] = useState<File | null>(null);
 
   const handleAddLog = () => {
-    // TODO: 로그생성 api 연결
-    navigate("/log/add-complete");
-  }
+    // Step3 데이터
+    const step3Data = {
+      title,
+      isPublic: visibility === "public",
+      imgFile: imgFile ?? undefined,
+      oneReview,
+    };
+    setStep3(step3Data);
 
-  const [visibility, setVisibility] = useState<"public" | "private">("public");
+    if(!title){
+      console.log("로그 제목을 필수로 입력해주세요.");
+      return;
+    }
+
+    // 최종 데이터
+    // TODO: 로그생성/이미지 업로드 api 연결, 일단 임시로 console 로그
+    const finalData = {
+      regionId,
+      startDate,
+      endDate,
+      ...step3Data,
+      imgFile: step3Data.imgFile ? step3Data.imgFile.name : null, // TODO: s3 링크로 변경
+    };
+
+    console.log("최종 로그 생성 데이터:", finalData);
+    navigate("/log/complete");
+  }
   
   return (    
     <Container>
@@ -24,14 +53,18 @@ const CreateLogInfoPage: React.FC = () => {
         required
         placeholder="로그 제목을 입력해주세요."
         variant="sm"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
       />
       <FormField
         label="로그 한 줄 소개"
         placeholder="로그 한 줄 소개를 작성해주세요."
         variant="sm"
+        value={oneReview}
+        onChange={(e) => setOneReview(e.target.value)}
       />
       <VisibilityToggle onChange={setVisibility} />
-      <ImageUpload label="대표사진"/>
+      <ImageUpload label="대표사진" onUpload={(url) => setImgFile(url)}/>
     </FormWrapper>
 
     <BottomButton

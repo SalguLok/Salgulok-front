@@ -4,9 +4,15 @@ import CameraIcon from "../../assets/common/camera.svg";
 
 interface ImageUploadProps {
   label?: string;
+  value?: File | null;
+  onUpload?: (file: File) => void;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ label }) => {
+const ImageUpload: React.FC<ImageUploadProps> = ({ 
+  label, 
+  value, 
+  onUpload 
+}) => {
   const [preview, setPreview] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -20,6 +26,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ label }) => {
       const reader = new FileReader();
       reader.onloadend = () => setPreview(reader.result as string);
       reader.readAsDataURL(file);
+      onUpload?.(file);
     }
   };
 

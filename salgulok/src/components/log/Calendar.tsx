@@ -4,7 +4,11 @@ import styled from "styled-components";
 
 const weekdays = ["일", "월", "화", "수", "목", "금", "토"];
 
-const Calendar: React.FC = () => {
+interface CalendarProps {
+  onDateChange?: (start: Dayjs | null, end: Dayjs | null) => void;
+}
+
+const Calendar: React.FC<CalendarProps> = ({ onDateChange }) => {
   const [currentMonth, setCurrentMonth] = useState(dayjs());
   const [startDate, setStartDate] = useState<Dayjs | null>(null);   // 여행 시작일
   const [endDate, setEndDate] = useState<Dayjs | null>(null);   // 여행 종료일일
@@ -28,6 +32,7 @@ const Calendar: React.FC = () => {
     } else {
         // 종료날짜 설정
         setEndDate(clicked);
+        onDateChange?.(startDate, clicked);
     }
   };
 
@@ -64,13 +69,13 @@ const Calendar: React.FC = () => {
 
       <Weekdays>
         {weekdays.map((w) => (
-          <Weekday>{w}</Weekday>
+          <Weekday key={w}>{w}</Weekday>
         ))}
       </Weekdays>
 
       <CalendarGrid>
         {Array.from({ length: firstDayOfWeek }).map((_, idx) => (
-          <EmptyCell/>
+          <EmptyCell key={idx}/>
         ))}
 
         {Array.from({ length: daysInMonth }).map((_, idx) => {
@@ -110,6 +115,7 @@ export default Calendar;
 
 const Container = styled.div`
   margin: auto 0px;
+  padding: 0 20px;
 `;
 
 const Header = styled.div`

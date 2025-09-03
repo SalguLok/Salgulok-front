@@ -8,6 +8,8 @@ interface FormFieldProps {
   placeholder?: string;
   variant?: "sm" | "md" | "lg";
   buttonText?: string;
+  value?: string;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onButtonClick?: () => void;
 }
 
@@ -17,6 +19,8 @@ const FormField: React.FC<FormFieldProps> = ({
   placeholder,
   variant = "md",
   buttonText,
+  value,
+  onChange,
   onButtonClick,
 }) => {
   return (
@@ -26,7 +30,12 @@ const FormField: React.FC<FormFieldProps> = ({
         {required && <RequiredMark>*</RequiredMark>}
       </Label>
       <InputRow>
-        <TextInput variant={variant} placeholder={placeholder} />
+        <TextInput 
+          variant={variant} 
+          placeholder={placeholder} 
+          value={value}
+          onChange={onChange}
+        />
         {buttonText && onButtonClick && (
           <ActionButton onClick={onButtonClick}>{buttonText}</ActionButton>
         )}

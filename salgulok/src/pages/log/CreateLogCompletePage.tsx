@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import LogoImg from "../../assets/common/main_salgu.svg"
 import BottomButton from "../../components/common/BottomButton";
 
-const AddLogCompletePage: React.FC = () => {
+const CreateLogCompletePage: React.FC = () => {
 
     const navigate = useNavigate();
 
@@ -26,7 +26,7 @@ const AddLogCompletePage: React.FC = () => {
     );
 }
 
-export default AddLogCompletePage;
+export default CreateLogCompletePage;
 
 const Container = styled.div`
   display: flex;

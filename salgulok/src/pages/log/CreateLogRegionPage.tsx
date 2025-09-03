@@ -3,6 +3,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import RegionItem from "../../components/log/RegionItem";
 import BottomButton from "../../components/common/BottomButton";
+import { useCreateLogStore } from "../../stores/CreateLogStore";
 
 const regions = [
   { id: "busan", nameKo: "부산", nameEn: "Busan", imageUrl: "/images/busan.jpg" },
@@ -10,12 +11,16 @@ const regions = [
   { id: "jeju", nameKo: "제주", nameEn: "Jeju", imageUrl: "/images/jeju.jpg" },
 ];
 
-const RegionSelectPage: React.FC = () => {
+const CreateRegionPage: React.FC = () => {
   const navigate = useNavigate();
 
+  const { setStep1 } = useCreateLogStore();
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const handleNextPage = () => {
+    if (!selectedId) return;
+
+    setStep1(Number(selectedId));
     navigate("/log/select-date");
   }
 
@@ -43,7 +48,7 @@ const RegionSelectPage: React.FC = () => {
   );
 };
 
-export default RegionSelectPage;
+export default CreateRegionPage;
 
 const Container = styled.div`
   display: flex;

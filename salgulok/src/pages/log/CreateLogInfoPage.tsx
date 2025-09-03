@@ -6,7 +6,7 @@ import ImageUpload from "../../components/common/ImageUpload";
 import VisibilityToggle from "../../components/log/VisibilityTogle";
 import BottomButton from "../../components/common/BottomButton";
 
-const SignupPage: React.FC = () => {
+const CreateLogInfoPage: React.FC = () => {
   const navigate = useNavigate();
 
   const handleAddLog = () => {
@@ -42,7 +42,7 @@ const SignupPage: React.FC = () => {
   );
 }
 
-export default SignupPage;
+export default CreateLogInfoPage;
 
 const Container = styled.div`
   display: flex;

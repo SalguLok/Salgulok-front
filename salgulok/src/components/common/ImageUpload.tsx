@@ -2,7 +2,11 @@ import React, { useRef, useState } from "react";
 import styled from "styled-components";
 import CameraIcon from "../../assets/common/camera.svg";
 
-const ImageUpload: React.FC = () => {
+interface ImageUploadProps {
+  label?: string;
+}
+
+const ImageUpload: React.FC<ImageUploadProps> = ({ label }) => {
   const [preview, setPreview] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -21,7 +25,7 @@ const ImageUpload: React.FC = () => {
 
   return (
     <Wrapper>
-      <Label>프로필 이미지</Label>
+      <Label>{label}</Label>
       <UploadBox onClick={handleClick}>
         {preview ? (
           <img src={preview} alt="preview" />

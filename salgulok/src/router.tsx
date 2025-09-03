@@ -7,10 +7,10 @@ import MapPage from "./pages/map/MapPage";
 import LogPage from "./pages/log/LogPage";
 import CommunityPage from "./pages/community/CommunityPage";
 import MyPage from "./pages/mypage/MyPage";
-import CreateDatePage from "./pages/log/CreateDatePage";
+import CreateDatePage from "./pages/log/CreateLogDatePage";
 import CreateLogInfoPage from "./pages/log/CreateLogInfoPage";
 import CreateLogCompletePage from "./pages/log/CreateLogCompletePage";
-import CreateRegionPage from "./pages/log/CreateRegionPage";
+import CreateRegionPage from "./pages/log/CreateLogRegionPage";
 
 const router = createBrowserRouter([
   {

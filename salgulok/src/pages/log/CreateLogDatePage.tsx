@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import Calendar from "../../components/log/Calendar";
 
-const SelectDatePage: React.FC = () => {
+const CreateDatePage: React.FC = () => {
   return (
     <Container>
         <Calendar />
@@ -10,7 +10,7 @@ const SelectDatePage: React.FC = () => {
   );
 };
 
-export default SelectDatePage;
+export default CreateDatePage;
 
 const Container = styled.div`
     margin: 50px 0; //임시

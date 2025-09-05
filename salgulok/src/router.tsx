@@ -11,6 +11,7 @@ import CreateDatePage from "./pages/log/CreateLogDatePage";
 import CreateLogInfoPage from "./pages/log/CreateLogInfoPage";
 import CreateLogCompletePage from "./pages/log/CreateLogCompletePage";
 import CreateRegionPage from "./pages/log/CreateLogRegionPage";
+import EditProfilePage from "./pages/mypage/EditProfilePage";
 
 const router = createBrowserRouter([
   {
@@ -42,7 +43,8 @@ const router = createBrowserRouter([
   { path: "/log/create/region", element: <CreateRegionPage />},
   { path: "/log/create/date", element: <CreateDatePage /> },
   { path: "/log/create/info", element: <CreateLogInfoPage />},
-  { path: "/log/complete", element: <CreateLogCompletePage />}
+  { path: "/log/complete", element: <CreateLogCompletePage />},
+  { path: "/profile/edit", element: <EditProfilePage /> }
 ]);
 
 export default router;

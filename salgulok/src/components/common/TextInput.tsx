@@ -1,12 +1,12 @@
 import React from "react";
 import styled from "styled-components";
 
-interface TextInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface TextAreaProps extends React.InputHTMLAttributes<HTMLTextAreaElement> {
   variant?: "sm" | "md" | "lg";
 }
 
-const TextInput: React.FC<TextInputProps> = ({ variant = "md", ...props }) => {
-  return <StyledInput $variant={variant} {...props} />;
+const TextInput: React.FC<TextAreaProps> = ({ variant = "md", ...props }) => {
+  return <StyledTextarea $variant={variant} {...props} />;
 };
 
 export default TextInput;
@@ -17,15 +17,19 @@ const sizeMap = {
   lg: { height: "196px" },
 };
 
-const StyledInput = styled.input<{ $variant?: "sm" | "md" | "lg" }>`
+const StyledTextarea = styled.textarea<{ $variant?: "sm" | "md" | "lg" }>`
   border: 1.5px solid var(--gray-300);
   color: var(--gray-300);
   border-radius: 10px;
   flex: 1;
   height: ${(props) => sizeMap[props.$variant || "sm"].height};
-  padding: 0 14px;
+  resize: none;
+  padding: 10.8px 14px;
   font-size: 13px;
+  line-height: 13px;
+  align-items: center; 
   font-weight: 500;
+  box-sizing: border-box;
 
   &:focus {
     outline: none;

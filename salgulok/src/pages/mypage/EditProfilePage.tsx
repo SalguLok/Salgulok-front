@@ -4,6 +4,7 @@ import styled from "styled-components";
 import EditProfile from "../../components/mypage/ProfileEdit";
 import FormField from "../../components/common/FormField";
 import BottomButton from "../../components/common/BottomButton";
+import Header from "../../components/common/Header";
 
 const dummy = { nickname: "제티", intro: "안뇽", profileImg: "" };
 
@@ -32,25 +33,28 @@ const EditProfilePage: React.FC = () => {
   
     return (    
         <Container>
-            <EditProfile imageUrl={profileImg} onChange={handleImageChange}/>
+            <Header title="살구로그 생성" showBackButton/>
+            <ContentWrapper>
+                <EditProfile imageUrl={profileImg} onChange={handleImageChange}/>
 
-            <FormWrapper>
-                <FormField
-                    label="닉네임"
-                    required
-                    placeholder={nickname}
-                    variant="sm"
-                    value={nickname}
-                    onChange={(e) => setNickname(e.target.value)}
-                />
-                <FormField
-                    label="소개글"
-                    placeholder={intro}
-                    variant="md"
-                    value={intro}
-                    onChange={(e) => setIntro(e.target.value)}
-                />
-            </FormWrapper>
+                <FormWrapper>
+                    <FormField
+                        label="닉네임"
+                        required
+                        placeholder={nickname}
+                        variant="sm"
+                        value={nickname}
+                        onChange={(e) => setNickname(e.target.value)}
+                    />
+                    <FormField
+                        label="소개글"
+                        placeholder={intro}
+                        variant="md"
+                        value={intro}
+                        onChange={(e) => setIntro(e.target.value)}
+                    />
+                </FormWrapper>
+            </ContentWrapper>
             
             <BottomButton
                 text="수정하기"
@@ -65,8 +69,13 @@ export default EditProfilePage;
 const Container = styled.div`
   display: flex;
   flex-direction: column;
+`;
+
+const ContentWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
   gap: 8px;
-  padding-top: 50px;  //임시
+  margin-top: 30px;
   align-items: center;
   width: 100%;
 `;

@@ -6,6 +6,7 @@ import ImageUpload from "../../components/common/ImageUpload";
 import VisibilityToggle from "../../components/log/VisibilityTogle";
 import BottomButton from "../../components/common/BottomButton";
 import { useCreateLogStore } from "../../stores/CreateLogStore";
+import Header from "../../components/common/Header";
 
 const CreateLogInfoPage: React.FC = () => {
   const navigate = useNavigate();
@@ -47,6 +48,7 @@ const CreateLogInfoPage: React.FC = () => {
   
   return (    
     <Container>
+      <Header title="살구로그 생성" showBackButton/>
       <FormWrapper>
       <FormField
         label="제목"
@@ -81,12 +83,11 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: 50px;  //임시
 `;
 
 const FormWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 25px;
-  margin: 0 20px;
+  margin: 30px 20px;
 `;

@@ -4,6 +4,7 @@ import LogoImg from "../../assets/common/main_salgu.svg";
 import FormField from "../../components/common/FormField";
 import ImageUpload from "../../components/common/ImageUpload";
 import BottomButton from "../../components/common/BottomButton";
+import Header from "../../components/common/Header";
 
 const SignupPage: React.FC = () => {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const SignupPage: React.FC = () => {
 
   return (
     <Container>
+      <Header title="회원가입"/>
       <Logo src={LogoImg}/>
       <MainInfo>회원정보 입력</MainInfo>
       <SubInfo>살구록 서비스 사용에 필요한 정보를 입력해주세요.</SubInfo>
@@ -50,12 +52,11 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: 50px;  //임시
 `;
 
 const Logo = styled.img`
   width: 43px;
-  margin: 0 20px;
+  margin: 20px 20px 0 20px;
 `;
 
 const MainInfo = styled.div`

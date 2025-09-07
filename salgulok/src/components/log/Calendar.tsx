@@ -114,7 +114,7 @@ const Calendar: React.FC<CalendarProps> = ({ onDateChange }) => {
 export default Calendar;
 
 const Container = styled.div`
-  margin: auto 0px;
+  margin: 20px 0px;
   padding: 0 20px;
 `;
 

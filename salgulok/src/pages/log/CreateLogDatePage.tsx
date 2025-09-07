@@ -5,6 +5,7 @@ import styled from "styled-components";
 import Calendar from "../../components/log/Calendar";
 import BottomButton from "../../components/common/BottomButton";
 import { useCreateLogStore } from "../../stores/CreateLogStore";
+import Header from "../../components/common/Header";
 
 const CreateDatePage: React.FC = () => {
   const navigate = useNavigate();
@@ -30,6 +31,7 @@ const CreateDatePage: React.FC = () => {
 
   return (
     <Container>
+        <Header title="살구로그 생성" showBackButton/>
         <Calendar onDateChange={handleDateChange}/>
         <BottomButton
           text="여행 선택"
@@ -42,5 +44,5 @@ const CreateDatePage: React.FC = () => {
 export default CreateDatePage;
 
 const Container = styled.div`
-    margin: 50px 0; //임시
+  gap: 30px;
 `;

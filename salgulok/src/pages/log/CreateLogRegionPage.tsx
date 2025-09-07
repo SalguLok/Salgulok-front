@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import RegionItem from "../../components/log/RegionItem";
 import BottomButton from "../../components/common/BottomButton";
 import { useCreateLogStore } from "../../stores/CreateLogStore";
+import Header from "../../components/common/Header";
 
 const regions = [
   { id: 1, nameKo: "부산", nameEn: "Busan", imageUrl: "/images/busan.jpg" },
@@ -28,6 +29,7 @@ const CreateRegionPage: React.FC = () => {
 
   return (
     <Container>
+      <Header title="살구로그 생성" showBackButton/>
       <List>
         {regions.map((region) => (
           <RegionItem
@@ -59,7 +61,7 @@ const Container = styled.div`
 `;
 
 const List = styled.div`
-  margin: 0 20px;
+  margin: 30px 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;

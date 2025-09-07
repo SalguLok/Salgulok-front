@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import styled from "styled-components";
 import editIcon from "../../assets/mypage/edit_profile_img.svg";
-import profile from "../../assets/common/profile_default.svg?react";
+import profile from "../../assets/common/profile_default.svg?url";
 
 interface ProfileImageProps {
   imageUrl?: string;
@@ -23,12 +23,7 @@ const EditProfileImage: React.FC<ProfileImageProps> = ({ imageUrl, onChange }) =
 
   return (
     <Container>
-      {imageUrl ? (
-        <ProfileImg src={imageUrl} alt="사용자 프로필" />
-      ) : (
-        <ProfileDefault />
-      )}
-
+      <ProfileImg src={imageUrl || profile} alt="사용자 프로필" />
 
       <EditIcon src={editIcon} alt="edit" onClick={handleEditClick}/>
       <HiddenInput
@@ -55,13 +50,6 @@ const ProfileImg = styled.img`
   border-radius: 50%;
   object-fit: cover;
   border: none;
-`;
-
-const ProfileDefault = styled(profile)`
-  width: 115px;
-  height: 115px;
-  border-radius: 50%;
-  object-fit: cover;
 `;
 
 const EditIcon = styled.img`

@@ -6,6 +6,11 @@ import HomePage from "./pages/home/HomePage";
 import MapPage from "./pages/map/MapPage";
 import LogPage from "./pages/log/LogPage";
 import CommunityPage from "./pages/community/CommunityPage";
+import CreateDatePage from "./pages/log/CreateLogDatePage";
+import CreateLogInfoPage from "./pages/log/CreateLogInfoPage";
+import CreateLogCompletePage from "./pages/log/CreateLogCompletePage";
+import CreateRegionPage from "./pages/log/CreateLogRegionPage";
+import EditProfilePage from "./pages/mypage/EditProfilePage";
 import MyPage from "./pages/mypage/MyPage";
 
 const router = createBrowserRouter([
@@ -35,6 +40,12 @@ const router = createBrowserRouter([
   },
   { path: "/community", element: <CommunityPage /> },
   { path: "/my", element: <MyPage /> },
+  { path: "/log/create/region", element: <CreateRegionPage />},
+  { path: "/log/create/date", element: <CreateDatePage /> },
+  { path: "/log/create/info", element: <CreateLogInfoPage />},
+  { path: "/log/complete", element: <CreateLogCompletePage />},
+  { path: "/mypage/edit", element: <EditProfilePage /> },
+  { path: "/mypage", element: <MyPage/>}
 ]);
 
 export default router;

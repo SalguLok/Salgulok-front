@@ -395,8 +395,8 @@ const SalguCircle = styled.div`
 `;
 
 const SalguPlusImg = styled.img`
-  width: 28px;
-  height: 28px;
+  width: 45px;
+  height: 45px;
   object-fit: contain;
 `;
 
@@ -418,7 +418,7 @@ const SalguNum = styled.span`
   inset: 0;
   display: grid;
   place-items: center;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 800;
   color: #000;
 `;

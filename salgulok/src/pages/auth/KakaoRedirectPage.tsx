@@ -1,12 +1,14 @@
 import { useEffect } from "react";
-import { sendKakaoCode } from "../../api/auth";
+import { sendKakaoCode } from "../../api/auth/auth";
 import { useNavigate } from "react-router-dom";
 
 function KakaoRedirectPage() {
+  localStorage.removeItem("accessToken"); //헤더의 accessToken 지우기
   const navigate = useNavigate();
 
   useEffect(() => {
     const code = new URL(window.location.href).searchParams.get("code");
+    console.log("받은 code:", code); 
     if (!code) return;
 
     sendKakaoCode(code)

@@ -11,8 +11,8 @@ import MyPage from "./pages/mypage/MyPage";
 // 테스트용
 // import LogEntryPage from "./pages/log/LogEntryPage";
 // import LogSearchPage from "./pages/log/LogSearchPage.tsx";
-// import LogEntryPage from "./pages/log/LogEntryPage.tsx";
-import TestPage from "./pages/log/TestPage.tsx"
+ import LogEntryPage from "./pages/log/LogEntryPage.tsx";
+// import TestPage from "./pages/log/TestPage.tsx"
 
 const router = createBrowserRouter([
   {
@@ -31,8 +31,8 @@ const router = createBrowserRouter([
     path: "/",
     //element: <HomePage />,
     //element: <LogSearchPage />
-    //element: <LogEntryPage />
-    element: <TestPage />
+    element: <LogEntryPage />
+    // element: <TestPage />
   },
   {
     path: "/map",

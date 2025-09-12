@@ -2,12 +2,15 @@ import { useRef, useState } from "react";
 import styled from "styled-components";
 import TemplateCard from "../../components/common/TemplateCard";
 
+import salguIcon from "../../assets/common/salgu.svg";
+import salguplusIcon from "../../assets/common/salgu_plus.svg";
+
 export default function LogEntryPage() {
     // 템플릿 카드의 폼 상태 (필요 시 여러 개로 확장 가능)
     const [place, setPlace] = useState("");
     const [text, setText] = useState("");
     const [thumb, setThumb] = useState<string | undefined>(undefined);
-
+    const [templateCount, setTemplateCount] = useState(1);
     // 로컬 파일 선택을 위한 숨겨진 input
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -30,6 +33,7 @@ export default function LogEntryPage() {
 
     const handleAddTemplate = () => {
         console.log("[LogEntryPage] 템플릿 추가");
+        setTemplateCount((n) => n + 1);
     };
 
     const handleSubmit = () => {
@@ -86,7 +90,10 @@ export default function LogEntryPage() {
                 {dayThumbs.map((d, idx) => (
                     <DayItem key={idx} $active={!!d.active} title={d.date}>
                         {d.add ? (
-                            <AddCircle role="img" aria-label="추가">＋</AddCircle>
+                            // ✅ 살구 아이콘으로 교체
+                            <SalguCircle>
+                                <SalguPlusImg src={salguplusIcon} alt="살구 추가" />
+                            </SalguCircle>
                         ) : (
                             <ThumbCircle src={d.img} alt="" loading="lazy" />
                         )}
@@ -98,10 +105,13 @@ export default function LogEntryPage() {
             {/* 상단 템플릿 미리보기 카드 */}
             <PreviewCard>
                 <PreviewHeader>
-                    <Emoji>🍑</Emoji>
-                    <PreviewTitle>
-                        <Rank>1</Rank> {preview.title}
-                    </PreviewTitle>
+                    {/* ✅ 살구 아이콘 + 숫자 오버레이 */}
+                    <SalguIconWrap aria-label={`템플릿 ${templateCount}개`}>
+                        <SalguImg src={salguIcon} alt="" />
+                        <SalguNum>{templateCount}</SalguNum>
+                    </SalguIconWrap>
+
+                    <PreviewTitle>{preview.title}</PreviewTitle>
                     <MoreBtn aria-label="more">⋮</MoreBtn>
                 </PreviewHeader>
 
@@ -214,7 +224,7 @@ const DayItem = styled.div<{ $active: boolean }>`
   align-items: center;
   gap: 6px;
   min-width: 54px;
-  opacity: ${(p) => (p.$active ? 1 : 0.7)};
+  //opacity: ${(p) => (p.$active ? 1 : 0.7)};
 `;
 
 const ThumbCircle = styled.img`
@@ -223,7 +233,6 @@ const ThumbCircle = styled.img`
   border-radius: 999px;
   object-fit: cover;
   border: 2px solid #fff;
-  box-shadow: 0 1px 4px rgba(0,0,0,.08);
 `;
 
 const AddCircle = styled.div`
@@ -244,10 +253,9 @@ const DayText = styled.span`
 
 const PreviewCard = styled.article`
   background: #fff;
-  border-radius: 16px;
+  border-radius: 10px;
   border: 1px solid var(--gray-200);
   padding: 12px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
 `;
 
 const PreviewHeader = styled.div`
@@ -375,3 +383,44 @@ const PrimaryButton = styled.button`
     font-size: 15px;
   cursor: pointer;
 `;
+
+const SalguCircle = styled.div`
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: 1.5px dashed var(--white);
+`;
+
+const SalguPlusImg = styled.img`
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+`;
+
+const SalguIconWrap = styled.div`
+  position: relative;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 auto;
+`;
+
+const SalguImg = styled.img`
+  width: 100%;
+  height: 100%;
+  display: block;
+`;
+
+const SalguNum = styled.span`
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-size: 12px;
+  font-weight: 800;
+  color: #000;
+`;
+
+

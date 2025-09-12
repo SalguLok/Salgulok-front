@@ -113,14 +113,14 @@ export default TemplateCard;
 /* ==================== styles ==================== */
 
 const Card = styled.div`
-    width: 335px;              /* ← 고정 */
-    height: 444px;
+    width: 100%;              /* ← 고정 */
+    height: 100%;
     box-sizing: border-box;
     border: 1px solid var(--gray-200);
   background: var(--white);
   border-radius: 10px;
-  padding: 16px;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+  padding: 14px;
+  // box-shadow: 0 1px 2px rgba(0,0,0,0.04);
 `;
 
 const TopRow = styled.div`

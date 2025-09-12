@@ -1,23 +1,19 @@
-// src/pages/log/TestPage.tsx
 import React from "react";
 import styled from "styled-components";
 
 import CommentInputBar from "../../components/common/CommentInputBar";
 import ActionMenu from "../../components/common/ActionMenu";
 
-// 타입 무시: props 안 맞아도 일단 렌더링만 하도록
 const AnyCommentInputBar = CommentInputBar as React.ComponentType<any>;
 const AnyActionMenu = ActionMenu as React.ComponentType<any>;
 
 export default function TestPage() {
     return (
         <Wrap>
-            {/* 상단: 댓글 입력바 */}
+            {/* 상단: CommentInputBar */}
             <AnyCommentInputBar placeholder="댓글 입력 미리보기" />
 
             <Divider />
-
-            {/* 하단: 액션 메뉴 */}
             <AnyActionMenu />
         </Wrap>
     );

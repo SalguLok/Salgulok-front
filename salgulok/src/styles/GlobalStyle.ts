@@ -31,6 +31,7 @@ const GlobalStyle = createGlobalStyle`
     display: flex;
     justify-content: center;
     background: #f5f5f5;
+    overflow: hidden;
   }
 
   #root {
@@ -38,6 +39,9 @@ const GlobalStyle = createGlobalStyle`
     width: 375px;
     height: 100svh;
     margin:0 auto;
+    overflow-x:hidden;
+    overflow-y: auto;
+    scrollbar-width: none;  
   }
 `;
 

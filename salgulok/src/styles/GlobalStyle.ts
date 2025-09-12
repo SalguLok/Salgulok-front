@@ -7,6 +7,7 @@ const GlobalStyle = createGlobalStyle`
     --black: #000000;
 
     --main-pri: #E78254;
+    --main-sec: #FFEADD;
 
     --gray-100: #EFEFEF;
     --gray-200: #D4D4D4;
@@ -20,7 +21,7 @@ const GlobalStyle = createGlobalStyle`
     -ms-overflow-style: none;
 }
 * {
-  font-family: Presentation;
+  font-family: Pretendard;
 }
 
   body{

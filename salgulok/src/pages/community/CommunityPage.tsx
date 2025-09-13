@@ -1,4 +1,5 @@
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 import NavigationBar from "../../components/common/NavigationBar";
 import Header from "../../components/common/Header";
 import CommentSvg from "../../assets/common/comment.svg";
@@ -29,6 +30,8 @@ const dummyPosts = [
 
 const CommunityPage = () => {
   
+  const navigate = useNavigate();
+
   return (
     <>
     <Layout>
@@ -67,12 +70,12 @@ const CommunityPage = () => {
       </PostList>
       </Layout>
       
-      <WriteButton onClick={() => console.log("글작성 이동")}>
-        <Plus>＋</Plus>
-        글 작성
-      </WriteButton>
-        
-      <NavigationBar />
+    <WriteButton onClick={() => navigate('/community/WritePage')}>
+      <Plus>＋</Plus>
+      글 작성
+    </WriteButton>
+    
+    <NavigationBar />
      
     </>
   );
@@ -249,7 +252,7 @@ const WriteButton = styled.button`
   display: flex; align-items: center; justify-content: center; gap: 8px;
   border: none; border-radius: 20px;
   background: var(--main-pri); color: #fff;
-  font-size: 11px; font-weight: 200; font-family: 'pretendard', sans-serif;
+  font-size: 13px; font-weight: 500; font-family: 'pretendard', sans-serif;
   box-shadow: 0 8px 18px rgba(0,0,0,0.15);
   cursor: pointer;
 `;

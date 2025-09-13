@@ -12,6 +12,7 @@ import CreateLogCompletePage from "./pages/log/CreateLogCompletePage";
 import CreateRegionPage from "./pages/log/CreateLogRegionPage";
 import EditProfilePage from "./pages/mypage/EditProfilePage";
 import MyPage from "./pages/mypage/MyPage";
+import WritePage from "./pages/community/WritePage";
 
 // 테스트용
 // import LogEntryPage from "./pages/log/LogEntryPage";
@@ -54,7 +55,8 @@ const router = createBrowserRouter([
   { path: "/log/create/info", element: <CreateLogInfoPage />},
   { path: "/log/complete", element: <CreateLogCompletePage />},
   { path: "/mypage/edit", element: <EditProfilePage /> },
-  { path: "/mypage", element: <MyPage/>}
+  { path: "/mypage", element: <MyPage/>},
+  { path: "/community/WritePage", element: <WritePage /> }
 ]);
 
 export default router;

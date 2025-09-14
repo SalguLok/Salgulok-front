@@ -70,7 +70,7 @@ const EditProfilePage: React.FC = () => {
   
     return (    
         <Container>
-            <Header title="살구로그 생성" showBackButton/>
+            <Header title="마이페이지" showBackButton/>
             <ContentWrapper>
                 <EditProfile imageUrl={profileImg} onChange={handleImageChange}/>
 

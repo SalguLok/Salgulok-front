@@ -5,7 +5,7 @@ import ProfileInfoItem from "../../components/mypage/ProfileInfoItem";
 import NavigationBar from "../../components/common/NavigationBar";
 import LogCardList from "../../components/common/CardListItem";
 import type { LogItem } from "../../components/common/CardListItem";
-import Header from "../../components/common/Header";
+import HeaderLeft from "../../components/common/HeaderLeft";
 
 const dummy: {
   nickname: string;
@@ -51,7 +51,7 @@ const dummy: {
 const MyPage: React.FC = () => {
     return (    
       <Container>
-        <Header title="마이페이지" showBackButton/>
+        <HeaderLeft title="마이페이지"/>
 
         <ContentWrapper>
           <ProfileInfoItem/>

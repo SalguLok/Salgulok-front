@@ -49,22 +49,12 @@ const dummy: {
 };
 
 const MyPage: React.FC = () => {
-    const navigate = useNavigate();
-
-    const handleEditPage = (file: File) => {
-        navigate("/");
-    };
-  
     return (    
       <Container>
         <Header title="마이페이지" showBackButton/>
 
         <ContentWrapper>
-          <ProfileInfoItem
-            nickname={dummy.nickname}
-            intro={dummy.intro}
-            profileImg={dummy.profileImg}
-          />
+          <ProfileInfoItem/>
           <CardContainer>
             <LogCardList
               items={dummy.logs}

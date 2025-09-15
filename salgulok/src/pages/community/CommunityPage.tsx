@@ -3,8 +3,10 @@ import { useNavigate } from "react-router-dom";
 import NavigationBar from "../../components/common/NavigationBar";
 import Header from "../../components/common/Header";
 import CommentSvg from "../../assets/common/comment.svg";
+// import PostCard, {type Post} from "./PostCard";
 
-const dummyPosts = [
+
+const dummyPosts= [
   {
     id: 1,
     user: "월버",
@@ -31,6 +33,7 @@ const dummyPosts = [
 const CommunityPage = () => {
   
   const navigate = useNavigate();
+  const goDetail = (id: number) => navigate(`/community/${id}`);
 
   return (
     <>
@@ -46,6 +49,7 @@ const CommunityPage = () => {
       </Banner>
       <PostList>
         {dummyPosts.map((post) => (
+          // <PostCard key={post.id} post={post} onClick={() => goDetail(post.id)} />
           <PostItem key={post.id}>
             <PostHeader>
               <Avatar src={post.avatar} alt={post.user} />
@@ -253,7 +257,6 @@ const WriteButton = styled.button`
   border: none; border-radius: 20px;
   background: var(--main-pri); color: #fff;
   font-size: 13px; font-weight: 500; font-family: 'pretendard', sans-serif;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.15);
   cursor: pointer;
 `;
 

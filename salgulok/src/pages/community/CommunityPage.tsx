@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import NavigationBar from "../../components/common/NavigationBar";
 import Header from "../../components/common/Header";
-import PostCard from "./PostCard";
+import PostCard from "../../components/common/PostCard";
 import type { Post } from "../../types/post";
 
 
@@ -51,26 +51,6 @@ const CommunityPage = () => {
       <PostList>
         {dummyPosts.map((post) => (
           <PostCard key={post.id} post={post} onClick={() => goDetail(post.id)} />
-          // <PostItem key={post.id}>
-          //   <PostHeader>
-          //     <Avatar src={post.avatar} alt={post.user} />
-          //     <PostInfo>
-          //       <PostUser>{post.user}</PostUser>
-          //       <PostMeta>{post.date}</PostMeta>
-          //     </PostInfo>
-          //     <PostMenu>⋮</PostMenu>
-          //   </PostHeader>
-          //   <PostContent>{post.content}</PostContent>
-          //   <PostFooter>
-          //     <CommentGroup>
-          //       <CommentIcon>
-          //       <img src={CommentSvg} alt="댓글" width={15} height={15} />
-          //       </CommentIcon>
-          //       <CommentCount>{post.comments}</CommentCount>
-          //       <HotBadge>맛집</HotBadge>
-          //     </CommentGroup>
-          //   </PostFooter>
-          // </PostItem>
         ))}
       </PostList>
       </Layout>

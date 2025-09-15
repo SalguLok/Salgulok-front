@@ -2,7 +2,6 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import NavigationBar from "../../components/common/NavigationBar";
 import Header from "../../components/common/Header";
-import CommentSvg from "../../assets/common/comment.svg";
 import PostCard from "./PostCard";
 import type { Post } from "../../types/post";
 
@@ -11,19 +10,20 @@ const dummyPosts: Post[] = [
   {
     id: 1,
     user: "월버",
-    date: "2025.08.10 제주",
+    date: "2025.08.10",
+    location: "제주",
     avatar: "https://randomuser.me/api/portraits/men/1.jpg",
     content:
       "세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요?",
     comments: 25,
     isHot: true,
   },
- 
   {
     id: 2,
     user: "월버",
-    date: "2025.08.10 제주",
-    avatar: "https://randomuser.me/api/portraits/men/1.jpg",
+    date: "2025.08.10",
+    location: "제주",
+    avatar: "https://randomuser.me/api/portraits/men/2.jpg",
     content:
       "세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요?",
     comments: 25,
@@ -147,92 +147,6 @@ const BannerImage = styled.img`
 
 const PostList = styled.div`
   margin: 0 0 80px 0;
-`;
-
-const PostItem = styled.div`
-  background: var(--white);
-  border-bottom: 1px solid var(--gray-100);
-  padding: 20px;
-`;
-
-const PostHeader = styled.div`
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-`;
-
-const Avatar = styled.img`
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  margin-right: 12px;
-`;
-
-const PostInfo = styled.div`
-  flex: 1;
-`;
-
-const PostUser = styled.div`
-  font-family: 'pretendard', sans-serif;
-  font-weight: 500;
-  font-size: 13px;
-`;
-
-const PostMeta = styled.div`
-  font-size: 11px;
-  font-family: 'pretendard', sans-serif;
-  color: var(--gray-300);
-`;
-
-const PostMenu = styled.div`
-  font-size: 20px;
-  font-family: 'pretendard', sans-serif;
-  color: var(--gray-300);
-  cursor: pointer;
-`;
-
-const PostContent = styled.div`
-  font-size: 13px;
-  font-family: 'pretendard', sans-serif;
-  margin-bottom: 12px;
-  color: var(--black);
-`;
-
-const PostFooter = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  justify-content: flex-end;
-`;
-
-const CommentGroup = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const CommentIcon = styled.span`
-  vertical-align: middle;
-  display: flex;
-  align-items: center;
-`;
-
-const CommentCount = styled.span`
-  font-size: 13px;
-  color: var(--black);
-  font-family: 'pretendard', sans-serif;
-`;
-
-const HotBadge = styled.span`
-  margin-left: auto;
-  padding: 2px 11px;
-  border-radius: 25px;
-  border: 0.5px solid var(--main-pri);
-  background-color: var(--white);
-  font-size: 12px;
-  font-weight: 200;
-  font-family: 'pretendard', sans-serif;
-  color: var(--main-pri);
 `;
 
 const NAV_H = 76;         // 네비게이션 높이(프로젝트 값에 맞춰 조정)

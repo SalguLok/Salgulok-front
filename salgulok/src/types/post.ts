@@ -2,6 +2,7 @@ export type Post = {
   id: number;
   user: string;
   date: string;
+  location: string;
   avatar: string;
   content: string;
   comments: number;

@@ -6,8 +6,11 @@ type TabKey = "log" | "place";
 
 type PlaceInfo = {
   title: string;
-  imageUrl: string;
+  imageUrl?: string;
   description?: string;
+  address?: string;
+  tel?: string;
+  star?: number;
 };
 
 type Props = {
@@ -31,6 +34,10 @@ const BottomSheetModalMap: React.FC<Props> = ({
 }) => {
   const [tab, setTab] = useState<TabKey>(defaultTab);
   const [height, setHeight] = useState<number>(initialHeight);
+
+  useEffect(() => {
+    setTab(defaultTab);
+  }, [defaultTab]);
 
   const minH = 120;
   const maxH = Math.round(window.innerHeight * maxHeightRatio);
@@ -107,6 +114,11 @@ const BottomSheetModalMap: React.FC<Props> = ({
             <ImagePlaceholder />
           )}
           <PlaceTitle>{place?.title ?? "지역 정보"}</PlaceTitle>
+          {place?.address && <PlaceMeta>📍 {place.address}</PlaceMeta>}
+          {typeof place?.star === "number" && (
+            <PlaceMeta>⭐ {place.star.toFixed(1)}</PlaceMeta>
+          )}
+          {place?.tel && <PlaceMeta>☎ {place.tel}</PlaceMeta>}
           {place?.description ? (
             <PlaceDesc>{place.description}</PlaceDesc>
           ) : null}
@@ -209,7 +221,7 @@ const Tabs = styled.div`
 const TabButton = styled.button<{ $active?: boolean }>`
   background: transparent;
   border: 0;
-  padding: 8px 4px 12px;
+  padding: 8px 3px 10px;
   font-size: 14px;
   font-weight: ${({ $active }) => ($active ? 700 : 500)};
   color: ${({ $active }) => ($active ? "#e57a5b" : "#888")};
@@ -218,11 +230,12 @@ const TabButton = styled.button<{ $active?: boolean }>`
 
 const ActiveLine = styled.div<{ $tab: TabKey }>`
   position: absolute;
-  left: ${({ $tab }) => ($tab === "log" ? "8px" : "84px")};
+  left: ${({ $tab }) => ($tab === "log" ? "9px" : "80px")};
   bottom: 0;
   height: 2px;
-  width: 64px;
-  background: #e57a5b;
+  width: 53px;
+  margin-bottom: 2px;
+  background: var(--main-pri);
   transition: left 180ms ease;
 `;
 
@@ -239,10 +252,16 @@ const LogContainer = styled.div`
   justify-content: center;
 `;
 
-//지역 탭
+const PlaceMeta = styled.p`
+  margin: 4px 0 0;
+  color: #666;
+  font-size: 13px;
+`;
+
 const PlaceContainer = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 5px;
 `;
 const PlaceImage = styled.img`
   width: 100%;

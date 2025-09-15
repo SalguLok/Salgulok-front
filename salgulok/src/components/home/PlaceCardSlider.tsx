@@ -5,11 +5,13 @@ import Comment from "../../assets/common/comment.svg?react";
 
 export type PlaceItem = {
   id: string;
-  image: string;
-  name: string;
-  likes: number;
+  image?: string;
+  placeName: string;
+  mapx?: string;
+  mapy?: string;
+  starCount: number;
   comments: number;
-  liked?: boolean;
+  star?: boolean;
 };
 
 type Props = {
@@ -21,18 +23,25 @@ type Props = {
 const PlaceCardSlider: FC<Props> = ({ items, onClick }) => {
   return (
     <Layout>
-      {items.map((item) => (
-        <Card key={item.id} onClick={() => onClick?.(item.id)}>
+      {items.map((item, i) => (
+        <Card
+          key={item.id ?? `${item.placeName ?? "place"}-${i}`}
+          onClick={() => onClick?.(item.id)}
+        >
           <ImageContainer>
-            <CoverImg src={item.image} alt="" loading="lazy" />
+            {item.image ? (
+              <CoverImg src={item.image} alt="" loading="lazy" />
+            ) : (
+              <Placeholder>NO IMG</Placeholder>
+            )}
           </ImageContainer>
 
           <DetailContainer>
-            <Title>{item.name}</Title>
+            <Title>{item.placeName}</Title>
             <ReactionContainer>
               <ReactionWrapper>
                 <Heart />
-                <ReactionText>{item.likes}</ReactionText>
+                <ReactionText>{item.starCount}</ReactionText>
               </ReactionWrapper>
               <ReactionWrapper>
                 <Comment />
@@ -53,37 +62,33 @@ const Layout = styled.div`
   flex-direction: row;
   gap: 16px;
 
-  /* 가로 슬라이드 */
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
   touch-action: pan-x;
 
-  /* 스크롤바 숨김 */
   -ms-overflow-style: none;
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
   }
 
-  /* 왼쪽 여백만, 오른쪽은 0 → 끝에 공백 없음 */
   padding-left: 20px;
   padding-right: 20px;
 
-  /* 스냅 기준도 왼쪽만 */
   scroll-padding-left: 20px;
   scroll-padding-right: 20px;
+
+  cursor: pointer;
 `;
 
 const Card = styled.div`
   border-radius: 10px;
   margin-bottom: 5px;
 
-  /* 카드 폭 고정 + 스냅 포인트 */
   flex: 0 0 10px;
   scroll-snap-align: start;
 
-  /* 혹시 전역/상위 스타일에서 margin-right가 들어온 경우 대비 */
   &:last-child {
     margin-right: 0;
   }
@@ -103,6 +108,7 @@ const CoverImg = styled.img`
 `;
 const ReactionContainer = styled.div`
   display: flex;
+  gap: 6px;
 `;
 const ReactionWrapper = styled.div`
   display: flex;
@@ -126,4 +132,12 @@ const Title = styled.span`
   font-size: 13px;
   font-weight: 600;
   margin-bottom: 3px;
+`;
+const Placeholder = styled.div`
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  color: var(--gray-500);
 `;

@@ -7,6 +7,8 @@ import VisibilityToggle from "../../components/log/VisibilityTogle";
 import BottomButton from "../../components/common/BottomButton";
 import { useCreateLogStore } from "../../stores/CreateLogStore";
 import Header from "../../components/common/Header";
+import { createLog } from "../../api/log/createLog";
+import type { LogCreateRequest } from "../../api/log/createLog";
 
 const CreateLogInfoPage: React.FC = () => {
   const navigate = useNavigate();
@@ -17,8 +19,7 @@ const CreateLogInfoPage: React.FC = () => {
   const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [imgFile, setImgFile] = useState<File | null>(null);
 
-  const handleAddLog = () => {
-    // Step3 데이터
+  const handleAddLog = async () => {
     const step3Data = {
       title,
       isPublic: visibility === "public",
@@ -27,24 +28,30 @@ const CreateLogInfoPage: React.FC = () => {
     };
     setStep3(step3Data);
 
-    if(!title){
+    if (!title) {
       console.log("로그 제목을 필수로 입력해주세요.");
       return;
     }
 
     // 최종 데이터
-    // TODO: 로그생성/이미지 업로드 api 연결, 일단 임시로 console 로그
-    const finalData = {
-      regionId,
-      startDate,
-      endDate,
-      ...step3Data,
-      imgFile: step3Data.imgFile ? step3Data.imgFile.name : null, // TODO: s3 링크로 변경
+    const finalData: LogCreateRequest = {
+      regionId: regionId ?? 0,
+      startDate: startDate ?? "",
+      endDate: endDate ?? "",
+      title,
+      isPublic: visibility === "public",
+      imgUrl: "", // TODO: S3 업로드 후 URL 넣기
+      oneReview,
     };
 
-    console.log("최종 로그 생성 데이터:", finalData);
-    navigate("/log/complete");
-  }
+    try {
+      await createLog(finalData);
+      navigate("/log/complete");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   
   return (    
     <Container>

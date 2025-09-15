@@ -1,5 +1,6 @@
 import api from "../api";
 
+// 카카오톡 로그인
 interface LoginResponse {
   accessToken: string;
   newUser: boolean;

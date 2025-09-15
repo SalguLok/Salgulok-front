@@ -1,54 +1,40 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 import ProfileInfoItem from "../../components/mypage/ProfileInfoItem";
 import NavigationBar from "../../components/common/NavigationBar";
 import LogCardList from "../../components/common/CardListItem";
 import type { LogItem } from "../../components/common/CardListItem";
 import HeaderLeft from "../../components/common/HeaderLeft";
-
-const dummy: {
-  nickname: string;
-  intro: string;
-  profileImg: string;
-  logs: LogItem[];
-} = {
-  nickname: "제티",
-  intro: "안뇽",
-  profileImg: "",
-  logs: [
-    {
-      id: "1",
-      image: "",
-      writer: "여행이좋아요",
-      writerProfile: "",
-      title: "25년 여름 제주는 아름다워",
-      date: "250703-250807",
-      likes: 17,
-      comments: 25,
-    },
-    {
-      id: "2",
-      image: "",
-      writer: "여행이좋아요",
-      title: "산토리니 블루",
-      date: "250703-250807",
-      likes: 12,
-      comments: 9,
-    },
-    {
-      id: "3",
-      image: "",
-      writer: "여행이좋아요",
-      title: "산토리니 블루",
-      date: "250703-250807",
-      likes: 12,
-      comments: 9,
-    },
-  ],
-};
+import { getMyLogs } from "../../api/log/getMyLog";
 
 const MyPage: React.FC = () => {
+  const [logs, setLogs] = useState<LogItem[]>([]);
+
+  useEffect(() => {
+    const fetchLogs = async () => {
+      try {
+        const res = await getMyLogs();
+
+        const mappedLogs: LogItem[] = res.logs.map((log) => ({
+          id: String(log.logId),
+          image: log.imgUrl ?? "",
+          writer: log.writer,
+          writerProfile: log.writerProfile,
+          title: log.title,
+          date: `${log.startDate} - ${log.endDate}`,
+          likes: 0,
+          comments: 0,
+        }));
+
+        setLogs(mappedLogs);
+      } catch (err) {
+        console.error("내 로그 불러오기 실패", err);
+      }
+    };
+
+    fetchLogs();
+  }, []);
+
     return (    
       <Container>
         <HeaderLeft title="마이페이지"/>
@@ -57,7 +43,7 @@ const MyPage: React.FC = () => {
           <ProfileInfoItem/>
           <CardContainer>
             <LogCardList
-              items={dummy.logs}
+              items={logs}
               onClick={(id) => console.log("open", id)}
               onToggleLike={(id) => console.log("like", id)}
             />

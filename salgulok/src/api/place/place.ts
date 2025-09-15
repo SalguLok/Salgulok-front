@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "../api";
 
 //키워드 지역 + 장소 검색
 export const getPlaceSearch = async (placeName: string) => {
@@ -36,6 +36,7 @@ export const getSalguListByPlace = async (placeId: string) => {
 export const getPopularPlace = async () => {
   try {
     const response = await api.get(`/places/popular`);
+    console.log("전체 인기장소", response);
     return response;
   } catch (err) {
     console.error(err);
@@ -43,9 +44,10 @@ export const getPopularPlace = async () => {
 };
 
 //지역별 인기 장소 조회
-export const getPopularPlaceByRegion = async (regionId: string) => {
+export const getPopularPlaceByRegion = async (regionId: number) => {
   try {
     const response = await api.get(`/places/popular/${regionId}`);
+    console.log("지역별 인기장소", response);
     return response;
   } catch (err) {
     console.error(err);

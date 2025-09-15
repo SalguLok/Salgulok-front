@@ -3,86 +3,336 @@ import NavigationBar from "../../components/common/NavigationBar.tsx";
 import BottomSheetModalMap from "../../components/map/BottomSheetModalMap.tsx";
 import { useEffect, useRef, useState } from "react";
 import Search from "../../assets/common/search.svg?react";
-import { getPlaceSearch } from "../../api/place.ts";
+import { getPlaceSearch } from "../../api/place/place.ts";
+import { useLocation } from "react-router-dom";
+import Overlay from "./Overlay.tsx";
+
+type APIPlace = {
+  place_id: number;
+  placeName: string;
+  mapx: number;
+  mapy: number;
+  content_type_id: number;
+  image_url?: string;
+  addr1?: string;
+  addr2?: string;
+  tel?: string;
+  overview?: string;
+  star?: number;
+};
+
+type PlaceSearchItem = {
+  id: number;
+  name: string;
+  lat: number;
+  lng: number;
+  address: string;
+  imageUrl?: string;
+  tel?: string;
+  overview?: string;
+  star?: number;
+};
+
+type SheetTab = "log" | "place";
+
+const toArray = (res: any): APIPlace[] =>
+  Array.isArray(res?.data) ? res.data : Array.isArray(res) ? res : [];
+
+const normalize = (list: APIPlace[]): PlaceSearchItem[] =>
+  Array.from(
+    new Map(
+      list.map((it) => {
+        const item: PlaceSearchItem = {
+          id: it.place_id,
+          name: it.placeName,
+          lat: it.mapy,
+          lng: it.mapx,
+          address: [it.addr1, it.addr2].filter(Boolean).join(" "),
+          imageUrl: it.image_url,
+          tel: it.tel,
+          overview: it.overview,
+          star: it.star,
+        };
+        return [item.id, item] as const;
+      })
+    ).values()
+  );
 
 const MapPage = () => {
   const [query, setQuery] = useState("");
-  const [searchResult, setSearchResult] = useState([]);
+  const [searchResult, setSearchResult] = useState<PlaceSearchItem[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showResults, setShowResults] = useState(false);
 
-  //장소 검색 API 연결
-  const readPlaceSearch = async () => {
-    try {
-      const response = await getPlaceSearch(query);
-      //setSearchResult(response.data);
-      return response;
-    } catch (err) {
-      console.error(err);
-    }
-  };
-  useEffect(() => {
-    readPlaceSearch();
-  });
+  // 바텀시트에 넘길 선택된 장소 & 탭
+  const [selectedPlace, setSelectedPlace] = useState<{
+    title: string;
+    imageUrl?: string;
+    description?: string;
+    address?: string;
+    tel?: string;
+    star?: number;
+  } | null>(null);
+  const [sheetTab, setSheetTab] = useState<SheetTab>("log");
 
-  const mapRef = useRef<HTMLDivElement | null>(null);
+  // 지도/마커 ref
+  const mapDivRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<naver.maps.Map | null>(null);
+  const markerRef = useRef<naver.maps.Marker | null>(null);
+
+  // 지도 정보 표시용(디버그)
   const [mapPoint, setMapPoint] = useState<{
     x: number | null;
     y: number | null;
   }>({ x: null, y: null });
   const [location, setLocation] = useState("");
 
-  useEffect(() => {
-    // 1) 스크립트 로딩/컨테이너 존재/사이즈 보장
-    if (!mapRef.current) return;
-    if (!(window as any).naver?.maps) return;
+  // Location state
+  const { state } = useLocation() as {
+    state?: { q?: string; lat?: number; lng?: number; name?: string };
+  };
+  const initialQ = state?.q;
+  const initialLat = state?.lat;
+  const initialLng = state?.lng;
+  const initialName = state?.name;
 
-    // 2) 맵 생성 (센터/줌 지정 권장)
-    const map = new window.naver.maps.Map(mapRef.current, {
+  // 검색 API
+  const readPlaceSearch = async (q: string) => {
+    const trimmed = q.trim();
+    if (!trimmed) {
+      setSearchResult([]);
+      setError(null);
+      return [];
+    }
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await getPlaceSearch(trimmed);
+      const normalized = normalize(toArray(response));
+      setSearchResult(normalized);
+      if (normalized.length === 0) setError("검색 결과가 없습니다.");
+      return normalized;
+    } catch (err: any) {
+      console.error(err);
+      setError(err?.message ?? "검색 중 오류가 발생했습니다.");
+      setSearchResult([]);
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 디바운스 검색 (입력할 때만 리스트 보여주고, 블러 시 닫힘)
+  useEffect(() => {
+    if (!showResults) return;
+    const t = setTimeout(() => void readPlaceSearch(query), 250);
+    return () => clearTimeout(t);
+  }, [query, showResults]);
+
+  // 지도 초기화 + 클릭 이벤트
+  useEffect(() => {
+    if (!mapDivRef.current || !(window as any).naver?.maps) return;
+
+    const m = new window.naver.maps.Map(mapDivRef.current, {
       center: new window.naver.maps.LatLng(37.5665, 126.978),
       zoom: 13,
     });
+    mapRef.current = m;
 
-    // 3) 이벤트는 map 객체에
-    window.naver.maps.Event.addListener(map, "click", (e: any) => {
+    window.naver.maps.Event.addListener(m, "click", (e: any) => {
       const lng = e.coord.x;
       const lat = e.coord.y;
       setMapPoint({ x: lng, y: lat });
 
+      const pos = new window.naver.maps.LatLng(lat, lng);
+      if (!markerRef.current) {
+        markerRef.current = new window.naver.maps.Marker({
+          map: m,
+          position: pos,
+        });
+      } else {
+        markerRef.current.setPosition(pos);
+      }
+
       window.naver.maps.Service.reverseGeocode(
         {
-          coords: new window.naver.maps.LatLng(lat, lng),
+          coords: pos,
           orders: [
             window.naver.maps.Service.OrderType.ADDR,
             window.naver.maps.Service.OrderType.ROAD_ADDR,
           ].join(","),
         },
-        (status: number, res: any) => {
+        (status: number, response: any) => {
           if (status !== window.naver.maps.Service.Status.OK) return;
-          setLocation(res?.v2?.address?.jibunAddress ?? "");
+          const addr = response?.v2?.address?.jibunAddress ?? "";
+          setLocation(addr);
+          setSelectedPlace({
+            title: "선택한 위치",
+            address: addr,
+            description: "",
+          });
+          setSheetTab("place");
+          setShowResults(false);
         }
       );
     });
   }, []);
 
+  // 초기 진입 처리(좌표 우선 → 검색어)
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+
+    const focus = (lat: number, lng: number, title: string) => {
+      const pos = new window.naver.maps.LatLng(lat, lng);
+      map.setCenter(pos);
+      map.setZoom(15);
+      if (!markerRef.current) {
+        markerRef.current = new window.naver.maps.Marker({
+          map,
+          position: pos,
+        });
+      } else {
+        markerRef.current.setPosition(pos);
+      }
+      setMapPoint({ x: lng, y: lat });
+      setLocation(title);
+      setSelectedPlace({ title, description: "", address: "" });
+      setSheetTab("place");
+      setShowResults(false);
+    };
+
+    if (typeof initialLat === "number" && typeof initialLng === "number") {
+      focus(initialLat, initialLng, initialName || initialQ || "선택한 위치");
+      return;
+    }
+
+    if (initialQ) {
+      setQuery(initialQ);
+      setShowResults(true);
+      (async () => {
+        const list = await readPlaceSearch(initialQ);
+        const exact = list.find((r) => r.name === initialQ) ?? list[0];
+        if (exact) {
+          const pos = new window.naver.maps.LatLng(exact.lat, exact.lng);
+          map.setCenter(pos);
+          map.setZoom(15);
+          if (!markerRef.current) {
+            markerRef.current = new window.naver.maps.Marker({
+              map,
+              position: pos,
+            });
+          } else {
+            markerRef.current.setPosition(pos);
+          }
+          setMapPoint({ x: exact.lng, y: exact.lat });
+          setLocation(exact.address || exact.name);
+          setSelectedPlace({
+            title: exact.name,
+            imageUrl: exact.imageUrl,
+            description: exact.overview,
+            address: exact.address,
+            tel: exact.tel,
+            star: exact.star,
+          });
+          setSheetTab("place");
+          setShowResults(false);
+        }
+      })();
+    }
+  }, [mapRef.current]);
+
+  // 검색 결과 클릭
+  const focusResult = (r: PlaceSearchItem) => {
+    const map = mapRef.current;
+    if (!map) return;
+    const pos = new window.naver.maps.LatLng(r.lat, r.lng);
+    map.setCenter(pos);
+    map.setZoom(15);
+
+    if (!markerRef.current) {
+      markerRef.current = new window.naver.maps.Marker({ map, position: pos });
+    } else {
+      markerRef.current.setPosition(pos);
+    }
+
+    setMapPoint({ x: r.lng, y: r.lat });
+    setLocation(r.address || r.name);
+    setSelectedPlace({
+      title: r.name,
+      imageUrl: r.imageUrl,
+      description: r.overview,
+      address: r.address,
+      tel: r.tel,
+      star: r.star,
+    });
+    setSheetTab("place");
+    setShowResults(false);
+  };
+
   return (
     <Layout>
       <MapContainer>
-        <MapCanvas ref={mapRef} />
+        <MapCanvas ref={mapDivRef} />
+      </MapContainer>
 
-        <OverlayTop>
+      <Overlay>
+        <OverlayTop
+          onMouseDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
           <SearchBar>
             <Search width={18} height={18} />
             <SearchInput
-              placeholder="검색어를 입력하세요"
+              placeholder="장소를 검색하세요 (예: 제주도)"
               value={query}
+              onFocus={() => setShowResults(true)}
+              onBlur={() => setTimeout(() => setShowResults(false), 150)}
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  setShowResults(true);
+                  void readPlaceSearch(query);
+                }
+              }}
             />
           </SearchBar>
-        </OverlayTop>
-      </MapContainer>
 
-      <div>{mapPoint.x}</div>
-      <div>{mapPoint.y}</div>
-      <div>주소는 : {location}</div>
+          {showResults && (
+            <ResultsContainer>
+              {loading && <ResultWrapper>검색 중…</ResultWrapper>}
+              {error && <ErrorWrapper>{error}</ErrorWrapper>}
+              {!loading &&
+                !error &&
+                searchResult.length === 0 &&
+                query.trim() && (
+                  <ResultWrapper>검색 결과가 없습니다.</ResultWrapper>
+                )}
+              {!loading &&
+                !error &&
+                searchResult.map((r) => (
+                  <ResultWrapper key={r.id} onMouseDown={() => focusResult(r)}>
+                    <RowTop>
+                      <strong>{r.name}</strong>
+                      {typeof r.star === "number" && (
+                        <Star>{r.star.toFixed(1)} ★</Star>
+                      )}
+                    </RowTop>
+                    <small>{r.address}</small>
+                    {r.tel && <small>{r.tel}</small>}
+                  </ResultWrapper>
+                ))}
+            </ResultsContainer>
+          )}
+        </OverlayTop>
+      </Overlay>
+
+      <Info>
+        <div>lng: {mapPoint.x}</div>
+        <div>lat: {mapPoint.y}</div>
+        <div>주소: {location}</div>
+      </Info>
 
       <div style={{ position: "relative", zIndex: 10 }}>
         <BottomSheetModalMap
@@ -116,11 +366,8 @@ const MapPage = () => {
               comments: 9,
             },
           ]}
-          place={{
-            title: "세화해수욕장",
-            imageUrl: "https://images.example.com/jeju-sehwa.jpg",
-            description: "맑은 물과 잔잔한 파도로 유명한 해변",
-          }}
+          place={selectedPlace}
+          defaultTab={sheetTab}
         />
       </div>
 
@@ -137,28 +384,28 @@ const Layout = styled.div`
   display: flex;
   flex-direction: column;
 `;
-
 const MapContainer = styled.div`
   position: relative;
   width: 100%;
   height: 100vh;
   overflow: hidden;
+  isolation: isolate;
 `;
-
 const MapCanvas = styled.div`
   width: 100%;
   height: 100%;
-`;
-
-const OverlayTop = styled.div`
   position: absolute;
-  top: 12px;
-  left: 16px;
-  right: 16px;
-  z-index: 2000;
-  pointer-events: none; /* 컨테이너는 클릭 통과 */
+  inset: 0;
+  z-index: 1;
 `;
-
+const OverlayTop = styled.div`
+  position: fixed;
+  width: 335px;
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+`;
 const SearchBar = styled.div`
   display: flex;
   align-items: center;
@@ -167,13 +414,58 @@ const SearchBar = styled.div`
   border: 1px solid var(--gray-300);
   border-radius: 20px;
   padding: 8px 12px;
+  margin-top: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  pointer-events: auto; /* 내부만 클릭 가능 */
+  pointer-events: auto;
 `;
-
 const SearchInput = styled.input`
   flex: 1;
   border: none;
   outline: none;
   font-size: 16px;
+`;
+const ResultsContainer = styled.div`
+  pointer-events: auto;
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  padding: 8px 0;
+  max-height: 50vh;
+  overflow: auto;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
+`;
+const ResultWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  cursor: pointer;
+  &:hover {
+    background: #fafafa;
+  }
+  & > strong {
+    font-size: 14px;
+  }
+  & > small {
+    font-size: 12px;
+    color: #666;
+  }
+`;
+const ErrorWrapper = styled(ResultWrapper)`
+  color: #c00;
+`;
+const RowTop = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  & > strong {
+    font-size: 14px;
+  }
+`;
+const Star = styled.span`
+  font-size: 12px;
+  color: #f39c12;
+`;
+const Info = styled.div`
+  padding: 8px 16px;
 `;

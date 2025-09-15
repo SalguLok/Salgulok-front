@@ -24,7 +24,7 @@ const GlobalStyle = createGlobalStyle`
   font-family: Pretendard;
 }
 
-  body{
+ body{
     font-family: 'Pretendard','Nunito', sans-serif;
     margin: 0;
     padding: 0;

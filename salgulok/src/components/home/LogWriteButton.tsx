@@ -1,4 +1,3 @@
-import React from "react";
 import styled from "styled-components";
 import Plus from "../../assets/common/plus.svg?react";
 import { useNavigate } from "react-router-dom";
@@ -17,6 +16,7 @@ export default LogWriteButton;
 const ButtonContainer = styled.div`
   display: flex;
   position: fixed;
+  right: 0;
   bottom: 80px;
   width: 104px;
   height: 36px;

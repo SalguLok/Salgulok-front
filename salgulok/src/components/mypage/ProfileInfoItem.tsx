@@ -1,29 +1,36 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
 import profile from "../../assets/common/profile_default.svg?url";
+import { getMyInfo } from "../../api/user/getMyProfile";
+import type { UserResponse } from "../../api/user/getMyProfile";
 
-interface RegionItemProps {
-  nickname: string;
-  intro: string;
-  profileImg: string;
-}
+const ProfileInfoItem: React.FC = () => {
+  const [userInfo, setUserInfo] = useState<UserResponse | null>(null);
 
-const ProfileInfoItem: React.FC<RegionItemProps> = ({
-  nickname,
-  intro: nameEn,
-  profileImg: imageUrl,
-}) => {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getMyInfo();
+        setUserInfo(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <Item>
-        <ProfileImg src={imageUrl || profile} alt="사용자 프로필" />
+        <ProfileImg src={userInfo?.profileImg || profile} alt="사용자 프로필" />
 
         <TextWrapper>
           <EditWrapper>
-            <Nickname>{nickname}</Nickname>
+            <Nickname>{userInfo?.nickname}</Nickname>
             <EditLink to="/mypage/edit">프로필 수정 &gt;</EditLink>
           </EditWrapper>
-          <Intro>{nameEn}</Intro>
+          <Intro>{userInfo?.intro}</Intro>
         </TextWrapper>
     </Item>
   );

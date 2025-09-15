@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { sendKakaoCode } from "../../api/auth/auth";
+import { sendKakaoCode } from "../../api/auth/login";
 import { useNavigate } from "react-router-dom";
 
 function KakaoRedirectPage() {
@@ -8,7 +8,6 @@ function KakaoRedirectPage() {
 
   useEffect(() => {
     const code = new URL(window.location.href).searchParams.get("code");
-    console.log("받은 code:", code); 
     if (!code) return;
 
     sendKakaoCode(code)

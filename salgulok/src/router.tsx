@@ -1,10 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 import { ProtectedRoute } from "./components/common/ProtectedRoute";
-
 import LoginPage from "./pages/auth/LoginPage";
 import KakaoRedirectPage from "./pages/auth/KakaoRedirectPage";
 import SignupPage from "./pages/auth/SignupPage";
-//import HomePage from "./pages/home/HomePage";
+import HomePage from "./pages/home/HomePage";
 import MapPage from "./pages/map/MapPage";
 import LogPage from "./pages/log/LogPage";
 import CommunityPage from "./pages/community/CommunityPage";

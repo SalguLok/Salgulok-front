@@ -1,6 +1,9 @@
 // pages/community/CommunityDetailPage.tsx
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
+import PostCard from "./PostCard";
+import CommentItem from "./CommentItem";
+import type { Post, Comment } from "../../types/post";
 
 const CommunityDetailPage = () => {
   const { postId } = useParams(); // 필요하면 이 id로 API 호출

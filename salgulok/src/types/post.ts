@@ -1,0 +1,18 @@
+export type Post = {
+  id: number;
+  user: string;
+  date: string;
+  avatar: string;
+  content: string;
+  comments: number;
+  isHot?: boolean;
+};
+
+export type Comment = {
+  id: number;
+  postId: number;
+  user: string;
+  date: string;
+  avatar: string;
+  content: string;
+};

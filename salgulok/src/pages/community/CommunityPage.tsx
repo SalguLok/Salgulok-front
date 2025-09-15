@@ -3,21 +3,22 @@ import { useNavigate } from "react-router-dom";
 import NavigationBar from "../../components/common/NavigationBar";
 import Header from "../../components/common/Header";
 import CommentSvg from "../../assets/common/comment.svg";
-// import PostCard, {type Post} from "./PostCard";
+import PostCard from "./PostCard";
+import type { Post } from "../../types/post";
 
 
-const dummyPosts= [
+const dummyPosts: Post[] = [
   {
     id: 1,
     user: "월버",
     date: "2025.08.10 제주",
-    avatar: "https://randomuser.me/api/portraits/men/1.jpg", // 예시 이미지
+    avatar: "https://randomuser.me/api/portraits/men/1.jpg",
     content:
       "세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요?",
     comments: 25,
     isHot: true,
   },
-  
+ 
   {
     id: 2,
     user: "월버",
@@ -49,27 +50,27 @@ const CommunityPage = () => {
       </Banner>
       <PostList>
         {dummyPosts.map((post) => (
-          // <PostCard key={post.id} post={post} onClick={() => goDetail(post.id)} />
-          <PostItem key={post.id}>
-            <PostHeader>
-              <Avatar src={post.avatar} alt={post.user} />
-              <PostInfo>
-                <PostUser>{post.user}</PostUser>
-                <PostMeta>{post.date}</PostMeta>
-              </PostInfo>
-              <PostMenu>⋮</PostMenu>
-            </PostHeader>
-            <PostContent>{post.content}</PostContent>
-            <PostFooter>
-              <CommentGroup>
-                <CommentIcon>
-                <img src={CommentSvg} alt="댓글" width={15} height={15} />
-                </CommentIcon>
-                <CommentCount>{post.comments}</CommentCount>
-                <HotBadge>맛집</HotBadge>
-              </CommentGroup>
-            </PostFooter>
-          </PostItem>
+          <PostCard key={post.id} post={post} onClick={() => goDetail(post.id)} />
+          // <PostItem key={post.id}>
+          //   <PostHeader>
+          //     <Avatar src={post.avatar} alt={post.user} />
+          //     <PostInfo>
+          //       <PostUser>{post.user}</PostUser>
+          //       <PostMeta>{post.date}</PostMeta>
+          //     </PostInfo>
+          //     <PostMenu>⋮</PostMenu>
+          //   </PostHeader>
+          //   <PostContent>{post.content}</PostContent>
+          //   <PostFooter>
+          //     <CommentGroup>
+          //       <CommentIcon>
+          //       <img src={CommentSvg} alt="댓글" width={15} height={15} />
+          //       </CommentIcon>
+          //       <CommentCount>{post.comments}</CommentCount>
+          //       <HotBadge>맛집</HotBadge>
+          //     </CommentGroup>
+          //   </PostFooter>
+          // </PostItem>
         ))}
       </PostList>
       </Layout>

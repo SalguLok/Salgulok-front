@@ -1,51 +1,72 @@
-// components/community/PostCard.tsx
+// src/pages/community/PostCard.tsx
 import styled from "styled-components";
-import Card from "../../components/common/Card";
-
-export type Post = {
-  id: number;
-  user: string;
-  date: string;
-  avatar: string;
-  content: string;
-  comments: number;
-  isHot?: boolean;
-};
+import CommentSvg from "../../assets/common/comment.svg";
+import type { Post } from "../../types/post";
 
 type Props = {
   post: Post;
   onClick?: (id: number) => void;
 };
 
-const PostCard = ({ post, onClick }: Props) => (
-  <Card clickable onClick={() => onClick?.(post.id)}>
-    <Header>
-      <Avatar src={post.avatar} alt={post.user} />
-      <Info>
-        <User>{post.user}</User>
-        <Meta>{post.date}</Meta>
-      </Info>
-      <Menu>⋮</Menu>
-    </Header>
-    <Content>{post.content}</Content>
-    <Footer>
-      <span>💬 {post.comments}</span>
-      {post.isHot && <Badge>맛집</Badge>}
-    </Footer>
-  </Card>
-);
-
-export default PostCard;
-
-const Header = styled.div`display:flex;align-items:center;margin-bottom:8px;`;
-const Avatar = styled.img`width:36px;height:36px;border-radius:50%;margin-right:12px;`;
-const Info = styled.div`flex:1;`;
-const User = styled.div`font-size:13px;font-weight:600;`;
-const Meta = styled.div`font-size:11px;color:var(--gray-300);`;
-const Menu = styled.div`font-size:20px;color:var(--gray-300);`;
-const Content = styled.div`font-size:13px;color:var(--black);margin:8px 0 12px;`;
-const Footer = styled.div`display:flex;gap:8px;align-items:center;justify-content:flex-end;`;
-const Badge = styled.span`
-  margin-left:auto;padding:2px 11px;border-radius:25px;
-  border:0.5px solid var(--main-pri);color:var(--main-pri);font-size:12px;
+const Card = styled.div<{ clickable?: boolean }>`
+  padding: 20px;
+  border-bottom: 1px solid var(--gray-100);
+  background: var(--white);
+  cursor: ${({ clickable }) => (clickable ? "pointer" : "default")};
 `;
+
+const Header = styled.div`
+  display: flex; align-items: center; margin-bottom: 8px;
+`;
+const Avatar = styled.img`
+  width: 36px; height: 36px; border-radius: 50%; margin-right: 12px;
+`;
+const Info = styled.div` flex: 1; `;
+const User = styled.div` font-weight: 500; font-size: 13px; `;
+const Meta = styled.div` font-size: 11px; color: var(--gray-300); `;
+const Menu = styled.div` font-size: 20px; color: var(--gray-300); `;
+
+const Content = styled.div`
+  font-size: 13px; color: var(--black); margin-bottom: 12px;
+`;
+const Footer = styled.div`
+  display: flex; align-items: center; gap: 8px; justify-content: flex-end;
+`;
+const CommentIcon = styled.span` display: flex; align-items: center; `;
+const Badge = styled.span`
+  padding: 2px 11px; border-radius: 25px;
+  border: 0.5px solid var(--main-pri); color: var(--main-pri); font-size: 12px;
+`;
+const CommentCount = styled.span`
+  font-size: 13px;              /* ← 여기서 크기 조절 */
+  line-height: 1;
+  font-family: 'pretendard', sans-serif;
+  color: var(--black);
+`;
+
+export default function PostCard({ post, onClick }: Props) {
+  const handleClick = () => onClick?.(post.id);
+
+  return (
+    <Card clickable={!!onClick} onClick={handleClick} role={onClick ? "button" : undefined}>
+      <Header>
+        <Avatar src={post.avatar} alt={post.user} />
+        <Info>
+          <User>{post.user}</User>
+          <Meta>{post.date}</Meta>
+        </Info>
+        <Menu>⋮</Menu>
+      </Header>
+
+      <Content>{post.content}</Content>
+
+      <Footer>
+        <CommentIcon>
+          <img src={CommentSvg} alt="댓글" width={15} height={15} />
+        </CommentIcon>
+        <CommentCount>{post.comments}</CommentCount>
+        {post.isHot && <Badge>맛집</Badge>}
+      </Footer>
+    </Card>
+  );
+}

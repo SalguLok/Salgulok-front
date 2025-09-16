@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
+import { useLocation } from "react-router-dom";
 import ProfileInfoItem from "../../components/mypage/ProfileInfoItem";
 import NavigationBar from "../../components/common/NavigationBar";
 import LogCardList from "../../components/common/CardListItem";
@@ -10,6 +11,8 @@ import Logout from "../../assets/mypage/logout.svg?react";
 import { logout } from "../../api/auth/logout";
 import { deleteMyLogs } from "../../api/log/getMyLog";
 import ConfirmModal from "../../components/common/ConfirmModal";
+import { getMyInfo } from "../../api/user/getMyProfile";
+import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 
 const MyPage: React.FC = () => {
   const [logs, setLogs] = useState<LogItem[]>([]);
@@ -19,32 +22,49 @@ const MyPage: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [delLogId, setDelLogId] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
-    const fetchLogs = async () => {
+    const fetchData = async () => {
       try {
-        const res = await getMyLogs();
+        const [logsRes, userInfo] = await Promise.all([getMyLogs(), getMyInfo()]);
 
-        const mappedLogs: LogItem[] = res.logs.map((log) => ({
-          id: log.logId,
-          image: log.imgUrl ?? "",
-          writer: log.writer,
-          writerProfile: log.writerProfile,
-          title: log.title,
-          isPublic: log.isPublic,
-          date: `${log.startDate} - ${log.endDate}`,
-          likes: 0,
-          comments: 0,
-        }));
+        const processedLogs = await Promise.all(
+          logsRes.logs.map(async (log) => {
+            const profileKey = log.writer === userInfo.nickname
+                ? userInfo.profileImg
+                : log.writerProfile;
 
-        setLogs(mappedLogs);
+            const [imageUrlRes, writerProfileUrlRes] = await Promise.all([
+                log.imgUrl ? issueGetPresigned(log.imgUrl) : Promise.resolve(null),
+                profileKey ? issueGetPresigned(profileKey) : Promise.resolve(null)
+            ]);
+
+            const imageUrl = imageUrlRes?.items[0]?.presignedUrl ?? "";
+            const writerProfileUrl = writerProfileUrlRes?.items[0]?.presignedUrl;
+
+            return {
+                id: log.logId,
+                image: imageUrl,
+                writer: log.writer,
+                writerProfile: writerProfileUrl,
+                title: log.title,
+                isPublic: log.isPublic,
+                date: `${log.startDate} - ${log.endDate}`,
+                likes: 0,
+                comments: 0,
+            };
+          })
+        );
+
+        setLogs(processedLogs);
       } catch (err) {
-        console.error("내 로그 불러오기 실패", err);
+        console.error("내 로그/유저 정보 불러오기 실패", err);
       }
     };
 
-    fetchLogs();
-  }, []);
+    fetchData();
+  }, [location]);
 
   //로그아웃 API 연결
   const readLogout = async () => {
@@ -97,7 +117,7 @@ const MyPage: React.FC = () => {
       />
 
       <ContentWrapper>
-        <ProfileInfoItem />
+        <ProfileInfoItem key={location.key} />
         <CardContainer>
           <LogCardList
             items={logs}

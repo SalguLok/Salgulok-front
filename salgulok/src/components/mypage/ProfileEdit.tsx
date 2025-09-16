@@ -12,7 +12,7 @@ const EditProfileImage: React.FC<ProfileImageProps> = ({ imageUrl, onChange }) =
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const handleEditClick = () => {
-    fileInputRef.current?.click(); 
+    fileInputRef.current?.click();
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -64,3 +64,4 @@ const EditIcon = styled.img`
 const HiddenInput = styled.input`
   display: none;
 `;
+

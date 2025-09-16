@@ -30,7 +30,7 @@ type LogDataItem = { date: string; hasLog: "yes" | "no" };
 
 const mock: LogItem[] = [
   {
-    id: "1",
+    id: 1,
     image: "",
     writer: "여행이좋아요",
     writerProfile: "",
@@ -40,7 +40,7 @@ const mock: LogItem[] = [
     comments: 25,
   },
   {
-    id: "2",
+    id: 2,
     image: "",
     writer: "여행이좋아요",
     title: "산토리니 블루",
@@ -52,7 +52,6 @@ const mock: LogItem[] = [
 
 const HomePage: FC<Props> = ({
   username = "윌버",
-  progress = 70,
   defaultMode = "before",
   onModeChange,
 }) => {
@@ -126,7 +125,7 @@ const HomePage: FC<Props> = ({
       : [];
     const mapped: PlaceItem[] = (payload as any[]).map((p, i) => ({
       id: String(p.place_id ?? `place-${i}`),
-      placeName: shorten(p.placeName),
+      placeName: String(p.placeName),
       mapx: String(p.mapx),
       mapy: String(p.mapy),
       image: p.image_url || undefined,
@@ -149,7 +148,9 @@ const HomePage: FC<Props> = ({
       : [];
     const mapped: PlaceItem[] = (payload as any[]).map((p, i) => ({
       id: String(p.place_id ?? `region-place-${i}`),
-      placeName: shorten(p.placeName),
+      placeName: String(p.placeName),
+      mapx: String(p.mapx),
+      mapy: String(p.mapy),
       image: p.image_url || undefined,
       starCount: Number(p.starCount),
       comments: Number(p.commentCount ?? 0),
@@ -168,6 +169,15 @@ const HomePage: FC<Props> = ({
   useEffect(() => {
     readPopularPlaceByRegion();
   }, [regionId]);
+
+  const placeItemsForDisplay = useMemo(
+    () =>
+      currentPlaceItems.map((it) => ({
+        ...it,
+        placeName: shorten(it.placeName, 8),
+      })),
+    [currentPlaceItems]
+  );
 
   return (
     <Layout>
@@ -245,7 +255,7 @@ const HomePage: FC<Props> = ({
         <More>더보기</More>
       </TitleContainer>
       <PlaceCardSlider
-        items={currentPlaceItems}
+        items={placeItemsForDisplay}
         onClick={(id) => {
           const target = currentPlaceItems.find((it) => it.id === id);
           if (!target) return;

@@ -5,7 +5,7 @@ export interface LogResponse {
   writer: string;
   writerProfile: string;
   title: string;
-  startDate: string;   
+  startDate: string;
   endDate: string;
   isPublic: boolean;
   regionId: number;
@@ -31,5 +31,15 @@ export const getMyLogs = async (): Promise<LogListResponse> => {
       alert("네트워크 오류가 발생했습니다.");
     }
     throw error;
+  }
+};
+
+//내 로그 삭제
+export const deleteMyLogs = async (logId: number) => {
+  try {
+    const response = await api.delete(`/logs/${logId}`);
+    return response;
+  } catch (err: any) {
+    throw err;
   }
 };

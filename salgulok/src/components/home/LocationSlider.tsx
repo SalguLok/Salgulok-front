@@ -1,16 +1,17 @@
 import styled from "styled-components";
-import type { FC, MouseEvent } from "react";
+import type { FC } from "react";
 
 export type RegionItem = {
-  id: string;
-  location: string;
+  id: number;
+  nameKo: string;
+  nameEn: string;
   image: string | React.ReactNode;
 };
 
 type Props = {
   title?: string;
   items: RegionItem[];
-  onClick?: (id: string) => void;
+  onClick?: (id: number) => void;
 };
 
 const LocationSlider: FC<Props> = ({ items, onClick }) => {
@@ -19,11 +20,11 @@ const LocationSlider: FC<Props> = ({ items, onClick }) => {
       {items.map((it) => (
         <LocationContainer key={it.id} onClick={() => onClick?.(it.id)}>
           {typeof it.image === "string" ? (
-            <Img src={it.image} alt={it.location} loading="lazy" />
+            <Img src={it.image} alt={it.nameKo} loading="lazy" />
           ) : (
             <Image>{it.image}</Image>
           )}
-          <Location>{it.location}</Location>
+          <Location>{it.nameKo}</Location>
         </LocationContainer>
       ))}
     </Layout>

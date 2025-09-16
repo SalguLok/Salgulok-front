@@ -5,7 +5,7 @@ interface RegionItemProps {
   id: number;
   nameKo: string;
   nameEn: string;
-  imageUrl: string;
+  imageUrl: string | React.ReactNode;
   selected: boolean;
   onSelect: (id: number) => void;
 }
@@ -18,10 +18,15 @@ const RegionItem: React.FC<RegionItemProps> = ({
   selected,
   onSelect,
 }) => {
+  const isUrl = typeof imageUrl === "string";
   return (
     <Item>
       <Left>
-        <Thumbnail src={imageUrl} alt={nameKo} />
+        {isUrl ? (
+          <ThumbImg src={imageUrl} alt={nameKo} loading="lazy" />
+        ) : (
+          <ThumbBox aria-label={nameKo}>{imageUrl}</ThumbBox>
+        )}
         <TextWrapper>
           <NameKo>{nameKo}</NameKo>
           <NameEn>{nameEn}</NameEn>
@@ -50,13 +55,29 @@ const Left = styled.div`
   gap: 13px;
 `;
 
-const Thumbnail = styled.img`
+const ThumbImg = styled.img`
   width: 42px;
   height: 42px;
   border-radius: 50%;
   object-fit: cover;
+  display: block;
 `;
-
+const ThumbBox = styled.div`
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--gray-100);
+  & > img,
+  & > svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    object-fit: cover;
+  }
+`;
 const TextWrapper = styled.div`
   display: flex;
   flex-direction: column;

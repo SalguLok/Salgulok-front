@@ -3,12 +3,14 @@ import type { FC, MouseEvent } from "react";
 import Heart from "../../assets/common/heart.svg?react";
 import Comment from "../../assets/common/comment.svg?react";
 import Profile from "../../assets/common/profile_default.svg?react";
+import Lock from "../../assets/mypage/lock.svg?react";
 
 export type LogItem = {
-  id: string;
+  id: number;
   image: string;
   writer: string;
   writerProfile?: string;
+  isPublic?: boolean;
   title: string;
   date: string;
   likes: number;
@@ -18,11 +20,12 @@ export type LogItem = {
 
 type Props = {
   items: LogItem[];
-  onClick?: (id: string) => void;
-  onToggleLike?: (id: string, e: MouseEvent) => void;
+  onClick?: (id: number) => void;
+  onToggleLike?: (id: number, e: MouseEvent) => void;
+  onClickMore?: (id: number, e: MouseEvent) => void;
 };
 
-const LogCardList: FC<Props> = ({ items, onClick }) => {
+const LogCardList: FC<Props> = ({ items, onClick, onClickMore }) => {
   return (
     <Layout>
       {items.map((item) => (
@@ -43,15 +46,29 @@ const LogCardList: FC<Props> = ({ items, onClick }) => {
 
           <DetailContainer>
             <WriterContainer>
-              {item.writerProfile ? (
-                <WriterImg src={item.writerProfile} alt="" />
-              ) : (
-                <Profile aria-hidden />
+              <WriterWrapper>
+                {item.writerProfile ? (
+                  <WriterImg src={item.writerProfile} alt="" />
+                ) : (
+                  <Profile aria-hidden />
+                )}
+                <Writer>{item.writer}</Writer>
+              </WriterWrapper>
+              {onClickMore && (
+                <MoreButton
+                  aria-label="더보기"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClickMore(item.id, e);
+                  }}
+                />
               )}
-              <Writer>{item.writer}</Writer>
             </WriterContainer>
             <Title>{item.title}</Title>
-            <Date>{item.date}</Date>
+            <Date>
+              {item.date}
+              {item.isPublic ? "" : <Lock />}
+            </Date>
           </DetailContainer>
         </Card>
       ))}
@@ -111,14 +128,18 @@ const ReactionText = styled.div`
 const DetailContainer = styled.div`
   display: flex;
   flex-direction: column;
-  margin: 8px 4px 4px 4px;
+  margin: 8px 0px 0px 4px;
 `;
 const WriterContainer = styled.div`
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
   align-items: center;
-  gap: 5px;
   margin-bottom: 4px;
+`;
+const WriterWrapper = styled.div`
+  display: flex;
+  gap: 5px;
 `;
 const WriterImg = styled.img`
   width: 17px;
@@ -127,6 +148,31 @@ const WriterImg = styled.img`
 const Writer = styled.span`
   font-size: 13px;
   font-weight: 400;
+`;
+const MoreButton = styled.button`
+  display: flex;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  border-radius: 50%;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 3px;
+    height: 3px;
+    background: #9aa0a6;
+    border-radius: 50%;
+    transform: translateY(-50%);
+    box-shadow: 0 -6px 0 #9aa0a6, 0 6px 0 #9aa0a6;
+  }
+  &:active {
+    background: rgba(0, 0, 0, 0.06);
+  }
 `;
 const Title = styled.span`
   font-size: 13px;
@@ -137,4 +183,5 @@ const Date = styled.span`
   color: var(--gray-400);
   font-family: Pretendard;
   font-size: 11px;
+  gap: 4px;
 `;

@@ -30,7 +30,7 @@ type LogDataItem = { date: string; hasLog: "yes" | "no" };
 
 const mock: LogItem[] = [
   {
-    id: "1",
+    id: 1,
     image: "",
     writer: "여행이좋아요",
     writerProfile: "",
@@ -40,7 +40,7 @@ const mock: LogItem[] = [
     comments: 25,
   },
   {
-    id: "2",
+    id: 2,
     image: "",
     writer: "여행이좋아요",
     title: "산토리니 블루",

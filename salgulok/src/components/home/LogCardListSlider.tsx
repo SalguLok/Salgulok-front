@@ -5,7 +5,7 @@ import Comment from "../../assets/common/comment.svg?react";
 import Profile from "../../assets/common/profile_default.svg?react";
 
 export type LogItem = {
-  id: string;
+  id: number;
   image: string;
   writer: string;
   writerProfile?: string;
@@ -18,8 +18,8 @@ export type LogItem = {
 
 type Props = {
   items: LogItem[];
-  onClick?: (id: string) => void;
-  onToggleLike?: (id: string, e: MouseEvent) => void;
+  onClick?: (id: number) => void;
+  onToggleLike?: (id: number, e: MouseEvent) => void;
 };
 
 const LogCardListSlider: FC<Props> = ({ items, onClick }) => {

@@ -14,37 +14,36 @@ import Gangwon from "../assets/home/gangwon.svg?react";
 import Jeolla from "../assets/home/jeolla.svg?react";
 
 export const regions = [
-  { id: "seoul", location: "서울", image: <Seoul /> },
-  { id: "busan", location: "부산", image: <Busan /> },
-  { id: "daegu", location: "대구", image: <Daegu /> },
-  { id: "incheon", location: "인천", image: <Incheon /> },
-  { id: "gwangju", location: "광주", image: <Gwangju /> },
-  { id: "daejeon", location: "대전", image: <Daejeon /> },
-  { id: "ulsan", location: "울산", image: <Ulsan /> },
+  { id: 1, nameEn: "seoul", nameKo: "서울", image: <Seoul /> },
+  { id: 2, nameEn: "busan", nameKo: "부산", image: <Busan /> },
+  { id: 3, nameEn: "daegu", nameKo: "대구", image: <Daegu /> },
+  { id: 4, nameEn: "incheon", nameKo: "인천", image: <Incheon /> },
+  { id: 5, nameEn: "gwangju", nameKo: "광주", image: <Gwangju /> },
+  { id: 6, nameEn: "daejeon", nameKo: "대전", image: <Daejeon /> },
+  { id: 7, nameEn: "ulsan", nameKo: "울산", image: <Ulsan /> },
+  { id: 8, nameEn: "sejong", nameKo: "세종", image: <Sejong /> },
+  { id: 9, nameEn: "gyeonggi", nameKo: "경기", image: <Gyeonggi /> },
+  { id: 10, nameEn: "chungcheong", nameKo: "충청", image: <Chungcheong /> },
   {
-    id: "sejong",
-    location: "세종",
-    image: <Sejong />,
-  },
-  { id: "gyeonggi", location: "경기", image: <Gyeonggi /> },
-  { id: "chungcheong", location: "충청", image: <Chungcheong /> },
-  {
-    id: "gyeongsang",
-    location: "경상",
+    id: 11,
+    nameEn: "gyeongsang",
+    nameKo: "경상",
     image: <Gyeongsang />,
   },
 
   {
-    id: "gangwon",
-    location: "강원",
+    id: 12,
+    nameEn: "gangwon",
+    nameKo: "강원",
     image: <Gangwon />,
   },
   {
-    id: "jeonbuk",
-    location: "전라",
+    id: 13,
+    nameEn: "jeonbuk",
+    nameKo: "전라",
     image: <Jeolla />,
   },
-  { id: "jeju", location: "제주", image: <Jeju /> },
+  { id: 14, nameEn: "jeju", nameKo: "제주", image: <Jeju /> },
 ];
 
 export default regions;

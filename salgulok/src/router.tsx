@@ -29,6 +29,8 @@ const router = createBrowserRouter([
   { path: "/", element: <ProtectedRoute element={<HomePage />} /> },
   { path: "/map", element: <ProtectedRoute element={<MapPage />} /> },
   { path: "/log", element: <ProtectedRoute element={<LogPage />} /> },
+  { path: "/log/:logId/entries", element: <ProtectedRoute element={<LogEntryPage />} /> },
+  { path: "/log/:logId", element: <ProtectedRoute element={<LogEntryPage />} /> },
   {
     path: "/community",
     element: <ProtectedRoute element={<CommunityPage />} />,

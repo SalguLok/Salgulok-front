@@ -4,6 +4,7 @@ import Heart from "../../assets/common/heart.svg?react";
 import Comment from "../../assets/common/comment.svg?react";
 import Profile from "../../assets/common/profile_default.svg?react";
 import Lock from "../../assets/mypage/lock.svg?react";
+import { useNavigate } from "react-router-dom";
 
 export type LogItem = {
   id: number;
@@ -25,10 +26,18 @@ type Props = {
 };
 
 const LogCardList: FC<Props> = ({ items, onClick, onClickMore }) => {
+  const navigate = useNavigate();
+
   return (
     <Layout>
       {items.map((item) => (
-        <Card key={item.id} onClick={() => onClick?.(item.id)}>
+          <Card
+              key={item.id}
+              onClick={() => {
+                navigate(`/log/${item.id}`);   // ✅ 카드 클릭 시 라우팅
+                onClick?.(item.id);            // ✅ 필요하면 외부 핸들러도 호출
+              }}
+          >
           <ImageContainer>
             <CoverImg src={item.image} alt="" loading="lazy" />
             <ReactionContainer>

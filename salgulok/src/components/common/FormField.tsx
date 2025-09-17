@@ -10,7 +10,7 @@ interface FormFieldProps {
   variant?: "sm" | "md" | "lg";
   buttonText?: string;
   value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onButtonClick?: () => void;
 }
 

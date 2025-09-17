@@ -16,8 +16,8 @@ export default LogWriteButton;
 const ButtonContainer = styled.div`
   display: flex;
   position: fixed;
-  right: 0;
-  bottom: 80px;
+  right: max(16px, calc((100vw - var(--app-width)) / 2 + 16px));
+  bottom: calc(85px + env(safe-area-inset-bottom, 0px));
   width: 104px;
   height: 36px;
   border-radius: 20px;

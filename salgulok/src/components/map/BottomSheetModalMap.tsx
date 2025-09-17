@@ -21,6 +21,8 @@ type Props = {
   logs?: any[];
   place?: PlaceInfo | null;
   onBackdropClick?: () => void;
+  autoSnapOnChange?: boolean;
+  snapTarget?: "mid" | "max";
 };
 
 const BottomSheetModalMap: React.FC<Props> = ({
@@ -31,6 +33,8 @@ const BottomSheetModalMap: React.FC<Props> = ({
   logs = [],
   place,
   onBackdropClick,
+  autoSnapOnChange = true,
+  snapTarget = "mid",
 }) => {
   const [tab, setTab] = useState<TabKey>(defaultTab);
   const [height, setHeight] = useState<number>(initialHeight);
@@ -41,8 +45,8 @@ const BottomSheetModalMap: React.FC<Props> = ({
 
   const minH = 120;
   const maxH = Math.round(window.innerHeight * maxHeightRatio);
-  const midH = Math.round((minH + maxH) / 2);
-
+  const midH = Math.round((minH + maxH) / 1.7);
+  const snapH = snapTarget === "max" ? maxH : midH;
   //드래그 상태
   const startYRef = useRef(0);
   const startHRef = useRef(0);
@@ -100,7 +104,14 @@ const BottomSheetModalMap: React.FC<Props> = ({
     };
   }, [height]);
 
-  //펼쳐진 상태에서 배경 오버레이 표시
+  useEffect(() => {
+    if (!open) return;
+    if (!autoSnapOnChange) return;
+
+    if (place || (Array.isArray(logs) && logs.length > 0)) {
+      setHeight(snapH);
+    }
+  }, [open, place, logs?.length, defaultTab, autoSnapOnChange, snapH]);
   const showBackdrop = open && height > minH + 20;
 
   //탭 콘텐츠
@@ -243,6 +254,16 @@ const Body = styled.div`
   flex: 1;
   overflow: auto;
   padding: 12px;
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    /* Chrome/Safari */
+    display: none;
+  }
 `;
 
 const LogContainer = styled.div`
@@ -250,25 +271,39 @@ const LogContainer = styled.div`
   flex-direction: row;
   align-itmes: center;
   justify-content: center;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
 const PlaceMeta = styled.p`
   margin: 4px 0 0;
   color: #666;
   font-size: 13px;
+  margin: 0 10px;
 `;
 
 const PlaceContainer = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: center;
   gap: 5px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 const PlaceImage = styled.img`
-  width: 100%;
+  width: 335px;
   height: 180px;
   object-fit: cover;
   border-radius: 12px;
   background: #f2f2f2;
+  align-self: center;
+  margin-bottom: 10px;
 `;
 
 const ImagePlaceholder = styled.div`
@@ -282,10 +317,12 @@ const PlaceTitle = styled.h3`
   margin: 0;
   font-size: 16px;
   font-weight: 700;
+  margin: 0 10px;
 `;
 
 const PlaceDesc = styled.p`
   margin: 0;
   color: #666;
   line-height: 1.4;
+  margin: 0 10px;
 `;

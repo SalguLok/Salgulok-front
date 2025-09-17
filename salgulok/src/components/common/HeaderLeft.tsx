@@ -11,16 +11,23 @@ const HeaderLeft: React.FC<HeaderProps> = ({ title, right }) => {
   const navigate = useNavigate();
 
   return (
-    <HeaderWrapper>
-      <Title>{title}</Title>
-      {right ? <RightSlot>{right}</RightSlot> : <RightSlot />}
-    </HeaderWrapper>
+    <>
+      <HeaderWrapper>
+        <Title>{title}</Title>
+        {right ? <RightSlot>{right}</RightSlot> : <RightSlot />}
+      </HeaderWrapper>
+
+      <HeaderSpacer/>
+    </>
   );
 };
 
 export default HeaderLeft;
 
 const HeaderWrapper = styled.header`
+  position: fixed;
+  top: 0;
+  width: 375px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
@@ -38,4 +45,8 @@ const Title = styled.h1`
 `;
 const RightSlot = styled.div`
   cursor: pointer;
+`;
+
+const HeaderSpacer = styled.div`
+  height: 44px;
 `;

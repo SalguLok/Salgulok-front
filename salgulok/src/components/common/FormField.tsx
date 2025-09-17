@@ -1,6 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import TextInput from "./TextInput";
+import TextInputSmall from "./TextInputSmall";
 
 interface FormFieldProps {
   label: string;
@@ -9,7 +10,7 @@ interface FormFieldProps {
   variant?: "sm" | "md" | "lg";
   buttonText?: string;
   value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   onButtonClick?: () => void;
 }
 
@@ -23,6 +24,9 @@ const FormField: React.FC<FormFieldProps> = ({
   onChange,
   onButtonClick,
 }) => {
+  // variant에 따라 다른 컴포넌트 선택
+  const InputComponent = variant === "sm" ? TextInputSmall : TextInput;
+
   return (
     <Wrapper>
       <Label>
@@ -30,8 +34,7 @@ const FormField: React.FC<FormFieldProps> = ({
         {required && <RequiredMark>*</RequiredMark>}
       </Label>
       <InputRow>
-        <TextInput 
-          variant={variant} 
+        <InputComponent 
           placeholder={placeholder} 
           value={value}
           onChange={onChange}

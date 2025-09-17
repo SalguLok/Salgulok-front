@@ -9,6 +9,7 @@ import { useCreateLogStore } from "../../stores/CreateLogStore";
 import Header from "../../components/common/Header";
 import { createLog } from "../../api/log/createLog";
 import type { LogCreateRequest } from "../../api/log/createLog";
+import { uploadImagesFlow } from "../../api/image/uploadFlow";
 
 const CreateLogInfoPage: React.FC = () => {
   const navigate = useNavigate();
@@ -33,6 +34,20 @@ const CreateLogInfoPage: React.FC = () => {
       return;
     }
 
+    let representativeImgKey = "";
+    if (imgFile) {
+      try {
+        const uploadResult = await uploadImagesFlow([{ file: imgFile }]);
+        if (uploadResult.items.length > 0) {
+          representativeImgKey = uploadResult.items[0].objectKey;
+        }
+      } catch (error) {
+        console.error("이미지 업로드에 실패했습니다.", error);
+        // 사용자에게 오류를 알리는 UI 처리 (예: 토스트 메시지)를 여기에 추가할 수 있습니다.
+        return; // 업로드 실패 시 로그 생성을 중단합니다.
+      }
+    }
+
     // 최종 데이터
     const finalData: LogCreateRequest = {
       regionId: regionId ?? 0,
@@ -40,7 +55,7 @@ const CreateLogInfoPage: React.FC = () => {
       endDate: endDate ?? "",
       title,
       isPublic: visibility === "public",
-      imgUrl: "", // TODO: S3 업로드 후 URL 넣기
+      imgUrl: representativeImgKey,
       oneReview,
     };
 
@@ -73,7 +88,7 @@ const CreateLogInfoPage: React.FC = () => {
         onChange={(e) => setOneReview(e.target.value)}
       />
       <VisibilityToggle onChange={setVisibility} />
-      <ImageUpload label="대표사진" onUpload={(url) => setImgFile(url)}/>
+      <ImageUpload label="대표사진" onUpload={(file) => setImgFile(file)}/>
     </FormWrapper>
 
     <BottomButton

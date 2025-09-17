@@ -24,7 +24,7 @@ const StyledTextarea = styled.textarea<{ $variant?: "sm" | "md" | "lg" }>`
   flex: 1;
   height: ${(props) => sizeMap[props.$variant || "sm"].height};
   resize: none;
-  padding: 10.8px 14px;
+  padding: 12px 14px;
   font-size: 13px;
   line-height: 13px;
   align-items: center; 

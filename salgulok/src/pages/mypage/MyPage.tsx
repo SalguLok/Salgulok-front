@@ -26,7 +26,7 @@ const MyPage: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
+      try {e
         const [logsRes, userInfo] = await Promise.all([getMyLogs(), getMyInfo()]);
 
         const processedLogs = await Promise.all(
@@ -58,6 +58,7 @@ const MyPage: React.FC = () => {
         );
 
         setLogs(processedLogs);
+
       } catch (err) {
         console.error("내 로그/유저 정보 불러오기 실패", err);
       }

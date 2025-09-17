@@ -12,7 +12,6 @@ export type LogItem = {
   title: string;
   date: string;
   likes: number;
-  comments: number;
   liked?: boolean;
 };
 
@@ -36,7 +35,7 @@ const LogCardListSlider: FC<Props> = ({ items, onClick }) => {
               </ReactionWrapper>
               <ReactionWrapper>
                 <Comment />
-                <ReactionText>{item.comments}</ReactionText>
+                <ReactionText></ReactionText>
               </ReactionWrapper>
             </ReactionContainer>
           </ImageContainer>

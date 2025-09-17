@@ -26,23 +26,24 @@ export const regions = [
   { id: 10, nameEn: "chungcheong", nameKo: "충청", image: <Chungcheong /> },
   {
     id: 11,
+    nameEn: "jeonbuk",
+    nameKo: "전라",
+    image: <Jeolla />,
+  },
+  {
+    id: 12,
     nameEn: "gyeongsang",
     nameKo: "경상",
     image: <Gyeongsang />,
   },
 
   {
-    id: 12,
+    id: 13,
     nameEn: "gangwon",
     nameKo: "강원",
     image: <Gangwon />,
   },
-  {
-    id: 13,
-    nameEn: "jeonbuk",
-    nameKo: "전라",
-    image: <Jeolla />,
-  },
+
   { id: 14, nameEn: "jeju", nameKo: "제주", image: <Jeju /> },
 ];
 

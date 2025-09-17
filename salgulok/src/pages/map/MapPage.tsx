@@ -131,9 +131,9 @@ const MapPage = () => {
       writerProfile: it.writerProfile ?? null,
       title: it.title ?? "",
       isPublic: true as const,
-      date: `${yymmdd(it.startDate)}-${yymmdd(it.endDate)}`, // 예: "251220-251228"
+      date: `${yymmdd(it.startDate)}-${yymmdd(it.endDate)}`,
       likes: it.likes ?? 0,
-      comments: 0, // 백엔드 응답에 없어서 0으로
+      comments: 0,
     }));
   };
 
@@ -241,10 +241,12 @@ const MapPage = () => {
       setSelectedPlace({ title, description: "", address: "" });
       setSheetTab("place");
       setShowResults(false);
+      setQuery(title);
     };
 
     if (typeof initialLat === "number" && typeof initialLng === "number") {
-      focus(initialLat, initialLng, initialName || initialQ || "선택한 위치");
+      const title = initialName || initialQ || "선택한 위치";
+      +focus(initialLat, initialLng, title);
       return;
     }
 

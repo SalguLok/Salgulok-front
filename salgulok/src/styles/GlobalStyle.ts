@@ -2,6 +2,8 @@ import { createGlobalStyle } from "styled-components";
 
 const GlobalStyle = createGlobalStyle`
   :root{
+    --app-width:375px;
+    
     --white: #ffffff;
 
     --black: #000000;

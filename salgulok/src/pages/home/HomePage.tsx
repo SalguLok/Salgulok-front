@@ -18,6 +18,7 @@ import LogWriteButton from "../../components/home/LogWriteButton";
 import { useNavigate } from "react-router-dom";
 import { getLogFillStates, getPopularLogs } from "../../api/log/log";
 import { getUserTraveling } from "../../api/user/getUserTraveling";
+import { getMyInfo } from "../../api/user/getMyProfile";
 
 type Stage = { date: string; completed?: boolean };
 
@@ -35,11 +36,7 @@ type UserTravelingResponse = {
   logId?: number;
 };
 
-const HomePage: FC<Props> = ({
-  username = "윌버",
-  defaultMode = "before",
-  onModeChange,
-}) => {
+const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
   const [mode, setMode] = useState<"before" | "during">(defaultMode);
   const [popularPlaceItems, setPopularPlaceItems] = useState<PlaceItem[]>([]);
   const [regionPopularPlaceItems, setRegionPopularPlaceItems] = useState<
@@ -49,6 +46,7 @@ const HomePage: FC<Props> = ({
   const [isTraveling, setIsTraveling] = useState(false);
   const [logId, setLogId] = useState<number>();
   const [popularLogs, setPopularLogs] = useState<LogItem[]>([]);
+  const [name, setName] = useState("");
 
   const toMMDD = (iso: string) => {
     const parts = iso.split("-");
@@ -64,7 +62,15 @@ const HomePage: FC<Props> = ({
     setMode(next);
     onModeChange?.(next);
   };
-
+  // 유저 이름 빼오기
+  const readMyInfo = async () => {
+    try {
+      const response = await getMyInfo();
+      setName(response.nickname);
+    } catch (err) {
+      console.error(err);
+    }
+  };
   //유저 traveling 여부 API 연결
   const readUserIsTraveling = async () => {
     try {
@@ -210,6 +216,10 @@ const HomePage: FC<Props> = ({
     readPopularPlaceByRegion();
   }, [regionId]);
 
+  useEffect(() => {
+    readMyInfo();
+  }, []);
+
   const placeItemsForDisplay = useMemo(
     () =>
       currentPlaceItems.map((it) => ({
@@ -254,8 +264,17 @@ const HomePage: FC<Props> = ({
         </ButtonContainer>
         <GreetingContainer>
           <Greeting>
-            안녕하세요 {username}님, <br />
-            새로운 살구로그를 생성해보세요!
+            {mode === "before" ? (
+              <>
+                안녕하세요 {name}님, <br />
+                새로운 살구로그를 생성해보세요!
+              </>
+            ) : (
+              <>
+                안녕하세요 {name}님, <br />
+                여행 중 순간을 살구로그에 기록해보세요!
+              </>
+            )}
           </Greeting>
         </GreetingContainer>
         <ProgressRow>
@@ -271,7 +290,7 @@ const HomePage: FC<Props> = ({
             </Track>
           </BarWrap>
           <GrowthText>
-            {username}님의 살구나무는 <Em>{progressPercent}%</Em> 성장완료!
+            {name}님의 살구나무는 <Em>{progressPercent}%</Em> 성장완료!
           </GrowthText>
         </ProgressRow>
 
@@ -321,6 +340,7 @@ const HomePage: FC<Props> = ({
               q: target.placeName,
               lat: target.mapx,
               lng: target.mapy,
+              name: target.placeName,
             },
           });
         }}

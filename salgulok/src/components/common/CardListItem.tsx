@@ -1,10 +1,12 @@
 import styled from "styled-components";
 import type { FC, MouseEvent } from "react";
+import { useState, useEffect } from "react";
 import Heart from "../../assets/common/heart.svg?react";
 import Comment from "../../assets/common/comment.svg?react";
 import Profile from "../../assets/common/profile_default.svg?react";
 import Lock from "../../assets/mypage/lock.svg?react";
 import { useNavigate } from "react-router-dom";
+import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 
 export type LogItem = {
   id: number;
@@ -25,6 +27,38 @@ type Props = {
   onClickMore?: (id: number, e: MouseEvent) => void;
 };
 
+const PresignedImage: FC<{ objectKey?: string | null; src?: string; [key: string]: any }> = ({ objectKey, ...props }) => {
+    const [url, setUrl] = useState('');
+
+    useEffect(() => {
+        if (!objectKey) {
+            setUrl('');
+            return;
+        }
+
+        const fetchUrl = async () => {
+            try {
+                const res = await issueGetPresigned(objectKey);
+                if (res.items && res.items.length > 0) {
+                    setUrl(res.items[0].presignedUrl);
+                } else {
+                    setUrl('');
+                }
+            } catch (e) {
+                console.error("Failed to get presigned URL", e);
+                setUrl('');
+            }
+        };
+
+        fetchUrl();
+    }, [objectKey]);
+
+    if (!url) return <div {...props} />;
+
+    return <img src={url} {...props} />;
+};
+
+
 const LogCardList: FC<Props> = ({ items, onClick, onClickMore }) => {
   const navigate = useNavigate();
 
@@ -34,12 +68,12 @@ const LogCardList: FC<Props> = ({ items, onClick, onClickMore }) => {
           <Card
               key={item.id}
               onClick={() => {
-                navigate(`/log/${item.id}`);   // ✅ 카드 클릭 시 라우팅
-                onClick?.(item.id);            // ✅ 필요하면 외부 핸들러도 호출
+                navigate(`/log/${item.id}`);
+                onClick?.(item.id);
               }}
           >
           <ImageContainer>
-            <CoverImg src={item.image} alt="" loading="lazy" />
+            <CoverImg objectKey={item.image} alt="" loading="lazy" />
             <ReactionContainer>
               <ReactionWrapper>
                 <Heart />
@@ -56,7 +90,7 @@ const LogCardList: FC<Props> = ({ items, onClick, onClickMore }) => {
             <WriterContainer>
               <WriterWrapper>
                 {item.writerProfile ? (
-                  <WriterImg src={item.writerProfile} alt="" />
+                  <WriterImg objectKey={item.writerProfile} alt="" />
                 ) : (
                   <Profile aria-hidden />
                 )}
@@ -103,7 +137,7 @@ const ImageContainer = styled.div`
   border-radius: 10px;
   overflow: hidden;
 `;
-const CoverImg = styled.img`
+const CoverImg = styled(PresignedImage)`
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -148,9 +182,11 @@ const WriterWrapper = styled.div`
   display: flex;
   gap: 5px;
 `;
-const WriterImg = styled.img`
+const WriterImg = styled(PresignedImage)`
   width: 17px;
   height: 17px;
+  border-radius: 50%;
+  object-fit: cover;
 `;
 const Writer = styled.span`
   font-size: 13px;

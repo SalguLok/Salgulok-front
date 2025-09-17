@@ -12,7 +12,6 @@ import { logout } from "../../api/auth/logout";
 import { deleteMyLogs } from "../../api/log/getMyLog";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import { getMyInfo } from "../../api/user/getMyProfile";
-import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 
 const MyPage: React.FC = () => {
   const [logs, setLogs] = useState<LogItem[]>([]);
@@ -32,38 +31,23 @@ const MyPage: React.FC = () => {
           getMyInfo(),
         ]);
 
-        const processedLogs = await Promise.all(
-          logsRes.logs.map(async (log) => {
-            const profileKey =
-              log.writer === userInfo.nickname
-                ? userInfo.profileImg
-                : log.writerProfile;
-
-            const [imageUrlRes, writerProfileUrlRes] = await Promise.all([
-              log.imgUrl
-                ? issueGetPresigned(log.imgUrl)
-                : Promise.resolve(null),
-              profileKey
-                ? issueGetPresigned(profileKey)
-                : Promise.resolve(null),
-            ]);
-
-            const imageUrl = imageUrlRes?.items[0]?.presignedUrl ?? "";
-            const writerProfileUrl =
-              writerProfileUrlRes?.items[0]?.presignedUrl;
-
-            return {
+        const processedLogs = logsRes.logs.map(
+          (log) =>
+            ({
               id: log.logId,
-              image: imageUrl,
+              image: log.imgUrl, // S3 Key 전달
               writer: log.writer,
-              writerProfile: writerProfileUrl,
+              // 내 프로필 이미지 키 또는 다른 사람의 프로필 이미지 키 전달
+              writerProfile:
+                log.writer === userInfo.nickname
+                  ? userInfo.profileImg
+                  : log.writerProfile,
               title: log.title,
               isPublic: log.isPublic,
               date: `${log.startDate} - ${log.endDate}`,
               likes: 0,
               comments: 0,
-            };
-          })
+            } as LogItem)
         );
 
         setLogs(processedLogs);

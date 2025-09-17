@@ -6,7 +6,6 @@ import LogCardList from "../../components/common/CardListItem";
 import type { LogItem } from "../../components/common/CardListItem";
 import HeaderLeft from "../../components/common/HeaderLeft";
 import { getPublicLogs } from "../../api/log/getPublicLogs";
-import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 import SearchIcon from "../../assets/common/search.svg?react";
 import { searchLogs } from "../../api/log/searchLogs";
 import SearchBar from "../../components/log/SearchBar";
@@ -39,41 +38,22 @@ const LogPage: React.FC = () => {
     }
   }, [query]);
 
-  // presigned GET URL로 변환 헬퍼
-  const toUrl = async (objectKey?: string | null): Promise<string> => {
-    if (!objectKey) return "";
-    try {
-      const res = await issueGetPresigned(objectKey);
-      if (res.items && res.items.length > 0) {
-        return res.items[0].presignedUrl;
-      }
-      return "";
-    } catch {
-      return "";
-    }
-  };
-
   // API 응답을 LogItem으로 변환하는 공통 함수
-  const processLogItems = (items: any[]): Promise<LogItem[]> => {
-    return Promise.all(
-      items.map(async (log) => {
-        const [imageUrl, writerProfileUrl] = await Promise.all([
-          toUrl(log.imgUrl),
-          toUrl(log.writerProfile),
-        ]);
-        return {
+  const processLogItems = (items: any[]): LogItem[] => {
+    return items.map(
+      (log) =>
+        ({
           id: log.logId ?? log.id,
           title: log.title,
           writer: log.writer,
-          image: imageUrl,
-          writerProfile: writerProfileUrl,
+          image: log.imgUrl, // S3 Key 전달
+          writerProfile: log.writerProfile, // S3 Key 전달
           likes: log.likes,
           isPublic: log.isPublic,
           date: `${log.startDate} - ${log.endDate}`,
           comments: log.comments ?? 0,
           oneLine: log.oneReview,
-        } as LogItem;
-      })
+        } as LogItem)
     );
   };
 
@@ -82,7 +62,7 @@ const LogPage: React.FC = () => {
     setLoading(true);
     try {
       const logsRes = await getPublicLogs();
-      const processedLogs = await processLogItems(logsRes);
+      const processedLogs = processLogItems(logsRes);
       setLogs(processedLogs);
     } catch (err) {
       console.error("공개 살구록 리스트 불러오기 실패:", err);
@@ -97,7 +77,7 @@ const LogPage: React.FC = () => {
     setLoading(true);
     try {
       const { logs } = await searchLogs(q);
-      const processedLogs = await processLogItems(logs ?? []);
+      const processedLogs = processLogItems(logs ?? []);
       setLogs(processedLogs);
     } catch (e) {
       console.error("검색 실패:", e);

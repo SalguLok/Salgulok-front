@@ -10,6 +10,8 @@ import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 import SearchIcon from "../../assets/common/search.svg?react";
 import { searchLogs } from "../../api/log/searchLogs";
 import SearchBar from "../../components/log/SearchBar";
+import FilterBar from "../../components/log/FilterBar";
+import { regions } from "../../data/regions";
 
 const LogPage: React.FC = () => {
   const [logs, setLogs] = useState<LogItem[]>([]);
@@ -20,6 +22,12 @@ const LogPage: React.FC = () => {
   const searchBarRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const isInitialQueryEffect = useRef(true);
+
+  // 필터 상태
+  const [sort, setSort] = useState("latest");
+  const [regionId, setRegionId] = useState<number | null>(null);
+
+  const regionOptions = regions.map((r) => ({ id: r.id, name: r.nameKo }));
 
   useEffect(() => {
     if (isInitialQueryEffect.current) {
@@ -152,16 +160,26 @@ const LogPage: React.FC = () => {
         }
       />
 
-        {showSearch && (
-            <SearchRow ref={searchBarRef}>
-                <SearchBar
-                    value={query}
-                    onChange={setQuery}
-                    onSubmit={handleSubmitSearch}
-                    placeholder="검색을 통해 로그를 찾아보세요"
-                />
-            </SearchRow>
-        )}
+        <ActionContainer>
+            {showSearch ? (
+                <SearchRow ref={searchBarRef}>
+                    <SearchBar
+                        value={query}
+                        onChange={setQuery}
+                        onSubmit={handleSubmitSearch}
+                        placeholder="검색을 통해 로그를 찾아보세요"
+                    />
+                </SearchRow>
+            ) : (
+                <FilterBarContainer>
+                    <FilterBar
+                        regions={regionOptions}
+                        onChangeSort={(key) => setSort(key)}
+                        onChangeRegion={(id) => setRegionId(id)}
+                    />
+                </FilterBarContainer>
+            )}
+        </ActionContainer>
 
         <ContentWrapper>
           <CardContainer>
@@ -182,10 +200,17 @@ const Container = styled.div`
   padding-bottom: 67px; /* NavigationBar height */
 `;
 
+const ActionContainer = styled.div`
+    height: 56px;
+    display: flex;
+    align-items: center;
+    padding-top: 4px;
+`;
+
 const ContentWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  margin-top: 20px;
+  margin-top: 8px;
   gap: 16px;
   align-items: center;
   width: 100%;
@@ -224,10 +249,19 @@ const SearchRow = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
+  align-items: center;
+  height: 100%;
   padding: 0 16px;
-  margin-top: 16px;
-  margin-bottom: 4px;
-    box-sizing: border-box;
-    overflow: visible;    
-    z-index: 1;
+  box-sizing: border-box;
+  overflow: visible;
+  z-index: 1;
+`;
+
+const FilterBarContainer = styled.div`
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  padding: 0 16px;
 `;

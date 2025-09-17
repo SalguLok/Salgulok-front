@@ -90,6 +90,8 @@ const Calendar: React.FC<CalendarProps> = ({ onDateChange }) => {
                 $isStart={isStart}
                 $isEnd={isEnd}
                 $dayIndex={dayIndexInWeek(day)}
+                $isRed={isSunday(day)}
+                $isBlue={isToday(day)}
               >
                 {day}
               </RangeBackground>
@@ -174,6 +176,8 @@ const RangeBackground = styled.div<{
   $isStart: boolean; 
   $isEnd: boolean;
   $dayIndex: number; 
+  $isRed: boolean;
+  $isBlue: boolean;
 }>`
   display: flex;
   justify-content: center;
@@ -198,6 +202,7 @@ const RangeBackground = styled.div<{
     else if ($isEnd) return "inset(0 50% 0 0)"; // 오른쪽 절반 자름
     else return "0";
   }};
+  color: ${({ $isBlue, $isRed }) => $isBlue ? "#80A8DD" : $isRed ? "#A81125" : "var(--black)"};
 `;
 
 const EdgeCircle = styled.div<{ $isRed: boolean; $isBlue: boolean }>`
@@ -210,7 +215,7 @@ const EdgeCircle = styled.div<{ $isRed: boolean; $isBlue: boolean }>`
   justify-content: center;
   align-items: center;
   font-weight: 500;
-  color: ${({ $isBlue, $isRed }) => $isBlue ? "#80A8DD" : $isRed ? "#A81125" : "white"};
+  color: var(--white);
   z-index: 1;
   cursor: pointer;
 `;

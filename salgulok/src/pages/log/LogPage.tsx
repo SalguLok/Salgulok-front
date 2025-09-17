@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import styled from "styled-components";
-import { useLocation, useNavigate } from "react-router-dom";
 import NavigationBar from "../../components/common/NavigationBar";
 import LogCardList from "../../components/common/CardListItem";
 import type { LogItem } from "../../components/common/CardListItem";
@@ -12,15 +11,25 @@ import SearchBar from "../../components/log/SearchBar";
 import FilterBar from "../../components/log/FilterBar";
 import { regions } from "../../data/regions";
 
+function useDebounced<T>(value: T, delay = 300) {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(id);
+  }, [value, delay]);
+  return debounced;
+}
+
+
 const LogPage: React.FC = () => {
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
   const [showSearch, setShowSearch] = useState(false);
   const searchBarRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
-  const isInitialQueryEffect = useRef(true);
+  const debouncedQuery = useDebounced(query, 350);
+  const cacheRef = useRef<Map<string, LogItem[]>>(new Map());
+  const abortRef = useRef<AbortController | null>(null);
 
   // 필터 상태
   const [sort, setSort] = useState("latest");
@@ -28,89 +37,80 @@ const LogPage: React.FC = () => {
 
   const regionOptions = regions.map((r) => ({ id: r.id, name: r.nameKo }));
 
-  useEffect(() => {
-    if (isInitialQueryEffect.current) {
-      isInitialQueryEffect.current = false;
-      return;
-    }
-    if (query === "") {
-      fetchAllPublicLogs();
-    }
-  }, [query]);
+  const processLogItems = useCallback((items: any[]): LogItem[] => {
+    return items.map((log) => ({
+      id: log.logId ?? log.id,
+      title: log.title,
+      writer: log.writer,
+      image: log.imgUrl,
+      writerProfile: log.writerProfile,
+      likes: log.likes,
+      isPublic: log.isPublic,
+      date: `${log.startDate} - ${log.endDate}`,
+      comments: log.comments ?? 0,
+      oneLine: log.oneReview,
+    }));
+  }, []);
 
-  // API 응답을 LogItem으로 변환하는 공통 함수
-  const processLogItems = (items: any[]): LogItem[] => {
-    return items.map(
-      (log) =>
-        ({
-          id: log.logId ?? log.id,
-          title: log.title,
-          writer: log.writer,
-          image: log.imgUrl, // S3 Key 전달
-          writerProfile: log.writerProfile, // S3 Key 전달
-          likes: log.likes,
-          isPublic: log.isPublic,
-          date: `${log.startDate} - ${log.endDate}`,
-          comments: log.comments ?? 0,
-          oneLine: log.oneReview,
-        } as LogItem)
-    );
-  };
 
-  // 전체 공개 로그를 불러오는 함수
-  const fetchAllPublicLogs = async () => {
-    setLoading(true);
-    try {
-      const logsRes = await getPublicLogs();
-      const processedLogs = processLogItems(logsRes);
-      setLogs(processedLogs);
-    } catch (err) {
-      console.error("공개 살구록 리스트 불러오기 실패:", err);
-      setLogs([]); // 실패 시 빈 배열로
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 살구록 검색 함수
-  const handleSearch = async (q: string) => {
-    setLoading(true);
-    try {
-      const { logs } = await searchLogs(q);
-      const processedLogs = processLogItems(logs ?? []);
-      setLogs(processedLogs);
-    } catch (e) {
-      console.error("검색 실패:", e);
-      setLogs([]); // 실패 시 빈 배열로
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // 검색 제출 처리 함수
+  // 검색 제출 처리
   const handleSubmitSearch = (value: string) => {
-    const trimmedValue = value.trim();
-    setShowSearch(false); // 검색창 닫기
-
-    if (trimmedValue) {
-      setQuery(trimmedValue);
-      handleSearch(trimmedValue);
-    } else {
-      // 검색어가 없는 경우
-      if (query !== "") {
-        // 기존 검색어가 있었다면 query를 ""로 바꿔서 useEffect를 트리거
-        setQuery("");
-      } else {
-        // 기존 검색어도 없었다면, useEffect가 실행되지 않으므로 직접 호출
-        fetchAllPublicLogs();
-      }
-    }
+    setShowSearch(false);
+    setQuery(value.trim());
   };
 
-  // 초기 데이터 로딩
+  const makeKey = useCallback(
+      (q: string, s: string, r: number | null) => `q=${q || ""}|s=${s}|r=${r ?? ""}`,
+      []
+  );
+
+  // 살구로그 목록 가져오기 (검색/정렬/지역 포함) + 캐시/요청취소 관리
+  const fetchLogs = useCallback(
+      async (opts: { q: string; s: string; r: number | null }) => {
+        const key = makeKey(opts.q, opts.s, opts.r);
+
+        if (cacheRef.current.has(key)) {
+          setLogs(cacheRef.current.get(key)!);
+          return;
+        }
+
+        if (abortRef.current) abortRef.current.abort();
+        abortRef.current = new AbortController();
+
+        setLoading(true);
+        try {
+          let data: any[];
+          if (opts.q && opts.q.trim()) {
+            const { logs } = await searchLogs(opts.q);
+            data = logs ?? [];
+          } else {
+            const res = await getPublicLogs(); // 서버가 sort/region 받으면 여기 파라미터 붙이면 됨
+            data = Array.isArray(res) ? res : (res?.logs ?? res?.items ?? []);
+          }
+          const processed = processLogItems(data);
+          cacheRef.current.set(key, processed);
+          setLogs(processed);
+        } catch (e: any) {
+          if (e?.name !== "AbortError") {
+            console.error("로그 불러오기 실패:", e);
+            setLogs([]);
+          }
+        } finally {
+          setLoading(false);
+        }
+      },
+      [makeKey, processLogItems]
+  );
+
+
+  // useEffect(() => {
+  //   fetchLogs({ q: "", s: "latest", r: null });
+  // }, [fetchLogs]);
+
   useEffect(() => {
-    fetchAllPublicLogs();
-  }, [location]);
+    fetchLogs({ q: debouncedQuery, s: sort, r: regionId });
+  }, [debouncedQuery, sort, regionId, fetchLogs]);
+
 
   // 검색창 외부 클릭 시 닫기
   useEffect(() => {
@@ -132,7 +132,7 @@ const LogPage: React.FC = () => {
       <HeaderLeft
         title="살구로그"
         right={
-            !showSearch && ( // ✅ 검색바가 열렸을 땐 아이콘 숨김
+            !showSearch && (
                 <IconButton aria-label="검색" onClick={() => setShowSearch(true)} title="검색">
                     <SearchIcon />
                 </IconButton>

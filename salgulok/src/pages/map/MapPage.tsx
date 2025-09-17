@@ -3,7 +3,7 @@ import NavigationBar from "../../components/common/NavigationBar.tsx";
 import BottomSheetModalMap from "../../components/map/BottomSheetModalMap.tsx";
 import { useEffect, useRef, useState } from "react";
 import Search from "../../assets/common/search.svg?react";
-import { getPlaceSearch } from "../../api/place/place.ts";
+import { getPlaceSearch, getLogsByPlace } from "../../api/place/place.ts";
 import { useLocation } from "react-router-dom";
 import Overlay from "./Overlay.tsx";
 
@@ -64,6 +64,19 @@ const MapPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showResults, setShowResults] = useState(false);
+  const [placeLogs, setPlaceLogs] = useState<
+    Array<{
+      id: string;
+      image: string;
+      writer: string;
+      writerProfile?: string | null;
+      title: string;
+      isPublic?: boolean;
+      date: string;
+      likes: number;
+      comments?: number;
+    }>
+  >([]);
 
   // 바텀시트에 넘길 선택된 장소 & 탭
   const [selectedPlace, setSelectedPlace] = useState<{
@@ -96,6 +109,33 @@ const MapPage = () => {
   const initialLat = state?.lat;
   const initialLng = state?.lng;
   const initialName = state?.name;
+
+  //날짜 포맷
+  const yymmdd = (iso: string | undefined) => {
+    if (!iso) return "";
+    // iso: "2025-09-25"
+    const [y, m, d] = iso.split("-");
+    return `${y.slice(2)}${m}${d}`;
+  };
+
+  const mapLogsResponse = (res: any) => {
+    const list = Array.isArray(res?.data)
+      ? res.data
+      : Array.isArray(res)
+      ? res
+      : [];
+    return list.map((it: any) => ({
+      id: String(it.logId),
+      image: it.imgUrl ?? "",
+      writer: it.writer ?? "",
+      writerProfile: it.writerProfile ?? null,
+      title: it.title ?? "",
+      isPublic: true as const,
+      date: `${yymmdd(it.startDate)}-${yymmdd(it.endDate)}`, // 예: "251220-251228"
+      likes: it.likes ?? 0,
+      comments: 0, // 백엔드 응답에 없어서 0으로
+    }));
+  };
 
   // 검색 API
   const readPlaceSearch = async (q: string) => {
@@ -238,15 +278,24 @@ const MapPage = () => {
           });
           setSheetTab("place");
           setShowResults(false);
+
+          try {
+            const response = await getLogsByPlace(exact.id);
+            setPlaceLogs(mapLogsResponse(response));
+          } catch (e) {
+            console.error(e);
+            setPlaceLogs([]);
+          }
         }
       })();
     }
   }, [mapRef.current]);
 
   // 검색 결과 클릭
-  const focusResult = (r: PlaceSearchItem) => {
+  const focusResult = async (r: PlaceSearchItem) => {
     const map = mapRef.current;
     if (!map) return;
+
     const pos = new window.naver.maps.LatLng(r.lat, r.lng);
     map.setCenter(pos);
     map.setZoom(15);
@@ -269,6 +318,14 @@ const MapPage = () => {
     });
     setSheetTab("place");
     setShowResults(false);
+
+    try {
+      const response = await getLogsByPlace(r.id);
+      setPlaceLogs(mapLogsResponse(response));
+    } catch (e) {
+      console.error(e);
+      setPlaceLogs([]);
+    }
   };
 
   return (
@@ -336,36 +393,7 @@ const MapPage = () => {
 
       <div style={{ position: "relative", zIndex: 10 }}>
         <BottomSheetModalMap
-          logs={[
-            {
-              id: "1",
-              image: "",
-              writer: "여행이좋아요",
-              writerProfile: "",
-              title: "25년 여름 제주는 아름다워",
-              date: "250703-250807",
-              likes: 17,
-              comments: 25,
-            },
-            {
-              id: "2",
-              image: "",
-              writer: "여행이좋아요",
-              title: "산토리니 블루",
-              date: "250703-250807",
-              likes: 12,
-              comments: 9,
-            },
-            {
-              id: "3",
-              image: "",
-              writer: "여행이좋아요",
-              title: "산토리니 블루",
-              date: "250703-250807",
-              likes: 12,
-              comments: 9,
-            },
-          ]}
+          logs={placeLogs}
           place={selectedPlace}
           defaultTab={sheetTab}
         />

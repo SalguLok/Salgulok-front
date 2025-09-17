@@ -14,7 +14,6 @@ export type LogItem = {
   title: string;
   date: string;
   likes: number;
-  comments: number;
   liked?: boolean;
 };
 
@@ -39,7 +38,7 @@ const LogCardList: FC<Props> = ({ items, onClick, onClickMore }) => {
               </ReactionWrapper>
               <ReactionWrapper>
                 <Comment />
-                <ReactionText>{item.comments}</ReactionText>
+                <ReactionText></ReactionText>
               </ReactionWrapper>
             </ReactionContainer>
           </ImageContainer>
@@ -66,8 +65,7 @@ const LogCardList: FC<Props> = ({ items, onClick, onClickMore }) => {
             </WriterContainer>
             <Title>{item.title}</Title>
             <Date>
-              {item.date}
-              {item.isPublic ? "" : <Lock />}
+              {item.date} {item.isPublic ? "" : <Lock />}
             </Date>
           </DetailContainer>
         </Card>
@@ -183,5 +181,4 @@ const Date = styled.span`
   color: var(--gray-400);
   font-family: Pretendard;
   font-size: 11px;
-  gap: 4px;
 `;

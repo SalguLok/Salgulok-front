@@ -63,3 +63,13 @@ export const getPlaceRating = async (placeId: string) => {
     console.error(err);
   }
 };
+
+//특정 장소 포함된 살구록 리스트 조회
+export const getLogsByPlace = async (logId: number) => {
+  try {
+    const response = await api.get(`/places/${logId}/logs`);
+    return response;
+  } catch (err) {
+    console.error(err);
+  }
+};

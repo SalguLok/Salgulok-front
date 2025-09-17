@@ -9,3 +9,13 @@ export const getLogFillStates = async (logId: number) => {
     console.error(err);
   }
 };
+
+//인기 살구록 API
+export const getPopularLogs = async () => {
+  try {
+    const response = await api.get(`/logs/popular`);
+    return response;
+  } catch (err) {
+    console.error(err);
+  }
+};

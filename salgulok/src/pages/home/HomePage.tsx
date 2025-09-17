@@ -9,12 +9,15 @@ import PlaceCardSlider from "../../components/home/PlaceCardSlider";
 import type { PlaceItem } from "../../components/home/PlaceCardSlider";
 import Salgu from "../../assets/common/salgu.svg?react";
 import SalguItem from "../../components/home/SalguItem";
-import { getPopularPlaceByRegion } from "../../api/place/place";
-import { getPopularPlace } from "../../api/place/place";
+import {
+  getPopularPlaceByRegion,
+  getPopularPlace,
+} from "../../api/place/place";
 import { useState, useEffect, useMemo } from "react";
 import LogWriteButton from "../../components/home/LogWriteButton";
 import { useNavigate } from "react-router-dom";
-import { getLogFillStates } from "../../api/log/log";
+import { getLogFillStates, getPopularLogs } from "../../api/log/log";
+import { getUserTraveling } from "../../api/user/getUserTraveling";
 
 type Stage = { date: string; completed?: boolean };
 
@@ -27,28 +30,10 @@ type Props = {
 };
 
 type LogDataItem = { date: string; hasLog: "yes" | "no" };
-
-const mock: LogItem[] = [
-  {
-    id: 1,
-    image: "",
-    writer: "여행이좋아요",
-    writerProfile: "",
-    title: "25년 여름 제주는 아름다워",
-    date: "250703-250807",
-    likes: 17,
-    comments: 25,
-  },
-  {
-    id: 2,
-    image: "",
-    writer: "여행이좋아요",
-    title: "산토리니 블루",
-    date: "250703-250807",
-    likes: 12,
-    comments: 9,
-  },
-];
+type UserTravelingResponse = {
+  traveling: boolean;
+  logId?: number;
+};
 
 const HomePage: FC<Props> = ({
   username = "윌버",
@@ -61,6 +46,9 @@ const HomePage: FC<Props> = ({
     PlaceItem[]
   >([]);
   const [logData, setLogData] = useState<LogDataItem[]>([]);
+  const [isTraveling, setIsTraveling] = useState(false);
+  const [logId, setLogId] = useState<number>();
+  const [popularLogs, setPopularLogs] = useState<LogItem[]>([]);
 
   const toMMDD = (iso: string) => {
     const parts = iso.split("-");
@@ -77,18 +65,32 @@ const HomePage: FC<Props> = ({
     onModeChange?.(next);
   };
 
-  //살구록 작성 퍼센트 계산
-  const progressPercent = useMemo(() => {
-    const total = logData.length;
-    if (!total) return 0;
-    const filled = logData.filter((d) => d.hasLog === "yes").length;
-    const percent = Math.round((filled / total) * 100);
-    return Math.max(0, Math.min(100, percent));
-  }, [logData]);
+  //유저 traveling 여부 API 연결
+  const readUserIsTraveling = async () => {
+    try {
+      const res = (await getUserTraveling()) as { data?: unknown } | unknown;
+      const data = res as any as UserTravelingResponse | undefined;
+      if (data) {
+        const travelingNow = !!data.traveling;
+        setIsTraveling(travelingNow);
+        setLogId(data.logId);
 
-  const logId = 4;
+        if (travelingNow) {
+          setMode("during");
+          onModeChange?.("during");
+        }
+      } else {
+        setIsTraveling(false);
+      }
+    } catch (err) {
+      console.error(err);
+      setIsTraveling(false);
+    }
+  };
+
   //살구록 작성여부 API 연결
   const readLogFillStates = async () => {
+    if (logId == null) return;
     try {
       const response = await getLogFillStates(logId);
       const days = ((response as any)?.data?.days ??
@@ -101,11 +103,20 @@ const HomePage: FC<Props> = ({
           hasLog: d?.hasTemplate ? "yes" : "no",
         }))
       );
+      console.log("logData", logData);
     } catch (e) {
       console.error(e);
       setLogData([]);
     }
   };
+  //살구록 작성 퍼센트 계산
+  const progressPercent = useMemo(() => {
+    const total = logData.length;
+    if (!total) return 0;
+    const filled = logData.filter((d) => d.hasLog === "yes").length;
+    const percent = Math.round((filled / total) * 100);
+    return Math.max(0, Math.min(100, percent));
+  }, [logData]);
 
   //이름이 8자보다 길 경우 ...로 처리
   const shorten = (s: string | undefined, max = 9) => {
@@ -113,17 +124,14 @@ const HomePage: FC<Props> = ({
     return arr.length > max ? arr.slice(0, max).join("") + "…" : s ?? "";
   };
 
+  const toArray = (r: any) =>
+    Array.isArray(r?.data) ? r.data : Array.isArray(r) ? r : [];
+
   //전체 인기장소 검색 API 연결
   const readPopularPlace = async () => {
     const response = await getPopularPlace();
-    const payload = Array.isArray(response?.data)
-      ? response.data
-      : Array.isArray(response?.data)
-      ? response.data
-      : Array.isArray(response)
-      ? response
-      : [];
-    const mapped: PlaceItem[] = (payload as any[]).map((p, i) => ({
+    const payload = toArray(response);
+    const mapped: PlaceItem[] = payload.map((p: any, i: number) => ({
       id: String(p.place_id ?? `place-${i}`),
       placeName: String(p.placeName),
       mapx: String(p.mapx),
@@ -136,17 +144,44 @@ const HomePage: FC<Props> = ({
   };
   const regionId = 1;
 
+  const rangeToYYMMDDDash = (start: string, end: string) => {
+    const fmt = (s: string) => {
+      const [y, m, d] = s?.split("-") ?? ["", "", ""];
+      if (!y || !m || !d) return s ?? "";
+      return `${y.slice(2)}${m}${d}`;
+    };
+    return `${fmt(start)}-${fmt(end)}`;
+  };
+
+  //인기 살구록 API 연결
+  const readPopularLogs = async () => {
+    try {
+      const response = await getPopularLogs();
+      const payload = toArray(response);
+      const mapped: LogItem[] = payload.map((item: any) => ({
+        id: item.logId,
+        image: String(item.imgUrl ?? ""),
+        writer: String(item.writer ?? ""),
+        writerProfile: item.writerProfile ? String(item.writerProfile) : "",
+        title: String(item.title ?? ""),
+        date: rangeToYYMMDDDash(
+          String(item.startDate ?? ""),
+          String(item.endDate ?? "")
+        ),
+        likes: Number(item.likes ?? 0),
+      }));
+      setPopularLogs(mapped);
+    } catch (e) {
+      console.error(e);
+      setPopularLogs([]);
+    }
+  };
+
   //인기장소 지역별 검색 API 연결
   const readPopularPlaceByRegion = async () => {
     const response = await getPopularPlaceByRegion(regionId);
-    const payload = Array.isArray(response?.data)
-      ? response.data
-      : Array.isArray(response?.data)
-      ? response.data
-      : Array.isArray(response)
-      ? response
-      : [];
-    const mapped: PlaceItem[] = (payload as any[]).map((p, i) => ({
+    const payload = toArray(response);
+    const mapped: PlaceItem[] = payload.map((p: any, i: number) => ({
       id: String(p.place_id ?? `region-place-${i}`),
       placeName: String(p.placeName),
       mapx: String(p.mapx),
@@ -162,8 +197,13 @@ const HomePage: FC<Props> = ({
     mode === "during" ? regionPopularPlaceItems : popularPlaceItems;
 
   useEffect(() => {
-    readPopularPlace();
+    readUserIsTraveling();
     readLogFillStates();
+  }, [logId]);
+
+  useEffect(() => {
+    readPopularPlace();
+    readPopularLogs();
   }, []);
 
   useEffect(() => {
@@ -178,6 +218,22 @@ const HomePage: FC<Props> = ({
       })),
     [currentPlaceItems]
   );
+
+  const salguItemsForDisplay = useMemo(() => {
+    if (mode === "before") {
+      return Array.from({ length: 6 }).map((_, i) => ({
+        key: `placeholder-${i}`,
+        date: "00/00",
+        hasLog: "no" as const,
+      }));
+    }
+
+    return logData.map((d) => ({
+      key: d.date,
+      date: d.date,
+      hasLog: d.hasLog,
+    }));
+  }, [mode, logData]);
 
   return (
     <Layout>
@@ -220,12 +276,12 @@ const HomePage: FC<Props> = ({
         </ProgressRow>
 
         <SalguContainer>
-          {logData.map((d) => (
+          {salguItemsForDisplay.map((d) => (
             <SalguItem
-              key={d.date}
-              date={d.date}
+              key={d.key}
+              date={d.date} // "체류 전"에는 빈 문자열 => 날짜 표시 없음
               hasLog={d.hasLog}
-              forceOff={mode === "before"}
+              forceOff={mode === "before"} // 체류 전이면 전부 꺼진 상태로 강제
               onClick={() => console.log("clicked:", d.date)}
             />
           ))}
@@ -245,7 +301,7 @@ const HomePage: FC<Props> = ({
       </TitleContainer>
       <CardContainer>
         <LogCardListSlide
-          items={mock}
+          items={popularLogs}
           onClick={(id) => console.log("open", id)}
           onToggleLike={(id) => console.log("like", id)}
         />

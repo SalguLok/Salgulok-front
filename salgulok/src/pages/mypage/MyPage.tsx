@@ -38,6 +38,7 @@ const MyPage: React.FC = () => {
         }));
 
         setLogs(mappedLogs);
+        console.log(logs);
       } catch (err) {
         console.error("내 로그 불러오기 실패", err);
       }

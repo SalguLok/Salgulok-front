@@ -308,7 +308,6 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
       </TopContainer>
       <TitleContainer>
         <Title>지역 추천</Title>
-        <More>더보기</More>
       </TitleContainer>
       <LocationSlider
         items={regions}
@@ -316,7 +315,6 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
       />
       <TitleContainer>
         <Title>인기 살구로그</Title>
-        <More>더보기</More>
       </TitleContainer>
       <CardContainer>
         <LogCardListSlide
@@ -327,7 +325,6 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
       </CardContainer>
       <TitleContainer>
         <Title>살구 도감</Title>
-        <More>더보기</More>
       </TitleContainer>
       <PlaceCardSlider
         items={placeItemsForDisplay}

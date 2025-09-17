@@ -24,6 +24,7 @@ const HeaderWrapper = styled.header`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  align-items: center;
   padding: 28px 20px 0px 20px;
   box-sizing: border-box;
   height: 44px;

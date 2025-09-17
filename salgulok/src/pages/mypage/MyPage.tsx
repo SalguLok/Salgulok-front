@@ -26,39 +26,47 @@ const MyPage: React.FC = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      try {e
-        const [logsRes, userInfo] = await Promise.all([getMyLogs(), getMyInfo()]);
+      try {
+        const [logsRes, userInfo] = await Promise.all([
+          getMyLogs(),
+          getMyInfo(),
+        ]);
 
         const processedLogs = await Promise.all(
           logsRes.logs.map(async (log) => {
-            const profileKey = log.writer === userInfo.nickname
+            const profileKey =
+              log.writer === userInfo.nickname
                 ? userInfo.profileImg
                 : log.writerProfile;
 
             const [imageUrlRes, writerProfileUrlRes] = await Promise.all([
-                log.imgUrl ? issueGetPresigned(log.imgUrl) : Promise.resolve(null),
-                profileKey ? issueGetPresigned(profileKey) : Promise.resolve(null)
+              log.imgUrl
+                ? issueGetPresigned(log.imgUrl)
+                : Promise.resolve(null),
+              profileKey
+                ? issueGetPresigned(profileKey)
+                : Promise.resolve(null),
             ]);
 
             const imageUrl = imageUrlRes?.items[0]?.presignedUrl ?? "";
-            const writerProfileUrl = writerProfileUrlRes?.items[0]?.presignedUrl;
+            const writerProfileUrl =
+              writerProfileUrlRes?.items[0]?.presignedUrl;
 
             return {
-                id: log.logId,
-                image: imageUrl,
-                writer: log.writer,
-                writerProfile: writerProfileUrl,
-                title: log.title,
-                isPublic: log.isPublic,
-                date: `${log.startDate} - ${log.endDate}`,
-                likes: 0,
-                comments: 0,
+              id: log.logId,
+              image: imageUrl,
+              writer: log.writer,
+              writerProfile: writerProfileUrl,
+              title: log.title,
+              isPublic: log.isPublic,
+              date: `${log.startDate} - ${log.endDate}`,
+              likes: 0,
+              comments: 0,
             };
           })
         );
 
         setLogs(processedLogs);
-
       } catch (err) {
         console.error("내 로그/유저 정보 불러오기 실패", err);
       }

@@ -66,40 +66,40 @@ const LogPage: React.FC = () => {
 
   // 살구로그 목록 가져오기 (검색/정렬/지역 포함) + 캐시/요청취소 관리
   const fetchLogs = useCallback(
-      async (opts: { q: string; s: string; r: number | null }) => {
-        const key = makeKey(opts.q, opts.s, opts.r);
+    async (opts: { q: string; s: string; r: number | null }) => {
+      const key = makeKey(opts.q, opts.s, opts.r);
 
-        if (cacheRef.current.has(key)) {
-          setLogs(cacheRef.current.get(key)!);
-          return;
+      if (cacheRef.current.has(key)) {
+        setLogs(cacheRef.current.get(key)!);
+        return;
+      }
+
+      if (abortRef.current) abortRef.current.abort();
+      abortRef.current = new AbortController();
+
+      setLoading(true);
+      try {
+        let data: any[];
+        const { logs } = await searchLogs(
+          opts.q || undefined,
+          opts.s as "latest" | "view" | "like",
+          opts.r ?? 0
+        );
+        data = logs ?? [];
+
+        const processed = processLogItems(data);
+        cacheRef.current.set(key, processed);
+        setLogs(processed);
+      } catch (e: any) {
+        if (e?.name !== "AbortError") {
+          console.error("로그 불러오기 실패:", e);
+          setLogs([]);
         }
-
-        if (abortRef.current) abortRef.current.abort();
-        abortRef.current = new AbortController();
-
-        setLoading(true);
-        try {
-          let data: any[];
-          if (opts.q && opts.q.trim()) {
-            const { logs } = await searchLogs(opts.q);
-            data = logs ?? [];
-          } else {
-            const res = await getPublicLogs(); // 서버가 sort/region 받으면 여기 파라미터 붙이면 됨
-            data = Array.isArray(res) ? res : (res?.logs ?? res?.items ?? []);
-          }
-          const processed = processLogItems(data);
-          cacheRef.current.set(key, processed);
-          setLogs(processed);
-        } catch (e: any) {
-          if (e?.name !== "AbortError") {
-            console.error("로그 불러오기 실패:", e);
-            setLogs([]);
-          }
-        } finally {
-          setLoading(false);
-        }
-      },
-      [makeKey, processLogItems]
+      } finally {
+        setLoading(false);
+      }
+    },
+    [makeKey, processLogItems]
   );
 
 

@@ -99,7 +99,7 @@ export const getCommentsByPostId = async (
 
 // 3. 게시글 생성
 export const createPost = async (postData: PostCreateRequest): Promise<{ postId: number }> => {
-  const response = await api.post('/community/posts', postData);
+  const response = await api.post<number>('/community/posts', postData);
   // 서버에서 직접 숫자를 반환하므로 객체로 감싸서 반환
   return { postId: response.data };
 };

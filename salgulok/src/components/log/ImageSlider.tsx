@@ -1,6 +1,5 @@
 import React, { useMemo, useRef, useState } from "react";
 import styled, { css } from "styled-components";
-import { Star } from "lucide-react";
 
 interface ImageSliderProps {
   images?: string[];

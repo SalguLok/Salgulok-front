@@ -52,6 +52,7 @@ export interface PostCreateRequest {
   topic: Topic;
   content: string;
   authorId: number;  // ★ 추가
+  regionId: number;  // ★ 지역 ID 추가
 }
 
 export interface CommentCreateRequest {

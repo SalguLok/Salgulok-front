@@ -10,7 +10,23 @@ import { createPost } from "../../api/community/community";
 import type { PostCreateRequest, Topic } from "../../api/community/community";
 
 
-const REGIONS = ["서울", "부산", "제주", "경기", "인천", "강원", "경상", "전라", "충청"];
+const REGIONS = [
+  "서울",
+  "부산",
+  "대구",
+  "인천",
+  "광주",
+  "대전",
+  "울산",
+  "세종",
+  "경기",
+  "충청",
+  "전라",
+  "경상",
+  "강원",
+  "제주"
+];
+
 const TOPICS: Topic[] = ["동행", "맛집", "숙소", "교통", "기타"];
 
 const WritePage = () => {
@@ -21,6 +37,22 @@ const WritePage = () => {
   const [openTopic, setOpenTopic] = useState(false);
 
   const [region, setRegion] = useState<string | null>(null);
+  const regionMap: Record<string, number> = {
+    "서울": 1,
+    "부산": 2,
+    "대구": 3,
+    "인천": 4,
+    "광주": 5,
+    "대전": 6,
+    "울산": 7,
+    "세종": 8,
+    "경기": 9,
+    "충청": 10,
+    "전라": 11,
+    "경상": 12,
+    "강원": 13,
+    "제주": 14,
+  };
   const [topic, setTopic] = useState<Topic | null>(null);
   const [content, setContent] = useState("");
 
@@ -40,8 +72,8 @@ const WritePage = () => {
   });
 
   const handleSubmit = () => {
-    if (!topic || !content.trim()) {
-      alert("주제와 내용을 모두 입력해주세요.");
+    if (!topic || !content.trim() || !region) {
+      alert("지역, 주제, 내용을 모두 입력해주세요.");
       return;
     }
     const userId = localStorage.getItem("userId");
@@ -54,7 +86,9 @@ const WritePage = () => {
       topic,
       content,
       authorId: parseInt(userId),
+      regionId: region ? regionMap[region] : 0,
     };
+    console.log("[게시글 생성] payload", postData);
     createPostMutation.mutate(postData);
   };
 

@@ -41,6 +41,7 @@ export interface Page<T> {
 
 // API 요청 시 필요한 데이터 타입
 export interface GetPostsParams {
+  regionId?: number; // regionId 속성 추가
   region?: string;
   topic?: Topic;
   status?: StayStatus;

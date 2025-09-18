@@ -70,7 +70,7 @@ const Sheet = styled.div`
   max-height: 85dvh;
   display: flex;
   flex-direction: column;
-  z-index: 1000;
+  z-index: 1100;
 
   @media (max-width: ${APP_W}px) {
     left: 0; transform: none; width: 100vw;

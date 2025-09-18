@@ -1,6 +1,6 @@
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import NavigationBar from "../../components/common/NavigationBar";
 import HeaderLeft from "../../components/common/HeaderLeft";
@@ -10,12 +10,41 @@ import type { GetPostsParams } from "../../api/community/community";
 import DefaultProfileImage from "../../assets/common/my_gray.svg";
 import { formatKst } from "../../utils/date";
 
+//region 선택
+import BottomSheet from "../../components/common/BottomSheet";
+import { Chip, ChipRow } from "../../components/common/Chip";
+import dropdown from "../../assets/common/dropdown.svg";
+import regions from "../../data/regions"; // regions 데이터 임포트
+
 const CommunityPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const goDetail = (id: number) => navigate(`/community/${id}`);
+  const [searchParams] = useSearchParams();
+  const initialRegionId = searchParams.get("region_id");
 
-  const [filters, setFilters] = useState<GetPostsParams>({ page: 0, size: 10 });
+
+  // const [filters, setFilters] = useState<GetPostsParams>({ page: 0, size: 10 });
+  const [filters, setFilters] = useState<GetPostsParams>({
+    page: 0,
+    size: 10,
+    regionId: initialRegionId ? parseInt(initialRegionId) : undefined,
+  });
+
+  const [openRegionFilter, setOpenRegionFilter] = useState(false);
+
+  useEffect(() => {
+    const regionIdFromParams = searchParams.get("region_id");
+    const newRegionId = regionIdFromParams ? parseInt(regionIdFromParams, 10) : undefined;
+
+    setFilters(prev => {
+      if (prev.regionId !== newRegionId) {
+        console.log(`CommunityPage: Syncing regionId from URL: ${newRegionId}`);
+        return { ...prev, regionId: newRegionId, page: 0 };
+      }
+      return prev;
+    });
+  }, [searchParams]);
 
   const {
     data: postsPage,
@@ -26,6 +55,8 @@ const CommunityPage = () => {
     queryFn: () => getPosts(filters),
   });
 
+  // 현재 필터에 해당하는 지역 이름 찾기
+  const currentRegion = regions.find(r => r.id === filters.regionId)?.nameKo ?? "전체 지역";
 
   // 게시글 삭제 뮤테이션
   const deletePostMutation = useMutation({
@@ -76,18 +107,25 @@ const CommunityPage = () => {
     }
   };
 
-  // TODO: 필터링 UI 구현 시 핸들러 추가
-  // const handleFilterChange = (newFilters: Partial<GetPostsParams>) => {
-  //   setFilters(prev => ({ ...prev, ...newFilters, page: 0 }));
-  // };
+  // 지역 필터 변경 핸들러
+  const handleRegionFilterChange = (newRegionId: number) => {
+    console.log(`CommunityPage: Selected regionId: ${newRegionId}`);
+    setFilters(prev => ({ ...prev, regionId: newRegionId, page: 0 }));
+    setOpenRegionFilter(false); // 바텀시트 닫기
+  };
 
   return (
     <>
       <Layout>
         <HeaderLeft title="커뮤니티" />
-        <Banner>
+        <Banner onClick={() => setOpenRegionFilter(true)}>
           <BannerText>
-            <BannerTitle>제주, 전체 주제</BannerTitle>
+            <BannerTitle>
+              {currentRegion}, 전체 주제
+              <Icon>
+                <img src={dropdown} alt="dropdown icon" />
+              </Icon>
+            </BannerTitle>
             <BannerSub>여행 예정 350명, 여행 중 137명</BannerSub>
           </BannerText>
           <BannerRight>여행 중인 사람만</BannerRight>
@@ -126,6 +164,25 @@ const CommunityPage = () => {
       </WriteButton>
 
       <NavigationBar />
+      <BottomSheet
+        open={openRegionFilter}
+        title="지역 선택"
+        onClose={() => setOpenRegionFilter(false)}
+        primaryLabel="선택"
+        onPrimary={() => setOpenRegionFilter(false)}
+      >
+        <ChipRow>
+          {regions.map(r => (
+            <Chip
+              key={r.id}
+              onClick={() => handleRegionFilterChange(r.id)}
+              selected={filters.regionId === r.id}
+            >
+              {r.nameKo}
+            </Chip>
+          ))}
+        </ChipRow>
+      </BottomSheet>
     </>
   );
 };
@@ -148,6 +205,7 @@ const Banner = styled.div`
   height: 160px;
   background: #eee;
   overflow: hidden;
+  cursor: pointer; /* 클릭 가능한 요소임을 시각적으로 알려줌 */
 `;
 
 const BannerText = styled.div`
@@ -156,6 +214,8 @@ const BannerText = styled.div`
   top: 24px;
   font-family: 'pretendard', sans-serif;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
 `;
 
 const BannerTitle = styled.div`
@@ -163,6 +223,20 @@ const BannerTitle = styled.div`
   font-weight: 500;
   font-family: 'pretendard', sans-serif;
   margin-bottom: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* 아이콘과의 간격 */
+`;
+
+const Icon = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 10px;
+  height: 10px;
 `;
 
 const BannerSub = styled.div`

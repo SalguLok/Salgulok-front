@@ -50,7 +50,7 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
   const [regionNameKo, setRegionNameKo] = useState<string>("");
   const [popularLogs, setPopularLogs] = useState<LogItem[]>([]);
   const [name, setName] = useState("");
-
+  isTraveling;
   //traveling id 바뀔때마다 nameKo 바꾸기
   useEffect(() => {
     if (regionId == null) {
@@ -511,10 +511,7 @@ const Title = styled.text`
   font-size: 20px;
   font-weight: 600;
 `;
-const More = styled.text`
-  color: var(--gray-400);
-  font-size: 16px;
-`;
+
 const CardContainer = styled.div`
   display: flex;
   flex-direction: row;

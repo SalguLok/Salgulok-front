@@ -15,6 +15,8 @@ export type LogItem = {
   date: string;
   likes: number;
   liked?: boolean;
+  comments?: number;
+  oneLine?: string;
 };
 
 type Props = {
@@ -38,7 +40,7 @@ const LogCardList: FC<Props> = ({ items, onClick, onClickMore }) => {
               </ReactionWrapper>
               <ReactionWrapper>
                 <Comment />
-                <ReactionText></ReactionText>
+                <ReactionText>{item.comments}</ReactionText>
               </ReactionWrapper>
             </ReactionContainer>
           </ImageContainer>

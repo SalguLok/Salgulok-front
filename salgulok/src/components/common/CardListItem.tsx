@@ -53,7 +53,7 @@ const PresignedImage: FC<{ objectKey?: string | null; src?: string; [key: string
         fetchUrl();
     }, [objectKey]);
 
-    if (!url) return <div {...props} />;
+    // if (!url) return <div {...props} />;
 
     return <img src={url} {...props} />;
 };

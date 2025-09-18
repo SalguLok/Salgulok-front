@@ -311,7 +311,10 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
       </TitleContainer>
       <LocationSlider
         items={regions}
-        onClick={(id) => console.log("region:", id)}
+        onClick={(regionId) => {
+          console.log(`HomePage: Selected regionId: ${regionId}`);
+          navigate(`/community?region_id=${regionId}`);
+        }}
       />
       <TitleContainer>
         <Title>인기 살구로그</Title>

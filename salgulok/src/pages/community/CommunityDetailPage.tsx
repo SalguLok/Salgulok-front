@@ -8,6 +8,7 @@ import { getPostById, deletePost, createComment, deleteComment, getCommentsByPos
 import type { CommentResponse } from "../../api/community/community";
 import DefaultProfileImage from "../../assets/common/my_gray.svg";
 import { formatKst } from "../../utils/date";
+import NavigationBar from "../../components/common/NavigationBar";
 
 const CommunityDetailPage = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -42,7 +43,7 @@ const CommunityDetailPage = () => {
   const createCommentMutation = useMutation({
     mutationFn: ({ content }: { content: string }) => createComment(numericPostId, { content }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["communityPost", numericPostId] });
+      queryClient.invalidateQueries({ queryKey: ["communityComments", numericPostId] });
     },
   });
 
@@ -50,7 +51,7 @@ const CommunityDetailPage = () => {
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId: number) => deleteComment(numericPostId, commentId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["communityPost", numericPostId] });
+      queryClient.invalidateQueries({ queryKey: ["communityComments", numericPostId] });
     },
   });
 
@@ -90,7 +91,15 @@ const CommunityDetailPage = () => {
             <Menu onClick={handleDeletePost}>⋮</Menu> {/* 메뉴 버튼에 삭제 기능 연결 */}
           </HeaderPost>
           <Body>{post.content}</Body>
+          <Footer>
+            {post.topic && <Badge>{post.topic}</Badge>}
+          </Footer>
         </PostSection>
+
+        {/* 댓글 입력 바 */}
+        <CommentInputWrapper>
+          <CommentInputBar onSubmit={handleCreateComment} />
+        </CommentInputWrapper>
 
         {/* 댓글 */}
         <CommentTitle>댓글 {comments?.length ?? 0}</CommentTitle>
@@ -98,22 +107,20 @@ const CommunityDetailPage = () => {
           <div>댓글 로딩 중...</div>
         ) : (
           comments?.map((c: CommentResponse) => (
-            <CommentBox key={c.commentId}>
+            <CommentBox key={c.id}>
               <HeaderPost>
-                <Avatar src={DefaultProfileImage} alt={c.authorName} />
+                <Avatar src={DefaultProfileImage} alt={c.username} />
                 <div>
-                  <User>{c.authorName}</User>
-                  <Meta>{new Date(c.createdAt).toLocaleDateString()}</Meta>
+                  <User>{c.username}</User>
                 </div>
-                <Menu onClick={() => handleDeleteComment(c.commentId)}>⋮</Menu> {/* 댓글 삭제 기능 연결 */}
+                <Menu onClick={() => handleDeleteComment(c.id)}>⋮</Menu> {/* 댓글 삭제 기능 연결 */}
               </HeaderPost>
               <CommentBody>{c.content}</CommentBody>
             </CommentBox>
           ))
         )}
       </Wrap>
-      {/* 댓글 입력 바 */}
-      <CommentInputBar onSubmit={handleCreateComment} />
+      <NavigationBar />
     </Layout>
   );
 };
@@ -173,6 +180,16 @@ const Body = styled.p`
   margin-top: 12px;
 `;
 
+const Footer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+`;
+
+const CommentInputWrapper = styled.div`
+  margin: 24px 0 16px;
+`;
+
 const CommentTitle = styled.h3`
   font-size: 13px;
   font-weight: 600;
@@ -195,4 +212,12 @@ const Menu = styled.div`
   color: var(--gray-400);
   cursor: pointer;
   margin-left: auto; /* 아바타+텍스트 오른쪽 끝으로 밀기 */
+`;
+
+const Badge = styled.span`
+  padding: 2px 11px;
+  border-radius: 25px;
+  border: 0.5px solid var(--main-pri);
+  color: var(--main-pri);
+  font-size: 12px;
 `;

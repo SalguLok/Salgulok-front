@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Header from "../../components/common/Header";
 import BottomSheet from "../../components/common/BottomSheet";
 import { Chip, ChipRow } from "../../components/common/Chip";
@@ -9,34 +9,31 @@ import dropdown from "../../assets/common/dropdown.svg";
 import { createPost } from "../../api/community/community";
 import type { PostCreateRequest, Topic } from "../../api/community/community";
 
+
 const REGIONS = ["서울", "부산", "제주", "경기", "인천", "강원", "경상", "전라", "충청"];
-// API 명세에 정의된 Topic으로 수정
 const TOPICS: Topic[] = ["동행", "맛집", "숙소", "교통", "기타"];
 
 const WritePage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  // 시트 열림 상태
   const [openRegion, setOpenRegion] = useState(false);
   const [openTopic, setOpenTopic] = useState(false);
 
-  // 선택 상태
   const [region, setRegion] = useState<string | null>(null);
   const [topic, setTopic] = useState<Topic | null>(null);
   const [content, setContent] = useState("");
 
-  // 라벨
   const regionLabel = region ?? "지역선택";
   const topicLabel = topic ?? "주제";
 
   const createPostMutation = useMutation({
     mutationFn: createPost,
-    onSuccess: data => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["communityPosts"] });
       navigate(`/community/${data.postId}`);
     },
-    onError: error => {
+    onError: (error) => {
       console.error("게시글 생성 실패:", error);
       alert("게시글 생성에 실패했습니다.");
     },
@@ -47,7 +44,17 @@ const WritePage = () => {
       alert("주제와 내용을 모두 입력해주세요.");
       return;
     }
-    const postData: PostCreateRequest = { topic, content };
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+        alert("사용자 정보를 가져올 수 없습니다. 다시 로그인해주세요.");
+        return;
+    }
+
+    const postData: PostCreateRequest = {
+      topic,
+      content,
+      authorId: parseInt(userId),
+    };
     createPostMutation.mutate(postData);
   };
 
@@ -82,14 +89,16 @@ const WritePage = () => {
           </SelectBtn>
         </SelectRow>
 
-        {/* API에 제목 필드가 없으므로 내용만 받도록 통합합니다. */}
         <InputContent
           value={content}
-          onChange={e => setContent(e.target.value)}
+          onChange={(e) => setContent(e.target.value)}
           placeholder="여행자들과 어떤 이야기를 나누고 싶으신가요?"
         />
       </Layout>
-      <WriteButton onClick={handleSubmit} disabled={createPostMutation.isPending}>
+      <WriteButton
+        onClick={handleSubmit}
+        disabled={createPostMutation.isPending}
+      >
         {createPostMutation.isPending ? "등록 중..." : "등록"}
       </WriteButton>
 
@@ -103,7 +112,7 @@ const WritePage = () => {
         primaryDisabled={!region}
       >
         <ChipRow>
-          {REGIONS.map(r => (
+          {REGIONS.map((r) => (
             <Chip key={r} selected={region === r} onClick={() => setRegion(r)}>
               {r}
             </Chip>
@@ -121,7 +130,7 @@ const WritePage = () => {
         primaryDisabled={!topic}
       >
         <ChipRow>
-          {TOPICS.map(t => (
+          {TOPICS.map((t) => (
             <Chip key={t} selected={topic === t} onClick={() => setTopic(t)}>
               {t}
             </Chip>
@@ -144,7 +153,7 @@ const Layout = styled.div`
   position: relative;
 
   max-width: ${APP_W}px;
-  margin: 0 auto;         /* 화면 가운데 정렬 */
+  margin: 0 auto; /* 화면 가운데 정렬 */
 `;
 
 const Icon = styled.div`
@@ -163,7 +172,7 @@ const SelectRow = styled.div`
 
 const SelectBtn = styled.button`
   display: flex;
-  align-items: center;  
+  align-items: center;
   padding: 0px 12px;
   height: 30px;
   border: 1px solid var(--gray-200);
@@ -201,18 +210,20 @@ const InputContent = styled.textarea`
   resize: none;
   line-height: 1.6;
   min-height: 300px;
-  max-height: 75dvh;      /* 너무 커지지 않도록 상한 */
-  overflow-y: hidden;    /* 상한 넘기 전까지 스크롤 숨김 */
+  max-height: 75dvh; /* 너무 커지지 않도록 상한 */
+  overflow-y: hidden; /* 상한 넘기 전까지 스크롤 숨김 */
   outline: none;
 
-  &::placeholder { color: var(--gray-200); }
+  &::placeholder {
+    color: var(--gray-200);
+  }
 `;
 
-const BTN_W = 90;  // 버튼 너비
-const GUTTER = 15;  // 프레임 오른쪽 여백
+const BTN_W = 90; // 버튼 너비
+const GUTTER = 15; // 프레임 오른쪽 여백
 
 const WriteButton = styled.button`
-  position: fixed; 
+  position: fixed;
   z-index: 1000;
 
   /* 하단 여백 + iOS 안전영역 */
@@ -231,10 +242,17 @@ const WriteButton = styled.button`
 
   width: 90px;
   height: 35px;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  border: none; border-radius: 15px;
-  background: var(--main-pri); color: #fff;
-  font-size: 15px; font-weight: 400; font-family: 'pretendard', sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  border-radius: 15px;
+  background: var(--main-pri);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 400;
+  font-family: "pretendard", sans-serif;
   cursor: pointer;
 `;
 

@@ -22,11 +22,10 @@ export interface PostResponse {
 }
 
 export interface CommentResponse {
-  commentId: number;
+  id: number;
   postId: number;
-  authorName: string;
+  username: string;
   content: string;
-  createdAt: string;
 }
 
 // 페이지네이션 응답을 위한 제네릭 타입

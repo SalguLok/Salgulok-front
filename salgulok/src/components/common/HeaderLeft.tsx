@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useNavigate } from "react-router-dom";
 
 interface HeaderProps {
   title: string;
@@ -8,13 +7,12 @@ interface HeaderProps {
 }
 
 const HeaderLeft: React.FC<HeaderProps> = ({ title, right }) => {
-  const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
+
       // 스크롤이 맨 위에 있으면 항상 헤더를 보이게 함
       if (currentScrollY <= 0) {
         setIsVisible(true);
@@ -25,10 +23,10 @@ const HeaderLeft: React.FC<HeaderProps> = ({ title, right }) => {
       setIsVisible(false);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -39,7 +37,7 @@ const HeaderLeft: React.FC<HeaderProps> = ({ title, right }) => {
         {right ? <RightSlot>{right}</RightSlot> : <RightSlot />}
       </HeaderWrapper>
 
-      <HeaderSpacer/>
+      <HeaderSpacer />
     </>
   );
 };
@@ -59,6 +57,7 @@ const HeaderWrapper = styled.header<{ $isVisible: boolean }>`
   height: 52px;
   background-color: var(--white);
   z-index: 1000;
+
 `;
 
 const Title = styled.h1`

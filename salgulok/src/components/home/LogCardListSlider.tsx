@@ -24,35 +24,39 @@ type Props = {
   onToggleLike?: (id: number, e: MouseEvent) => void;
 };
 
-const PresignedImage: FC<{ objectKey?: string | null; src?: string; [key: string]: any }> = ({ objectKey, ...props }) => {
-    const [url, setUrl] = useState('');
+const PresignedImage: FC<{
+  objectKey?: string | null;
+  src?: string;
+  [key: string]: any;
+}> = ({ objectKey, ...props }) => {
+  const [url, setUrl] = useState("");
 
-    useEffect(() => {
-        if (!objectKey) {
-            setUrl('');
-            return;
+  useEffect(() => {
+    if (!objectKey) {
+      setUrl("");
+      return;
+    }
+
+    const fetchUrl = async () => {
+      try {
+        const res = await issueGetPresigned(objectKey);
+        if (res.items && res.items.length > 0) {
+          setUrl(res.items[0].presignedUrl);
+        } else {
+          setUrl("");
         }
+      } catch (e) {
+        console.error("Failed to get presigned URL", e);
+        setUrl("");
+      }
+    };
 
-        const fetchUrl = async () => {
-            try {
-                const res = await issueGetPresigned(objectKey);
-                if (res.items && res.items.length > 0) {
-                    setUrl(res.items[0].presignedUrl);
-                } else {
-                    setUrl('');
-                }
-            } catch (e) {
-                console.error("Failed to get presigned URL", e);
-                setUrl('');
-            }
-        };
+    fetchUrl();
+  }, [objectKey]);
 
-        fetchUrl();
-    }, [objectKey]);
+  //if (!url) return <div {...props} />;
 
-    if (!url) return <div {...props} />;
-
-    return <img src={url} {...props} />;
+  return <img src={url} {...props} />;
 };
 
 const LogCardListSlider: FC<Props> = ({ items, onClick }) => {
@@ -61,13 +65,13 @@ const LogCardListSlider: FC<Props> = ({ items, onClick }) => {
   return (
     <Layout>
       {items.map((item) => (
-          <Card
-              key={item.id}
-              onClick={() => {
-                navigate(`/log/${item.id}`);   // ✅ 카드 클릭 시 라우팅
-                onClick?.(item.id);            // ✅ 필요하면 외부 핸들러도 호출
-              }}
-          >
+        <Card
+          key={item.id}
+          onClick={() => {
+            navigate(`/log/${item.id}`);
+            onClick?.(item.id);
+          }}
+        >
           <ImageContainer>
             <CoverImg objectKey={item.image} alt="" loading="lazy" />
             <ReactionContainer>

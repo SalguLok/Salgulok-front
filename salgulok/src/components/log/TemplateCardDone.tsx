@@ -137,9 +137,9 @@ const ReviewContainer = styled.div`
   width: 300px;
 `;
 
-const Review = styled.p`
-  font-size: 14px;
-  line-height: 1.6;
-  color: #374151;
-  white-space: pre-line;
-`;
+// const Review = styled.p`
+//   font-size: 14px;
+//   line-height: 1.6;
+//   color: #374151;
+//   white-space: pre-line;
+// `;

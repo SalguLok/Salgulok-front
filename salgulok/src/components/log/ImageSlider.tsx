@@ -19,7 +19,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images, title }) => {
   const touchStartX = useRef<number | null>(null);
 
   const goTo = (i: number) =>
-    setCurrent((prev) => (i + safeImages.length) % safeImages.length);
+    setCurrent(() => (i + safeImages.length) % safeImages.length);
   const next = () => goTo(current + 1);
   const prev = () => goTo(current - 1);
 
@@ -159,30 +159,4 @@ const Dot = styled.button<{ $active?: boolean }>`
   background: ${(p) => (p.$active ? "#fb923c" : "rgba(255,255,255,0.7)")};
   outline: 1px solid rgba(0, 0, 0, 0.15);
   cursor: pointer;
-`;
-
-/* Stars & Review */
-const Stars = styled.div`
-  display: flex;
-  gap: 4px;
-  margin-top: 4px;
-`;
-
-const StarIcon = styled(Star)<{ $active?: boolean }>`
-  ${(p) =>
-    p.$active
-      ? css`
-          fill: #fb923c;
-          color: #fb923c;
-        `
-      : css`
-          color: #e5e7eb;
-        `}
-`;
-
-const Review = styled.p`
-  font-size: 14px;
-  line-height: 1.6;
-  color: #374151;
-  white-space: pre-line;
 `;

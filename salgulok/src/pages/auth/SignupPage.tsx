@@ -51,7 +51,7 @@ const SignupPage: React.FC = () => {
       alert("닉네임 중복 확인을 먼저 해주세요.");
       return;
     }
-
+    setProfileImg;
     try {
       await sendUserInfoIfNew({
         username,

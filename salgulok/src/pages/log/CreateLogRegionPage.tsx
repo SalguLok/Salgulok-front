@@ -5,12 +5,7 @@ import RegionItem from "../../components/log/RegionItem";
 import BottomButton from "../../components/common/BottomButton";
 import { useCreateLogStore } from "../../stores/CreateLogStore";
 import Header from "../../components/common/Header";
-
-const regions = [
-  { id: 1, nameKo: "부산", nameEn: "Busan", imageUrl: "/images/busan.jpg" },
-  { id: 2, nameKo: "서울", nameEn: "Seoul", imageUrl: "/images/seoul.jpg" },
-  { id: 3, nameKo: "제주", nameEn: "Jeju", imageUrl: "/images/jeju.jpg" },
-];
+import regions from "../../data/regions";
 
 const CreateRegionPage: React.FC = () => {
   const navigate = useNavigate();
@@ -25,11 +20,11 @@ const CreateRegionPage: React.FC = () => {
     }
     setStep1(Number(selectedId));
     navigate("/log/create/date");
-  }
+  };
 
   return (
     <Container>
-      <Header title="살구로그 생성" showBackButton/>
+      <Header title="살구로그 생성" showBackButton />
       <List>
         {regions.map((region) => (
           <RegionItem
@@ -37,17 +32,14 @@ const CreateRegionPage: React.FC = () => {
             id={region.id}
             nameKo={region.nameKo}
             nameEn={region.nameEn}
-            imageUrl={region.imageUrl}
+            imageUrl={region.image}
             selected={selectedId === region.id}
             onSelect={setSelectedId}
           />
         ))}
       </List>
 
-      <BottomButton
-        text="다음"
-        onClick={handleNextPage}
-      />
+      <BottomButton text="다음" onClick={handleNextPage} />
     </Container>
   );
 };

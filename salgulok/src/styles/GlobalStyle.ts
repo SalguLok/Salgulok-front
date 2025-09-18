@@ -2,6 +2,8 @@ import { createGlobalStyle } from "styled-components";
 
 const GlobalStyle = createGlobalStyle`
   :root{
+    --app-width:375px;
+    
     --white: #ffffff;
 
     --black: #000000;
@@ -24,7 +26,7 @@ const GlobalStyle = createGlobalStyle`
   font-family: Pretendard;
 }
 
-  body{
+ body{
     font-family: 'Pretendard','Nunito', sans-serif;
     margin: 0;
     padding: 0;

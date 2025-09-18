@@ -1,34 +1,79 @@
 import styled from "styled-components";
 import type { FC, MouseEvent } from "react";
+import { useState, useEffect } from "react";
 import Heart from "../../assets/common/heart.svg?react";
 import Comment from "../../assets/common/comment.svg?react";
 import Profile from "../../assets/common/profile_default.svg?react";
+import Lock from "../../assets/mypage/lock.svg?react";
+import { useNavigate } from "react-router-dom";
+import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 
 export type LogItem = {
-  id: string;
+  id: number;
   image: string;
   writer: string;
   writerProfile?: string;
+  isPublic?: boolean;
   title: string;
   date: string;
   likes: number;
-  comments: number;
   liked?: boolean;
 };
 
 type Props = {
   items: LogItem[];
-  onClick?: (id: string) => void;
-  onToggleLike?: (id: string, e: MouseEvent) => void;
+  onClick?: (id: number) => void;
+  onToggleLike?: (id: number, e: MouseEvent) => void;
+  onClickMore?: (id: number, e: MouseEvent) => void;
 };
 
-const LogCardList: FC<Props> = ({ items, onClick }) => {
+const PresignedImage: FC<{ objectKey?: string | null; src?: string; [key: string]: any }> = ({ objectKey, ...props }) => {
+    const [url, setUrl] = useState('');
+
+    useEffect(() => {
+        if (!objectKey) {
+            setUrl('');
+            return;
+        }
+
+        const fetchUrl = async () => {
+            try {
+                const res = await issueGetPresigned(objectKey);
+                if (res.items && res.items.length > 0) {
+                    setUrl(res.items[0].presignedUrl);
+                } else {
+                    setUrl('');
+                }
+            } catch (e) {
+                console.error("Failed to get presigned URL", e);
+                setUrl('');
+            }
+        };
+
+        fetchUrl();
+    }, [objectKey]);
+
+    if (!url) return <div {...props} />;
+
+    return <img src={url} {...props} />;
+};
+
+
+const LogCardList: FC<Props> = ({ items, onClick, onClickMore }) => {
+  const navigate = useNavigate();
+
   return (
     <Layout>
       {items.map((item) => (
-        <Card key={item.id} onClick={() => onClick?.(item.id)}>
+          <Card
+              key={item.id}
+              onClick={() => {
+                navigate(`/log/${item.id}`);
+                onClick?.(item.id);
+              }}
+          >
           <ImageContainer>
-            <CoverImg src={item.image} alt="" loading="lazy" />
+            <CoverImg objectKey={item.image} alt="" loading="lazy" />
             <ReactionContainer>
               <ReactionWrapper>
                 <Heart />
@@ -36,22 +81,35 @@ const LogCardList: FC<Props> = ({ items, onClick }) => {
               </ReactionWrapper>
               <ReactionWrapper>
                 <Comment />
-                <ReactionText>{item.comments}</ReactionText>
+                <ReactionText></ReactionText>
               </ReactionWrapper>
             </ReactionContainer>
           </ImageContainer>
 
           <DetailContainer>
             <WriterContainer>
-              {item.writerProfile ? (
-                <WriterImg src={item.writerProfile} alt="" />
-              ) : (
-                <Profile aria-hidden />
+              <WriterWrapper>
+                {item.writerProfile ? (
+                  <WriterImg objectKey={item.writerProfile} alt="" />
+                ) : (
+                  <Profile aria-hidden />
+                )}
+                <Writer>{item.writer}</Writer>
+              </WriterWrapper>
+              {onClickMore && (
+                <MoreButton
+                  aria-label="더보기"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onClickMore(item.id, e);
+                  }}
+                />
               )}
-              <Writer>{item.writer}</Writer>
             </WriterContainer>
             <Title>{item.title}</Title>
-            <Date>{item.date}</Date>
+            <Date>
+              {item.date} {item.isPublic ? "" : <Lock />}
+            </Date>
           </DetailContainer>
         </Card>
       ))}
@@ -79,7 +137,7 @@ const ImageContainer = styled.div`
   border-radius: 10px;
   overflow: hidden;
 `;
-const CoverImg = styled.img`
+const CoverImg = styled(PresignedImage)`
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -111,22 +169,53 @@ const ReactionText = styled.div`
 const DetailContainer = styled.div`
   display: flex;
   flex-direction: column;
-  margin: 8px 4px 4px 4px;
+  margin: 8px 0px 0px 4px;
 `;
 const WriterContainer = styled.div`
   display: flex;
   flex-direction: row;
+  justify-content: space-between;
   align-items: center;
-  gap: 5px;
   margin-bottom: 4px;
 `;
-const WriterImg = styled.img`
+const WriterWrapper = styled.div`
+  display: flex;
+  gap: 5px;
+`;
+const WriterImg = styled(PresignedImage)`
   width: 17px;
   height: 17px;
+  border-radius: 50%;
+  object-fit: cover;
 `;
 const Writer = styled.span`
   font-size: 13px;
   font-weight: 400;
+`;
+const MoreButton = styled.button`
+  display: flex;
+  width: 24px;
+  height: 24px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  border-radius: 50%;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 3px;
+    height: 3px;
+    background: #9aa0a6;
+    border-radius: 50%;
+    transform: translateY(-50%);
+    box-shadow: 0 -6px 0 #9aa0a6, 0 6px 0 #9aa0a6;
+  }
+  &:active {
+    background: rgba(0, 0, 0, 0.06);
+  }
 `;
 const Title = styled.span`
   font-size: 13px;

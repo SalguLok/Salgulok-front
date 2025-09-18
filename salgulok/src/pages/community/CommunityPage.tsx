@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import NavigationBar from "../../components/common/NavigationBar";
-import Header from "../../components/common/Header";
+import HeaderLeft from "../../components/common/HeaderLeft";
 import PostCard from "../../components/common/PostCard";
 import type { Post } from "../../types/post";
 
@@ -39,7 +39,7 @@ const CommunityPage = () => {
   return (
     <>
     <Layout>
-      <Header title="커뮤니티" />
+      <HeaderLeft title="커뮤니티" />
       <Banner>
         <BannerText>
           <BannerTitle>제주, 전체 주제</BannerTitle>

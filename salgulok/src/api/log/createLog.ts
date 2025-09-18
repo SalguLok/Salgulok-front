@@ -14,7 +14,6 @@ export interface LogCreateRequest {
 export const createLog = async (logData: LogCreateRequest): Promise<void> => {
   try {
     await api.post("/logs", logData);
-    alert("로그가 성공적으로 생성되었습니다!");
   } catch (error: any) {
     if (error.response) {
       console.error("서버 오류:", error.response.data);

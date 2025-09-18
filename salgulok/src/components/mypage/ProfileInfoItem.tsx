@@ -4,15 +4,30 @@ import { Link } from "react-router-dom";
 import profile from "../../assets/common/profile_default.svg?url";
 import { getMyInfo } from "../../api/user/getMyProfile";
 import type { UserResponse } from "../../api/user/getMyProfile";
+import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 
 const ProfileInfoItem: React.FC = () => {
   const [userInfo, setUserInfo] = useState<UserResponse | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string>(profile);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const data = await getMyInfo();
         setUserInfo(data);
+
+        if (data.profileImg) {
+          try {
+            const presignedData = await issueGetPresigned(data.profileImg);
+            if (presignedData.items.length > 0) {
+              setProfileImageUrl(presignedData.items[0].presignedUrl);
+            }
+          } catch (e) {
+            console.error("Failed to get presigned URL", e);
+          }
+        } else {
+          setProfileImageUrl(profile);
+        }
       } catch (err) {
         console.error(err);
       }
@@ -23,7 +38,7 @@ const ProfileInfoItem: React.FC = () => {
 
   return (
     <Item>
-        <ProfileImg src={userInfo?.profileImg || profile} alt="사용자 프로필" />
+        <ProfileImg src={profileImageUrl} alt="사용자 프로필" />
 
         <TextWrapper>
           <EditWrapper>
@@ -51,6 +66,8 @@ const ProfileImg = styled.img`
   height: 56px;
   border-radius: 50%;
   object-fit: cover;
+  object-position: center;
+  flex-shrink: 0;
 `;
 
 const TextWrapper = styled.div`

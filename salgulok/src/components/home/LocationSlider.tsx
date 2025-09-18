@@ -1,31 +1,35 @@
 import styled from "styled-components";
-import type { FC, MouseEvent } from "react";
+import type { FC } from "react";
 
 export type RegionItem = {
-  id: string;
-  location: string;
-  image: string;
+  id: number;
+  nameKo: string;
+  nameEn: string;
+  image: string | React.ReactNode;
 };
 
 type Props = {
   title?: string;
   items: RegionItem[];
-  onClick?: (id: string) => void;
+  onClick?: (id: number) => void;
 };
 
-const LocationSlider: FC<Props> = ({ items }) => {
+const LocationSlider: FC<Props> = ({ items, onClick }) => {
   return (
     <Layout>
       {items.map((it) => (
-        <LocationContainer key={it.id} onClick={() => it.id}>
-          <Image src={it.image} alt="" loading="lazy"></Image>
-          <Location>{it.location}</Location>
+        <LocationContainer key={it.id} onClick={() => onClick?.(it.id)}>
+          {typeof it.image === "string" ? (
+            <Img src={it.image} alt={it.nameKo} loading="lazy" />
+          ) : (
+            <Image>{it.image}</Image>
+          )}
+          <Location>{it.nameKo}</Location>
         </LocationContainer>
       ))}
     </Layout>
   );
 };
-
 export default LocationSlider;
 
 const Layout = styled.div`
@@ -33,24 +37,20 @@ const Layout = styled.div`
   flex-direction: row;
   gap: 16px;
 
-  /* 가로 슬라이드 */
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
   touch-action: pan-x;
 
-  /* 스크롤바 숨김 */
   -ms-overflow-style: none;
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
   }
 
-  /* 왼쪽 여백만, 오른쪽은 0 → 끝에 공백 없음 */
   padding-left: 20px;
   padding-right: 20px;
 
-  /* 스냅 기준도 왼쪽만 */
   scroll-padding-left: 20px;
   scroll-padding-right: 20px;
 `;
@@ -61,7 +61,14 @@ const LocationContainer = styled.div`
   align-items: center;
   gap: 6px;
 `;
-const Image = styled.img`
+const Image = styled.div`
+  width: 65px;
+  height: 65px;
+  border-radius: 100px;
+  overflow: hidden;
+  background-color: var(--gray-200);
+`;
+const Img = styled.img`
   width: 65px;
   height: 65px;
   border-radius: 100px;

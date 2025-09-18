@@ -103,6 +103,7 @@ const Wrap = styled.div`
 
 const PostSection = styled.div`
   border-bottom: 1px solid var(--gray-100);
+  padding-top: 16px;
   padding-bottom: 16px;
   margin-bottom: 16px;
 `;

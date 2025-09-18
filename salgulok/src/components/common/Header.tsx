@@ -12,24 +12,31 @@ const Header: React.FC<HeaderProps> = ({ title, showBackButton = false }) => {
   const navigate = useNavigate();
 
   return (
-    <HeaderWrapper>
-      {showBackButton ? (
-        <IconButton onClick={() => navigate(-1)}>
-          <img src={BackButton} alt="뒤로가기" />
-        </IconButton>
-        ) : (
-        <Spacer />
-      )}
+    <>
+      <HeaderWrapper>
+        {showBackButton ? (
+          <IconButton onClick={() => navigate(-1)}>
+            <img src={BackButton} alt="뒤로가기" />
+          </IconButton>
+          ) : (
+          <Spacer />
+        )}
 
-      <Title>{title}</Title>
-      <Spacer /> 
-    </HeaderWrapper>
+        <Title>{title}</Title>
+        <Spacer /> 
+      </HeaderWrapper>
+
+      <HeaderSpacer/>
+    </>
   );
 };
 
 export default Header;
 
 const HeaderWrapper = styled.header`
+  position: fixed;
+  top: 0;
+  width: 375px;           
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -42,6 +49,7 @@ const IconButton = styled.button`
   background: none;
   border: none;
   padding: 0;
+  padding-bottom: 5px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -54,13 +62,17 @@ const IconButton = styled.button`
 
 const Title = styled.h1`
   flex: 1;
-  text-align: center;
+  text-align: left;
   font-size: 16px;
-  padding: 0;
+  padding: 0px 10px 5px 10px;
   margin: 0;
   font-weight: 600px;
 `;
 
 const Spacer = styled.div`
   width: 9px;
+`;
+
+const HeaderSpacer = styled.div`
+  height: 44px;
 `;

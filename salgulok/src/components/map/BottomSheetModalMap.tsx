@@ -6,8 +6,11 @@ type TabKey = "log" | "place";
 
 type PlaceInfo = {
   title: string;
-  imageUrl: string;
+  imageUrl?: string;
   description?: string;
+  address?: string;
+  tel?: string;
+  star?: number;
 };
 
 type Props = {
@@ -18,6 +21,8 @@ type Props = {
   logs?: any[];
   place?: PlaceInfo | null;
   onBackdropClick?: () => void;
+  autoSnapOnChange?: boolean;
+  snapTarget?: "mid" | "max";
 };
 
 const BottomSheetModalMap: React.FC<Props> = ({
@@ -28,14 +33,20 @@ const BottomSheetModalMap: React.FC<Props> = ({
   logs = [],
   place,
   onBackdropClick,
+  autoSnapOnChange = true,
+  snapTarget = "mid",
 }) => {
   const [tab, setTab] = useState<TabKey>(defaultTab);
   const [height, setHeight] = useState<number>(initialHeight);
 
+  useEffect(() => {
+    setTab(defaultTab);
+  }, [defaultTab]);
+
   const minH = 120;
   const maxH = Math.round(window.innerHeight * maxHeightRatio);
-  const midH = Math.round((minH + maxH) / 2);
-
+  const midH = Math.round((minH + maxH) / 1.7);
+  const snapH = snapTarget === "max" ? maxH : midH;
   //드래그 상태
   const startYRef = useRef(0);
   const startHRef = useRef(0);
@@ -93,7 +104,14 @@ const BottomSheetModalMap: React.FC<Props> = ({
     };
   }, [height]);
 
-  //펼쳐진 상태에서 배경 오버레이 표시
+  useEffect(() => {
+    if (!open) return;
+    if (!autoSnapOnChange) return;
+
+    if (place || (Array.isArray(logs) && logs.length > 0)) {
+      setHeight(snapH);
+    }
+  }, [open, place, logs?.length, defaultTab, autoSnapOnChange, snapH]);
   const showBackdrop = open && height > minH + 20;
 
   //탭 콘텐츠
@@ -107,6 +125,11 @@ const BottomSheetModalMap: React.FC<Props> = ({
             <ImagePlaceholder />
           )}
           <PlaceTitle>{place?.title ?? "지역 정보"}</PlaceTitle>
+          {place?.address && <PlaceMeta>📍 {place.address}</PlaceMeta>}
+          {typeof place?.star === "number" && (
+            <PlaceMeta>⭐ {place.star.toFixed(1)}</PlaceMeta>
+          )}
+          {place?.tel && <PlaceMeta>☎ {place.tel}</PlaceMeta>}
           {place?.description ? (
             <PlaceDesc>{place.description}</PlaceDesc>
           ) : null}
@@ -209,7 +232,7 @@ const Tabs = styled.div`
 const TabButton = styled.button<{ $active?: boolean }>`
   background: transparent;
   border: 0;
-  padding: 8px 4px 12px;
+  padding: 8px 3px 10px;
   font-size: 14px;
   font-weight: ${({ $active }) => ($active ? 700 : 500)};
   color: ${({ $active }) => ($active ? "#e57a5b" : "#888")};
@@ -218,11 +241,12 @@ const TabButton = styled.button<{ $active?: boolean }>`
 
 const ActiveLine = styled.div<{ $tab: TabKey }>`
   position: absolute;
-  left: ${({ $tab }) => ($tab === "log" ? "8px" : "84px")};
+  left: ${({ $tab }) => ($tab === "log" ? "9px" : "80px")};
   bottom: 0;
   height: 2px;
-  width: 64px;
-  background: #e57a5b;
+  width: 53px;
+  margin-bottom: 2px;
+  background: var(--main-pri);
   transition: left 180ms ease;
 `;
 
@@ -230,6 +254,16 @@ const Body = styled.div`
   flex: 1;
   overflow: auto;
   padding: 12px;
+  flex: 1;
+  overflow: auto;
+  padding: 12px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar {
+    /* Chrome/Safari */
+    display: none;
+  }
 `;
 
 const LogContainer = styled.div`
@@ -237,19 +271,39 @@ const LogContainer = styled.div`
   flex-direction: row;
   align-itmes: center;
   justify-content: center;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 
-//지역 탭
+const PlaceMeta = styled.p`
+  margin: 4px 0 0;
+  color: #666;
+  font-size: 13px;
+  margin: 0 10px;
+`;
+
 const PlaceContainer = styled.div`
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
 `;
 const PlaceImage = styled.img`
-  width: 100%;
+  width: 335px;
   height: 180px;
   object-fit: cover;
   border-radius: 12px;
   background: #f2f2f2;
+  align-self: center;
+  margin-bottom: 10px;
 `;
 
 const ImagePlaceholder = styled.div`
@@ -263,10 +317,12 @@ const PlaceTitle = styled.h3`
   margin: 0;
   font-size: 16px;
   font-weight: 700;
+  margin: 0 10px;
 `;
 
 const PlaceDesc = styled.p`
   margin: 0;
   color: #666;
   line-height: 1.4;
+  margin: 0 10px;
 `;

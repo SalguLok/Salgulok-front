@@ -4,15 +4,21 @@ import NavigationBar from "../../components/common/NavigationBar";
 import LogCardListSlide from "../../components/home/LogCardListSlider";
 import type { LogItem } from "../../components/common/CardListItem";
 import LocationSlider from "../../components/home/LocationSlider";
-import type { RegionItem } from "../../components/home/LocationSlider";
+import regions from "../../data/regions";
 import PlaceCardSlider from "../../components/home/PlaceCardSlider";
 import type { PlaceItem } from "../../components/home/PlaceCardSlider";
 import Salgu from "../../assets/common/salgu.svg?react";
 import SalguItem from "../../components/home/SalguItem";
-import SalguOff from "../../assets/common/salgu_off.svg?react";
-import Jeju from "../../assets/home/jeju.svg";
-import { useState, useEffect } from "react";
+import {
+  getPopularPlaceByRegion,
+  getPopularPlace,
+} from "../../api/place/place";
+import { useState, useEffect, useMemo } from "react";
 import LogWriteButton from "../../components/home/LogWriteButton";
+import { useNavigate } from "react-router-dom";
+import { getLogFillStates, getPopularLogs } from "../../api/log/log";
+import { getUserTraveling } from "../../api/user/getUserTraveling";
+import { getMyInfo } from "../../api/user/getMyProfile";
 
 type Stage = { date: string; completed?: boolean };
 
@@ -24,93 +30,30 @@ type Props = {
   onModeChange?: (mode: "before" | "during") => void;
 };
 
-const data = [
-  { date: "07/03", hasLog: "yes" as const },
-  { date: "07/04", hasLog: "no" as const },
-  { date: "07/05", hasLog: "yes" as const },
-  { date: "07/06", hasLog: "no" as const },
-  { date: "07/07", hasLog: "no" as const },
-  { date: "07/05", hasLog: "yes" as const },
-  { date: "07/06", hasLog: "no" as const },
-  { date: "07/07", hasLog: "no" as const },
-];
+type LogDataItem = { date: string; hasLog: "yes" | "no" };
+type UserTravelingResponse = {
+  traveling: boolean;
+  logId?: number;
+};
 
-const regions: RegionItem[] = [
-  { id: "jeju", location: "제주", image: Jeju },
-  { id: "busan", location: "부산", image: "/imgs/regions/busan.jpg" },
-  { id: "sokcho", location: "속초", image: "/imgs/regions/sokcho.jpg" },
-  { id: "gangneung", location: "강릉", image: "/imgs/regions/gangneung.jpg" },
-];
-
-const mock: LogItem[] = [
-  {
-    id: "1",
-    image: "",
-    writer: "여행이좋아요",
-    writerProfile: "",
-    title: "25년 여름 제주는 아름다워",
-    date: "250703-250807",
-    likes: 17,
-    comments: 25,
-  },
-  {
-    id: "2",
-    image: "",
-    writer: "여행이좋아요",
-    title: "산토리니 블루",
-    date: "250703-250807",
-    likes: 12,
-    comments: 9,
-  },
-  {
-    id: "3",
-    image: "",
-    writer: "여행이좋아요",
-    title: "산토리니 블루",
-    date: "250703-250807",
-    likes: 12,
-    comments: 9,
-  },
-];
-
-const place: PlaceItem[] = [
-  {
-    id: "1",
-    image: "",
-    name: "강릉 옥수수빵",
-    likes: 12,
-    comments: 9,
-  },
-  {
-    id: "2",
-    image: "",
-    name: "강릉 옥수수빵",
-    likes: 12,
-    comments: 9,
-  },
-  {
-    id: "3",
-    image: "",
-    name: "강릉 옥수수빵",
-    likes: 12,
-    comments: 9,
-  },
-];
-
-const HomePage: FC<Props> = ({
-  username = "윌버",
-  progress = 70,
-  stages = [
-    { date: "00/00" },
-    { date: "00/00" },
-    { date: "00/00" },
-    { date: "00/00" },
-    { date: "00/00" },
-  ],
-  defaultMode = "before",
-  onModeChange,
-}) => {
+const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
   const [mode, setMode] = useState<"before" | "during">(defaultMode);
+  const [popularPlaceItems, setPopularPlaceItems] = useState<PlaceItem[]>([]);
+  const [regionPopularPlaceItems, setRegionPopularPlaceItems] = useState<
+    PlaceItem[]
+  >([]);
+  const [logData, setLogData] = useState<LogDataItem[]>([]);
+  const [isTraveling, setIsTraveling] = useState(false);
+  const [logId, setLogId] = useState<number>();
+  const [popularLogs, setPopularLogs] = useState<LogItem[]>([]);
+  const [name, setName] = useState("");
+
+  const toMMDD = (iso: string) => {
+    const parts = iso.split("-");
+    if (parts.length !== 3) return iso;
+    const [, mm, dd] = parts;
+    return `${mm}/${dd}`;
+  };
   useEffect(() => {
     setMode(defaultMode);
   }, [defaultMode]);
@@ -119,6 +62,188 @@ const HomePage: FC<Props> = ({
     setMode(next);
     onModeChange?.(next);
   };
+  // 유저 이름 빼오기
+  const readMyInfo = async () => {
+    try {
+      const response = await getMyInfo();
+      setName(response.nickname);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  //유저 traveling 여부 API 연결
+  const readUserIsTraveling = async () => {
+    try {
+      const res = (await getUserTraveling()) as { data?: unknown } | unknown;
+      const data = res as any as UserTravelingResponse | undefined;
+      if (data) {
+        const travelingNow = !!data.traveling;
+        setIsTraveling(travelingNow);
+        setLogId(data.logId);
+
+        if (travelingNow) {
+          setMode("during");
+          onModeChange?.("during");
+        }
+      } else {
+        setIsTraveling(false);
+      }
+    } catch (err) {
+      console.error(err);
+      setIsTraveling(false);
+    }
+  };
+
+  //살구록 작성여부 API 연결
+  const readLogFillStates = async () => {
+    if (logId == null) return;
+    try {
+      const response = await getLogFillStates(logId);
+      const days = ((response as any)?.data?.days ??
+        (response as any)?.days ??
+        []) as Array<{ date?: string; hasTemplate?: boolean }>;
+
+      setLogData(
+        days.map((d) => ({
+          date: toMMDD(String(d?.date ?? "")),
+          hasLog: d?.hasTemplate ? "yes" : "no",
+        }))
+      );
+      console.log("logData", logData);
+    } catch (e) {
+      console.error(e);
+      setLogData([]);
+    }
+  };
+  //살구록 작성 퍼센트 계산
+  const progressPercent = useMemo(() => {
+    const total = logData.length;
+    if (!total) return 0;
+    const filled = logData.filter((d) => d.hasLog === "yes").length;
+    const percent = Math.round((filled / total) * 100);
+    return Math.max(0, Math.min(100, percent));
+  }, [logData]);
+
+  //이름이 8자보다 길 경우 ...로 처리
+  const shorten = (s: string | undefined, max = 9) => {
+    const arr = Array.from(s ?? "");
+    return arr.length > max ? arr.slice(0, max).join("") + "…" : s ?? "";
+  };
+
+  const toArray = (r: any) =>
+    Array.isArray(r?.data) ? r.data : Array.isArray(r) ? r : [];
+
+  //전체 인기장소 검색 API 연결
+  const readPopularPlace = async () => {
+    const response = await getPopularPlace();
+    const payload = toArray(response);
+    const mapped: PlaceItem[] = payload.map((p: any, i: number) => ({
+      id: String(p.place_id ?? `place-${i}`),
+      placeName: String(p.placeName),
+      mapx: String(p.mapx),
+      mapy: String(p.mapy),
+      image: p.image_url || undefined,
+      starCount: Number(p.starCount),
+      comments: Number(p.commentCount ?? 0),
+    }));
+    setPopularPlaceItems(mapped);
+  };
+  const regionId = 1;
+
+  const rangeToYYMMDDDash = (start: string, end: string) => {
+    const fmt = (s: string) => {
+      const [y, m, d] = s?.split("-") ?? ["", "", ""];
+      if (!y || !m || !d) return s ?? "";
+      return `${y.slice(2)}${m}${d}`;
+    };
+    return `${fmt(start)}-${fmt(end)}`;
+  };
+
+  //인기 살구록 API 연결
+  const readPopularLogs = async () => {
+    try {
+      const response = await getPopularLogs();
+      const payload = toArray(response);
+      const mapped: LogItem[] = payload.map((item: any) => ({
+        id: item.logId,
+        image: String(item.imgUrl ?? ""),
+        writer: String(item.writer ?? ""),
+        writerProfile: item.writerProfile ? String(item.writerProfile) : "",
+        title: String(item.title ?? ""),
+        date: rangeToYYMMDDDash(
+          String(item.startDate ?? ""),
+          String(item.endDate ?? "")
+        ),
+        likes: Number(item.likes ?? 0),
+      }));
+      setPopularLogs(mapped);
+    } catch (e) {
+      console.error(e);
+      setPopularLogs([]);
+    }
+  };
+
+  //인기장소 지역별 검색 API 연결
+  const readPopularPlaceByRegion = async () => {
+    const response = await getPopularPlaceByRegion(regionId);
+    const payload = toArray(response);
+    const mapped: PlaceItem[] = payload.map((p: any, i: number) => ({
+      id: String(p.place_id ?? `region-place-${i}`),
+      placeName: String(p.placeName),
+      mapx: String(p.mapx),
+      mapy: String(p.mapy),
+      image: p.image_url || undefined,
+      starCount: Number(p.starCount),
+      comments: Number(p.commentCount ?? 0),
+    }));
+    setRegionPopularPlaceItems(mapped);
+  };
+  const navigate = useNavigate();
+  const currentPlaceItems =
+    mode === "during" ? regionPopularPlaceItems : popularPlaceItems;
+
+  useEffect(() => {
+    readUserIsTraveling();
+    readLogFillStates();
+  }, [logId]);
+
+  useEffect(() => {
+    readPopularPlace();
+    readPopularLogs();
+  }, []);
+
+  useEffect(() => {
+    readPopularPlaceByRegion();
+  }, [regionId]);
+
+  useEffect(() => {
+    readMyInfo();
+  }, []);
+
+  const placeItemsForDisplay = useMemo(
+    () =>
+      currentPlaceItems.map((it) => ({
+        ...it,
+        placeName: shorten(it.placeName, 8),
+      })),
+    [currentPlaceItems]
+  );
+
+  const salguItemsForDisplay = useMemo(() => {
+    if (mode === "before") {
+      return Array.from({ length: 6 }).map((_, i) => ({
+        key: `placeholder-${i}`,
+        date: "00/00",
+        hasLog: "no" as const,
+      }));
+    }
+
+    return logData.map((d) => ({
+      key: d.date,
+      date: d.date,
+      hasLog: d.hasLog,
+    }));
+  }, [mode, logData]);
 
   return (
     <Layout>
@@ -139,8 +264,17 @@ const HomePage: FC<Props> = ({
         </ButtonContainer>
         <GreetingContainer>
           <Greeting>
-            안녕하세요 {username}님, <br />
-            새로운 살구로그를 생성해보세요!
+            {mode === "before" ? (
+              <>
+                안녕하세요 {name}님, <br />
+                새로운 살구로그를 생성해보세요!
+              </>
+            ) : (
+              <>
+                안녕하세요 {name}님, <br />
+                여행 중 순간을 살구로그에 기록해보세요!
+              </>
+            )}
           </Greeting>
         </GreetingContainer>
         <ProgressRow>
@@ -150,23 +284,23 @@ const HomePage: FC<Props> = ({
                 <Dot key={i} />
               ))}
 
-              <Marker style={{ left: `calc(${progress}% - 9px)` }}>
+              <Marker style={{ left: `calc(${progressPercent}% - 9px)` }}>
                 {mode === "before" ? "" : <Salgu width={25} height={28} />}
               </Marker>
             </Track>
           </BarWrap>
           <GrowthText>
-            {username}님의 살구나무는 <Em>{progress}%</Em> 성장완료!
+            {name}님의 살구나무는 <Em>{progressPercent}%</Em> 성장완료!
           </GrowthText>
         </ProgressRow>
 
         <SalguContainer>
-          {data.map((d) => (
+          {salguItemsForDisplay.map((d) => (
             <SalguItem
-              key={d.date}
-              date={d.date}
+              key={d.key}
+              date={d.date} // "체류 전"에는 빈 문자열 => 날짜 표시 없음
               hasLog={d.hasLog}
-              forceOff={mode === "before"}
+              forceOff={mode === "before"} // 체류 전이면 전부 꺼진 상태로 강제
               onClick={() => console.log("clicked:", d.date)}
             />
           ))}
@@ -174,7 +308,6 @@ const HomePage: FC<Props> = ({
       </TopContainer>
       <TitleContainer>
         <Title>지역 추천</Title>
-        <More>더보기</More>
       </TitleContainer>
       <LocationSlider
         items={regions}
@@ -182,22 +315,32 @@ const HomePage: FC<Props> = ({
       />
       <TitleContainer>
         <Title>인기 살구로그</Title>
-        <More>더보기</More>
       </TitleContainer>
       <CardContainer>
         <LogCardListSlide
-          items={mock}
+          items={popularLogs}
           onClick={(id) => console.log("open", id)}
           onToggleLike={(id) => console.log("like", id)}
         />
       </CardContainer>
       <TitleContainer>
         <Title>살구 도감</Title>
-        <More>더보기</More>
       </TitleContainer>
       <PlaceCardSlider
-        items={place}
-        onClick={(id) => console.log("open", id)}
+        items={placeItemsForDisplay}
+        onClick={(id) => {
+          const target = currentPlaceItems.find((it) => it.id === id);
+          if (!target) return;
+
+          navigate("/map", {
+            state: {
+              q: target.placeName,
+              lat: target.mapx,
+              lng: target.mapy,
+              name: target.placeName,
+            },
+          });
+        }}
       />
       {mode === "before" && <LogWriteButton />}
 
@@ -259,8 +402,8 @@ const ProgressRow = styled.div`
 `;
 
 const BarWrap = styled.div`
-  flex: 1; /* 가운데 트랙은 남은 공간을 채움 */
-  min-width: 0; /* 텍스트 때문에 줄바꿈될 때 수축 허용 */
+  flex: 1;
+  min-width: 0;
 `;
 
 const Track = styled.div`
@@ -313,24 +456,20 @@ const SalguContainer = styled.div`
   flex-direction: row;
   gap: 16px;
 
-  /* 가로 슬라이드 */
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scroll-snap-type: x proximity;
   touch-action: pan-x;
 
-  /* 스크롤바 숨김 */
   -ms-overflow-style: none;
   scrollbar-width: none;
   &::-webkit-scrollbar {
     display: none;
   }
 
-  /* 왼쪽 여백만, 오른쪽은 0 → 끝에 공백 없음 */
   padding-left: 20px;
   padding-right: 20px;
 
-  /* 스냅 기준도 왼쪽만 */
   scroll-padding-left: 20px;
   scroll-padding-right: 20px;
 `;
@@ -347,8 +486,9 @@ const Title = styled.text`
   font-weight: 600;
 `;
 const More = styled.text`
-color:var(--gray-400);
-font-size:font-size: 16px;`;
+  color: var(--gray-400);
+  font-size: 16px;
+`;
 const CardContainer = styled.div`
   display: flex;
   flex-direction: row;

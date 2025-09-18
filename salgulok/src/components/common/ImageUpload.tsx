@@ -35,7 +35,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
       <Label>{label}</Label>
       <UploadBox onClick={handleClick}>
         {preview ? (
-          <img src={preview} alt="preview" />
+          <PreviewImg src={preview} alt="preview" />
         ) : (
           <CameraImg src={CameraIcon} alt="camera icon" />
         )}
@@ -73,6 +73,7 @@ const UploadBox = styled.div`
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  overflow: hidden;
 `;
 
 const CameraImg = styled.img`
@@ -82,4 +83,10 @@ const CameraImg = styled.img`
 
 const HiddenInput = styled.input`
   display: none;
+`;
+
+const PreviewImg = styled.img`
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 비율 유지하면서 박스에 맞춤 */
 `;

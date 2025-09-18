@@ -67,7 +67,7 @@ const Wrapper = styled.div`
 `;
 
 const Title = styled.h1`
-  font-size: 20px;
+  font-size: 15px;
   font-weight: 700;
   color: #222;
   margin: 0;

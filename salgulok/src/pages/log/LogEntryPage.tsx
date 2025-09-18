@@ -16,9 +16,11 @@ const LogEntryPage: React.FC = () => {
                 title="살구로그 생성"
                 showBackButton
             />
-            <LogDetailHeader
-                logId={numericLogId}
-            />
+            <div style={{ marginTop: "15px" }}>
+                <LogDetailHeader
+                    logId={numericLogId}
+                />
+            </div>
         </Container>
     );
 };

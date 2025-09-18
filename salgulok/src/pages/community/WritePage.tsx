@@ -93,9 +93,8 @@ const WritePage = () => {
 
   return (
     <>
+      <Header title="글쓰기" showBackButton={true} />
       <Layout>
-        <Header title="글쓰기" showBackButton={true} />
-
         <SelectRow>
           <SelectBtn
             type="button"

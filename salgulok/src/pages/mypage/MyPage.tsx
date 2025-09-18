@@ -159,6 +159,7 @@ export default MyPage;
 const Container = styled.div`
   display: flex;
   flex-direction: column;
+  margin-bottom: 70px;
 `;
 
 const ContentWrapper = styled.div`

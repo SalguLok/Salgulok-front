@@ -122,7 +122,7 @@ const CommunityPage = () => {
   const toggleStatus = () => {
     setFilters(prev => ({
       ...prev,
-      status: prev.status === 'STAYING' ? undefined : 'STAYING',
+      status: prev.status === 'staying' ? undefined : 'staying',
       page: 0,
     }));
   };
@@ -141,15 +141,15 @@ const CommunityPage = () => {
             </BannerTitle>
             <BannerSub>여행 예정 350명, 여행 중 137명</BannerSub>
           </BannerText>
-          <StatusButton 
-            $active={filters.status === 'STAYING'}
+          {/* <StatusButton
+            $active={filters.status === 'staying'}
             onClick={(e) => {
               e.stopPropagation(); // 배너 클릭 이벤트 전파 방지
               toggleStatus();
             }}
           >
             여행 중인 사람만
-          </StatusButton>
+          </StatusButton> */}
           <BannerImage
             src="https://mblogthumb-phinf.pstatic.net/MjAyNDA2MThfMTMx/MDAxNzE4Njc0MDcwMTM5.39fnbeAr2b_0HiCDOfeAaa31R_Zf33CDSmokYr3hg7sg.igWNKGclsAXMUN1m5JpgiJwMrucJGotyKNKmhQLL-40g.JPEG/%EC%BD%94%EB%82%9C%ED%95%B4%EB%B3%8020.JPG?type=w800"
             alt="제주"

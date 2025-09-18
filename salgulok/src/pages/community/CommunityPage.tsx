@@ -6,7 +6,7 @@ import NavigationBar from "../../components/common/NavigationBar";
 import HeaderLeft from "../../components/common/HeaderLeft";
 import PostCard from "../../components/common/PostCard";
 import { getPosts, deletePost } from "../../api/community/community";
-import type { GetPostsParams } from "../../api/community/community";
+import type { GetPostsParams, Topic } from "../../api/community/community";
 import DefaultProfileImage from "../../assets/common/my_gray.svg";
 import { formatKst } from "../../utils/date";
 
@@ -15,6 +15,8 @@ import BottomSheet from "../../components/common/BottomSheet";
 import { Chip, ChipRow } from "../../components/common/Chip";
 import dropdown from "../../assets/common/dropdown.svg";
 import regions from "../../data/regions"; // regions 데이터 임포트
+
+const topics: Topic[] = ['동행', '맛집', '숙소', '교통', '기타'];
 
 const CommunityPage = () => {
   const navigate = useNavigate();
@@ -31,7 +33,7 @@ const CommunityPage = () => {
     regionId: initialRegionId ? parseInt(initialRegionId) : undefined,
   });
 
-  const [openRegionFilter, setOpenRegionFilter] = useState(false);
+  const [openFilter, setOpenFilter] = useState(false);
 
   useEffect(() => {
     const regionIdFromParams = searchParams.get("region_id");
@@ -55,8 +57,9 @@ const CommunityPage = () => {
     queryFn: () => getPosts(filters),
   });
 
-  // 현재 필터에 해당하는 지역 이름 찾기
+  // 현재 필터에 해당하는 지역 및 주제 이름 찾기
   const currentRegion = regions.find(r => r.id === filters.regionId)?.nameKo ?? "전체 지역";
+  const currentTopic = filters.topic ?? "전체 주제";
 
   // 게시글 삭제 뮤테이션
   const deletePostMutation = useMutation({
@@ -107,28 +110,46 @@ const CommunityPage = () => {
     }
   };
 
-  // 지역 필터 변경 핸들러
-  const handleRegionFilterChange = (newRegionId: number) => {
-    console.log(`CommunityPage: Selected regionId: ${newRegionId}`);
+  // 필터 변경 핸들러
+  const handleRegionChange = (newRegionId?: number) => {
     setFilters(prev => ({ ...prev, regionId: newRegionId, page: 0 }));
-    setOpenRegionFilter(false); // 바텀시트 닫기
+  };
+
+  const handleTopicChange = (newTopic?: Topic) => {
+    setFilters(prev => ({ ...prev, topic: newTopic, page: 0 }));
+  };
+
+  const toggleStatus = () => {
+    setFilters(prev => ({
+      ...prev,
+      status: prev.status === 'STAYING' ? undefined : 'STAYING',
+      page: 0,
+    }));
   };
 
   return (
     <>
       <Layout>
         <HeaderLeft title="커뮤니티" />
-        <Banner onClick={() => setOpenRegionFilter(true)}>
+        <Banner onClick={() => setOpenFilter(true)}>
           <BannerText>
             <BannerTitle>
-              {currentRegion}, 전체 주제
+              {currentRegion}, {currentTopic}
               <Icon>
                 <img src={dropdown} alt="dropdown icon" />
               </Icon>
             </BannerTitle>
             <BannerSub>여행 예정 350명, 여행 중 137명</BannerSub>
           </BannerText>
-          <BannerRight>여행 중인 사람만</BannerRight>
+          <StatusButton 
+            $active={filters.status === 'STAYING'}
+            onClick={(e) => {
+              e.stopPropagation(); // 배너 클릭 이벤트 전파 방지
+              toggleStatus();
+            }}
+          >
+            여행 중인 사람만
+          </StatusButton>
           <BannerImage
             src="https://mblogthumb-phinf.pstatic.net/MjAyNDA2MThfMTMx/MDAxNzE4Njc0MDcwMTM5.39fnbeAr2b_0HiCDOfeAaa31R_Zf33CDSmokYr3hg7sg.igWNKGclsAXMUN1m5JpgiJwMrucJGotyKNKmhQLL-40g.JPEG/%EC%BD%94%EB%82%9C%ED%95%B4%EB%B3%8020.JPG?type=w800"
             alt="제주"
@@ -165,23 +186,52 @@ const CommunityPage = () => {
 
       <NavigationBar />
       <BottomSheet
-        open={openRegionFilter}
-        title="지역 선택"
-        onClose={() => setOpenRegionFilter(false)}
-        primaryLabel="선택"
-        onPrimary={() => setOpenRegionFilter(false)}
+        open={openFilter}
+        title="필터"
+        onClose={() => setOpenFilter(false)}
+        primaryLabel="적용"
+        onPrimary={() => setOpenFilter(false)}
       >
-        <ChipRow>
-          {regions.map(r => (
+        <FilterSection>
+          <FilterTitle>지역</FilterTitle>
+          <ChipRow>
             <Chip
-              key={r.id}
-              onClick={() => handleRegionFilterChange(r.id)}
-              selected={filters.regionId === r.id}
+              onClick={() => handleRegionChange(undefined)}
+              selected={filters.regionId === undefined}
             >
-              {r.nameKo}
+              전체
             </Chip>
-          ))}
-        </ChipRow>
+            {regions.map(r => (
+              <Chip
+                key={r.id}
+                onClick={() => handleRegionChange(r.id)}
+                selected={filters.regionId === r.id}
+              >
+                {r.nameKo}
+              </Chip>
+            ))}
+          </ChipRow>
+        </FilterSection>
+        <FilterSection>
+          <FilterTitle>주제</FilterTitle>
+          <ChipRow>
+            <Chip
+              onClick={() => handleTopicChange(undefined)}
+              selected={filters.topic === undefined}
+            >
+              전체
+            </Chip>
+            {topics.map(t => (
+              <Chip
+                key={t}
+                onClick={() => handleTopicChange(t)}
+                selected={filters.topic === t}
+              >
+                {t}
+              </Chip>
+            ))}
+          </ChipRow>
+        </FilterSection>
       </BottomSheet>
     </>
   );
@@ -245,13 +295,19 @@ const BannerSub = styled.div`
   font-family: 'pretendard', sans-serif;
 `;
 
-const BannerRight = styled.div`
+const StatusButton = styled.button<{$active?: boolean}>`
   position: absolute;
   right: 24px;
   top: 24px;
   font-size: 14px;
-  color: var(--black);
   font-family: 'pretendard', sans-serif;
+  background: ${({$active}) => $active ? 'var(--main-pri)' : 'rgba(0,0,0,0.3)'};
+  color: var(--white);
+  border: none;
+  border-radius: 12px;
+  padding: 4px 12px;
+  cursor: pointer;
+  z-index: 2;
 `;
 
 const BannerImage = styled.img`
@@ -265,6 +321,17 @@ const BannerImage = styled.img`
 
 const PostList = styled.div`
   margin: 0 0 80px 0;
+`;
+
+const FilterSection = styled.div`
+  margin-bottom: 24px;
+`;
+
+const FilterTitle = styled.h3`
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0 0 12px 0;
+  padding-left: 4px;
 `;
 
 const NAV_H = 76;         // 네비게이션 높이(프로젝트 값에 맞춰 조정)

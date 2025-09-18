@@ -1,120 +1,128 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Header from "../../components/common/Header";
 import BottomSheet from "../../components/common/BottomSheet";
 import { Chip, ChipRow } from "../../components/common/Chip";
-import { useState} from "react";
+import { useState } from "react";
 import dropdown from "../../assets/common/dropdown.svg";
+import { createPost } from "../../api/community/community";
+import type { PostCreateRequest, Topic } from "../../api/community/community";
 
-const REGIONS = ["서울","부산","제주","경기","인천","강원","경상","전라","충청"];
-const TOPICS = ["맛집","카페","레저","공방","박물관","관광지"];
+const REGIONS = ["서울", "부산", "제주", "경기", "인천", "강원", "경상", "전라", "충청"];
+// API 명세에 정의된 Topic으로 수정
+const TOPICS: Topic[] = ["동행", "맛집", "숙소", "교통", "기타"];
 
 const WritePage = () => {
-  
-  
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
   // 시트 열림 상태
   const [openRegion, setOpenRegion] = useState(false);
   const [openTopic, setOpenTopic] = useState(false);
 
   // 선택 상태
   const [region, setRegion] = useState<string | null>(null);
-  
-  const [topic, setTopic] = useState<string | null>(null);
+  const [topic, setTopic] = useState<Topic | null>(null);
+  const [content, setContent] = useState("");
+
   // 라벨
   const regionLabel = region ?? "지역선택";
-  const topicLabel  = topic ?? "주제";
+  const topicLabel = topic ?? "주제";
+
+  const createPostMutation = useMutation({
+    mutationFn: createPost,
+    onSuccess: data => {
+      queryClient.invalidateQueries({ queryKey: ["communityPosts"] });
+      navigate(`/community/${data.postId}`);
+    },
+    onError: error => {
+      console.error("게시글 생성 실패:", error);
+      alert("게시글 생성에 실패했습니다.");
+    },
+  });
+
+  const handleSubmit = () => {
+    if (!topic || !content.trim()) {
+      alert("주제와 내용을 모두 입력해주세요.");
+      return;
+    }
+    const postData: PostCreateRequest = { topic, content };
+    createPostMutation.mutate(postData);
+  };
 
   return (
     <>
-    <Layout>
-      <Header title="글쓰기" showBackButton={true} />
-      
-      {/* <SelectRow>
-        <SelectBtn>
-          지역선택
-          <Icon>
-            <img src={dropdown} alt="dropdown icon" />
-          </Icon>
-        </SelectBtn>
-        <SelectBtn>
-          주제
-          <Icon>
-            <img src={dropdown} alt="dropdown icon" />
-          </Icon>
-        </SelectBtn>
-      </SelectRow> */}
+      <Layout>
+        <Header title="글쓰기" showBackButton={true} />
 
-      <SelectRow>
-        <SelectBtn
-          type="button"
-          onClick={() => setOpenRegion(true)}
-          aria-haspopup="dialog"
-          aria-expanded={openRegion}
-        >
-          {regionLabel}
-          <Icon><img src={dropdown} alt="dropdown icon" /></Icon>
-        </SelectBtn>
+        <SelectRow>
+          <SelectBtn
+            type="button"
+            onClick={() => setOpenRegion(true)}
+            aria-haspopup="dialog"
+            aria-expanded={openRegion}
+          >
+            {regionLabel}
+            <Icon>
+              <img src={dropdown} alt="dropdown icon" />
+            </Icon>
+          </SelectBtn>
 
-        <SelectBtn
-          type="button"
-          onClick={() => setOpenTopic(true)}
-          aria-haspopup="dialog"
-          aria-expanded={openTopic}
-        >
-          {topicLabel}
-          <Icon><img src={dropdown} alt="dropdown icon" /></Icon>
-        </SelectBtn>
-      </SelectRow>
+          <SelectBtn
+            type="button"
+            onClick={() => setOpenTopic(true)}
+            aria-haspopup="dialog"
+            aria-expanded={openTopic}
+          >
+            {topicLabel}
+            <Icon>
+              <img src={dropdown} alt="dropdown icon" />
+            </Icon>
+          </SelectBtn>
+        </SelectRow>
 
-      <InputTitle placeholder="제목을 입력해주세요" />
-      <InputContent placeholder="여행자들과 어떤 이야기를 나누고 싶으신가요?" />
+        {/* API에 제목 필드가 없으므로 내용만 받도록 통합합니다. */}
+        <InputContent
+          value={content}
+          onChange={e => setContent(e.target.value)}
+          placeholder="여행자들과 어떤 이야기를 나누고 싶으신가요?"
+        />
+      </Layout>
+      <WriteButton onClick={handleSubmit} disabled={createPostMutation.isPending}>
+        {createPostMutation.isPending ? "등록 중..." : "등록"}
+      </WriteButton>
 
-  
-    </Layout>
-      <WriteButton onClick={() => navigate('')}>
-          등록
-      </WriteButton> 
-
-    {/* 지역 선택 바텀시트 */}
+      {/* 지역 선택 바텀시트 */}
       <BottomSheet
         open={openRegion}
         title="지역선택"
         onClose={() => setOpenRegion(false)}
-        primaryLabel="다음"
+        primaryLabel="선택"
         onPrimary={() => setOpenRegion(false)}
         primaryDisabled={!region}
       >
         <ChipRow>
-          {REGIONS.map((r) => (
-            <Chip
-              key={r}
-              selected={region === r}
-              onClick={() => setRegion(r)}
-            >
+          {REGIONS.map(r => (
+            <Chip key={r} selected={region === r} onClick={() => setRegion(r)}>
               {r}
             </Chip>
           ))}
         </ChipRow>
       </BottomSheet>
 
-
       {/* 주제 선택 바텀시트 */}
       <BottomSheet
         open={openTopic}
         title="주제"
         onClose={() => setOpenTopic(false)}
-        primaryLabel="다음"
+        primaryLabel="선택"
         onPrimary={() => setOpenTopic(false)}
         primaryDisabled={!topic}
       >
         <ChipRow>
-          {TOPICS.map((t) => (
-            <Chip
-              key={t}
-              selected={topic === t}
-              onClick={() => setTopic(t)}
-            >
+          {TOPICS.map(t => (
+            <Chip key={t} selected={topic === t} onClick={() => setTopic(t)}>
               {t}
             </Chip>
           ))}

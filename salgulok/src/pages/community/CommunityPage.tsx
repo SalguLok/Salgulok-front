@@ -1,67 +1,79 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import NavigationBar from "../../components/common/NavigationBar";
 import HeaderLeft from "../../components/common/HeaderLeft";
 import PostCard from "../../components/common/PostCard";
-import type { Post } from "../../types/post";
-
-
-const dummyPosts: Post[] = [
-  {
-    id: 1,
-    user: "월버",
-    date: "2025.08.10",
-    location: "제주",
-    avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-    content:
-      "세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요?",
-    comments: 25,
-    isHot: true,
-  },
-  {
-    id: 2,
-    user: "월버",
-    date: "2025.08.10",
-    location: "제주",
-    avatar: "https://randomuser.me/api/portraits/men/2.jpg",
-    content:
-      "세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노쿨링 장비 빌릴 수 있는 곳 있나요?",
-    comments: 25,
-    isHot: true,
-  },
-];
+import { getPosts } from "../../api/community/community";
+import type { GetPostsParams } from "../../api/community/community";
+import DefaultProfileImage from "../../assets/common/my_gray.svg";
+import { formatKst } from "../../utils/date";
 
 const CommunityPage = () => {
-  
   const navigate = useNavigate();
   const goDetail = (id: number) => navigate(`/community/${id}`);
 
+  const [filters, setFilters] = useState<GetPostsParams>({ page: 0, size: 10 });
+
+  const {
+    data: postsPage,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["communityPosts", filters],
+    queryFn: () => getPosts(filters),
+  });
+
+  // TODO: 필터링 UI 구현 시 핸들러 추가
+  // const handleFilterChange = (newFilters: Partial<GetPostsParams>) => {
+  //   setFilters(prev => ({ ...prev, ...newFilters, page: 0 }));
+  // };
+
   return (
     <>
-    <Layout>
-      <HeaderLeft title="커뮤니티" />
-      <Banner>
-        <BannerText>
-          <BannerTitle>제주, 전체 주제</BannerTitle>
-          <BannerSub>여행 예정 350명, 여행 중 137명</BannerSub>
-        </BannerText>
-        <BannerRight>여행 중인 사람만</BannerRight>
-        <BannerImage src="https://mblogthumb-phinf.pstatic.net/MjAyNDA2MThfMTMx/MDAxNzE4Njc0MDcwMTM5.39fnbeAr2b_0HiCDOfeAaa31R_Zf33CDSmokYr3hg7sg.igWNKGclsAXMUN1m5JpgiJwMrucJGotyKNKmhQLL-40g.JPEG/%EC%BD%94%EB%82%9C%ED%95%B4%EB%B3%8020.JPG?type=w800" alt="제주" />
-      </Banner>
-      <PostList>
-        {dummyPosts.map((post) => (
-          <PostCard key={post.id} post={post} onClick={() => goDetail(post.id)} />
-        ))}
-      </PostList>
+      <Layout>
+        <HeaderLeft title="커뮤니티" />
+        <Banner>
+          <BannerText>
+            <BannerTitle>제주, 전체 주제</BannerTitle>
+            <BannerSub>여행 예정 350명, 여행 중 137명</BannerSub>
+          </BannerText>
+          <BannerRight>여행 중인 사람만</BannerRight>
+          <BannerImage
+            src="https://mblogthumb-phinf.pstatic.net/MjAyNDA2MThfMTMx/MDAxNzE4Njc0MDcwMTM5.39fnbeAr2b_0HiCDOfeAaa31R_Zf33CDSmokYr3hg7sg.igWNKGclsAXMUN1m5JpgiJwMrucJGotyKNKmhQLL-40g.JPEG/%EC%BD%94%EB%82%9C%ED%95%B4%EB%B3%8020.JPG?type=w800"
+            alt="제주"
+          />
+        </Banner>
+        <PostList>
+          {isLoading && <div>로딩 중...</div>}
+          {error && <div>에러가 발생했습니다.</div>}
+          {postsPage?.content.map(post => (
+            <PostCard
+              key={post.id}
+              post={{
+                id: post.id,
+                user: post.username ?? '익명',
+                date: formatKst(post.createdAt) || '-',
+                location: post.region,
+                topic: post.topic,
+                content: post.content,
+                avatar: post.authorProfileImg || DefaultProfileImage, // 작성자 프로필 이미지
+                comments: 0, // 백엔드 응답에 없어 임시 처리
+                isHot: false, // 백엔드 응답에 없어 임시 처리
+              }}
+              onClick={() => goDetail(post.id)}
+            />
+          ))}
+        </PostList>
       </Layout>
-      
-    <WriteButton onClick={() => navigate('/community/WritePage')}>
-      <Plus>＋</Plus>
-      글 작성
-    </WriteButton>
-    
-    <NavigationBar />
-     
+
+      <WriteButton onClick={() => navigate("/community/WritePage")}>
+        <Plus>＋</Plus>
+        글 작성
+      </WriteButton>
+
+      <NavigationBar />
     </>
   );
 };

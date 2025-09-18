@@ -7,6 +7,7 @@ export type Post = {
   content: string;
   comments: number;
   isHot?: boolean;
+  topic?: string;
 };
 
 export type Comment = {

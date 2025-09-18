@@ -65,7 +65,7 @@ export default function PostCard({ post, onClick }: Props) {
           <img src={CommentSvg} alt="댓글" width={15} height={15} />
         </CommentIcon>
         <CommentCount>{post.comments}</CommentCount>
-        {post.isHot && <Badge>맛집</Badge>}
+        {post.topic && <Badge>{post.topic}</Badge>}
       </Footer>
     </Card>
   );

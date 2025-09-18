@@ -1,85 +1,120 @@
 // pages/community/CommunityDetailPage.tsx
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Header from "../../components/common/Header";
-import type { Post, Comment } from "../../types/post";
-
-// 더미 데이터
-const dummyPost: Post = {
-  id: 1,
-  user: "월버",
-  date: "2025.08.10",
-  location: "제주",
-  avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-  content:
-    "세화 해변에 스노클링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노클링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노클링 장비 빌릴 수 있는 곳 있나요?",
-  comments: 2, // 실제 댓글 개수
-};
-
-const dummyComments: Comment[] = [
-  {
-    id: 1,
-    postId: 1,
-    user: "월버",
-    date: "2분 전",
-    avatar: "https://randomuser.me/api/portraits/men/1.jpg",
-    content: "세화 해변에 스노클링 장비 빌릴 수 있는 곳 있나요?",
-  },
-  {
-    id: 2,
-    postId: 1,
-    user: "월버",
-    date: "2분 전",
-    avatar: "https://randomuser.me/api/portraits/men/2.jpg",
-    content:
-      "세화 해변에 스노클링 장비 빌릴 수 있는 곳 있나요? 세화 해변에 스노클링 장비 빌릴 수 있는 곳 있나요?",
-  },
-];
+import CommentInputBar from "../../components/common/CommentInputBar"; // 댓글 입력창 컴포넌트
+import { getPostById, deletePost, createComment, deleteComment, getCommentsByPostId } from "../../api/community/community";
+import type { CommentResponse } from "../../api/community/community";
+import DefaultProfileImage from "../../assets/common/my_gray.svg";
+import { formatKst } from "../../utils/date";
 
 const CommunityDetailPage = () => {
-  //const { postId } = useParams();
-  const post = dummyPost;
-  const comments = dummyComments;
+  const { postId } = useParams<{ postId: string }>();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const numericPostId = Number(postId);
+
+  // 1. 게시글 상세 정보 조회
+  const { data: post, isLoading, error } = useQuery({
+    queryKey: ["communityPost", numericPostId],
+    queryFn: () => getPostById(numericPostId),
+    enabled: !!numericPostId, // postId가 유효할 때만 쿼리 실행
+  });
+
+  // 1.1. 댓글 목록 조회
+  const { data: comments = [], isLoading: isCommentsLoading } = useQuery({
+    queryKey: ["communityComments", numericPostId],
+    queryFn: () => getCommentsByPostId(numericPostId),
+    enabled: !!numericPostId,
+  });
+
+  // 2. 게시글 삭제 뮤테이션
+  const deletePostMutation = useMutation({
+    mutationFn: deletePost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["communityPosts"] });
+      navigate("/community");
+    },
+  });
+
+  // 3. 댓글 생성 뮤테이션
+  const createCommentMutation = useMutation({
+    mutationFn: ({ content }: { content: string }) => createComment(numericPostId, { content }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["communityPost", numericPostId] });
+    },
+  });
+
+  // 4. 댓글 삭제 뮤테이션
+  const deleteCommentMutation = useMutation({
+    mutationFn: (commentId: number) => deleteComment(numericPostId, commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["communityPost", numericPostId] });
+    },
+  });
+
+  const handleDeletePost = () => {
+    if (window.confirm("정말 삭제하시겠습니까?")) {
+      deletePostMutation.mutate(numericPostId);
+    }
+  };
+
+  const handleCreateComment = (content: string) => {
+    createCommentMutation.mutate({ content });
+  };
+
+  const handleDeleteComment = (commentId: number) => {
+    if (window.confirm("댓글을 삭제하시겠습니까?")) {
+      deleteCommentMutation.mutate(commentId);
+    }
+  };
+
+  if (isLoading) return <Layout><div>로딩 중...</div></Layout>;
+  if (error || !post) return <Layout><div>게시글을 불러올 수 없습니다.</div></Layout>;
 
   return (
-
     <Layout>
-         <Header title="커뮤니티" showBackButton={true} />
-         <Wrap>
-       
-      {/* 게시글 */}
-      <PostSection>
-        <HeaderPost>
-          <Avatar src={post.avatar} alt={post.user} />
-          <div>
-            <User>{post.user}</User>
-            <Meta>
-              {post.date} · {post.location}
-            </Meta>
-          </div>
-          <Menu>⋮</Menu> {/* 👈 메뉴 버튼 추가 */}
-        </HeaderPost>
-        <Body>{post.content}</Body>
-      </PostSection>
-
-      {/* 댓글 */}
-      <CommentTitle>댓글 {post.comments}</CommentTitle>
-      {comments.map((c) => (
-        <CommentBox key={c.id}>
+      <Header title="커뮤니티" showBackButton={true} />
+      <Wrap>
+        {/* 게시글 */}
+        <PostSection>
           <HeaderPost>
-            <Avatar src={c.avatar} alt={c.user} />
+            <Avatar src={post.authorProfileImg || DefaultProfileImage} alt={post.username} />
             <div>
-              <User>{c.user}</User>
-              <Meta>{c.date}</Meta>
+              <User>{post.username}</User>
+              <Meta>
+                {formatKst(post.createdAt)} · {post.region}
+              </Meta>
             </div>
-            <Menu>⋮</Menu> {/* 👈 메뉴 버튼 추가 */}
+            <Menu onClick={handleDeletePost}>⋮</Menu> {/* 메뉴 버튼에 삭제 기능 연결 */}
           </HeaderPost>
-          <CommentBody>{c.content}</CommentBody>
-        </CommentBox>
-      ))}
-    </Wrap>
+          <Body>{post.content}</Body>
+        </PostSection>
+
+        {/* 댓글 */}
+        <CommentTitle>댓글 {comments?.length ?? 0}</CommentTitle>
+        {isCommentsLoading ? (
+          <div>댓글 로딩 중...</div>
+        ) : (
+          comments?.map((c: CommentResponse) => (
+            <CommentBox key={c.commentId}>
+              <HeaderPost>
+                <Avatar src={DefaultProfileImage} alt={c.authorName} />
+                <div>
+                  <User>{c.authorName}</User>
+                  <Meta>{new Date(c.createdAt).toLocaleDateString()}</Meta>
+                </div>
+                <Menu onClick={() => handleDeleteComment(c.commentId)}>⋮</Menu> {/* 댓글 삭제 기능 연결 */}
+              </HeaderPost>
+              <CommentBody>{c.content}</CommentBody>
+            </CommentBox>
+          ))
+        )}
+      </Wrap>
+      {/* 댓글 입력 바 */}
+      <CommentInputBar onSubmit={handleCreateComment} />
     </Layout>
-    
   );
 };
 

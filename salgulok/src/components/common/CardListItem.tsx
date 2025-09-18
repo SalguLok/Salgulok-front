@@ -18,6 +18,8 @@ export type LogItem = {
   date: string;
   likes: number;
   liked?: boolean;
+  comments?: number;
+  oneLine?: string;
 };
 
 type Props = {
@@ -53,7 +55,7 @@ const PresignedImage: FC<{ objectKey?: string | null; src?: string; [key: string
         fetchUrl();
     }, [objectKey]);
 
-    if (!url) return <div {...props} />;
+    // if (!url) return <div {...props} />;
 
     return <img src={url} {...props} />;
 };
@@ -81,7 +83,7 @@ const LogCardList: FC<Props> = ({ items, onClick, onClickMore }) => {
               </ReactionWrapper>
               <ReactionWrapper>
                 <Comment />
-                <ReactionText></ReactionText>
+                <ReactionText>{item.comments}</ReactionText>
               </ReactionWrapper>
             </ReactionContainer>
           </ImageContainer>
@@ -128,6 +130,7 @@ const Layout = styled.div`
 const Card = styled.div`
   border-radius: 10px;
   margin-bottom: 5px;
+  background-color: white;
 `;
 const ImageContainer = styled.div`
   position: relative;

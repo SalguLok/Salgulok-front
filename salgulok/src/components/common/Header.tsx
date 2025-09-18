@@ -49,6 +49,7 @@ const IconButton = styled.button`
   background: none;
   border: none;
   padding: 0;
+  padding-bottom: 5px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -61,9 +62,9 @@ const IconButton = styled.button`
 
 const Title = styled.h1`
   flex: 1;
-  text-align: center;
+  text-align: left;
   font-size: 16px;
-  padding: 0;
+  padding: 0px 10px 5px 10px;
   margin: 0;
   font-weight: 600px;
 `;

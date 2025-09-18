@@ -1,40 +1,48 @@
-// src/api/log/searchLogs.ts
 import api from "../api";
 
-export interface LogItem {
-    // 백엔드 LogResponse 기준(필요한 것만 우선 명세)
-    title: string;
-    startDate: string;   // "2025-09-18" 같은 ISO-8601 날짜 문자열
-    endDate: string;
-    isPublic: boolean;
-    regionId: number;
-    imgUrl?: string | null;
-    oneReview?: string | null;
-
-    // 리스트라면 보통 식별자가 필요해요. 백엔드에 따라 key 이름이 다를 수 있어 optional로 둡니다.
-    logId?: number;
-    id?: number;
-
-    // 추후 확장(조회수, 좋아요 등)
-    view?: number;
-    likeCount?: number;
-    createdAt?: string;
-    [key: string]: unknown;
+export interface LogResponse {
+  logId: number;
+  writer: string;
+  writerProfile: string;
+  title: string;
+  startDate: string;
+  endDate: string;
+  isPublic: boolean;
+  regionId: number;
+  imgUrl: string | null;
+  oneReview: string | null;
+  likes: number;
+  isUpload: boolean;
 }
 
 export interface LogListResponse {
-    logs: LogItem[];     // 팀 규칙에 맞춰 변경 가능(예: content, data 등)
-    totalCount?: number;  // 페이징 필요시 백엔드와 합의해서 사용
+  logs: LogResponse[];
 }
 
-/** 살구록 검색 (GET /logs?search=...) */
-export async function searchLogs(
-    query: string,
-    opts?: { signal?: AbortSignal }
-): Promise<LogListResponse> {
-    const { data } = await api.get<LogListResponse>("/logs", {
-        params: { search: query },
-        signal: opts?.signal,
+// 로그 검색 및 필터링
+export const searchLogs = async (
+  keyword?: string,
+  sort: "latest" | "view" | "like" = "latest",
+  regionId: number = 0
+): Promise<LogListResponse> => {
+  try {
+    const response = await api.get<LogListResponse>("/logs/search", {
+      params: {
+        keyword,
+        sort,
+        regionId,
+      },
     });
-    return data;
-}
+    console.log(response.data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      console.error("서버 오류:", error.response.data);
+      alert("로그 목록을 불러오는 중 문제가 발생했습니다.");
+    } else {
+      console.error("네트워크 오류:", error);
+      alert("네트워크 오류가 발생했습니다.");
+    }
+    throw error;
+  }
+};

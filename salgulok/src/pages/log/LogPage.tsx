@@ -3,7 +3,7 @@ import styled from "styled-components";
 import NavigationBar from "../../components/common/NavigationBar";
 import LogCardList from "../../components/common/CardListItem";
 import type { LogItem } from "../../components/common/CardListItem";
-import HeaderLeft from "../../components/common/HeaderLeft";
+import Header from "../../components/common/Header";
 import { getPublicLogs } from "../../api/log/getPublicLogs";
 import SearchIcon from "../../assets/common/search.svg?react";
 import { searchLogs } from "../../api/log/searchLogs";
@@ -66,40 +66,40 @@ const LogPage: React.FC = () => {
 
   // 살구로그 목록 가져오기 (검색/정렬/지역 포함) + 캐시/요청취소 관리
   const fetchLogs = useCallback(
-      async (opts: { q: string; s: string; r: number | null }) => {
-        const key = makeKey(opts.q, opts.s, opts.r);
+    async (opts: { q: string; s: string; r: number | null }) => {
+      const key = makeKey(opts.q, opts.s, opts.r);
 
-        if (cacheRef.current.has(key)) {
-          setLogs(cacheRef.current.get(key)!);
-          return;
+      if (cacheRef.current.has(key)) {
+        setLogs(cacheRef.current.get(key)!);
+        return;
+      }
+
+      if (abortRef.current) abortRef.current.abort();
+      abortRef.current = new AbortController();
+
+      setLoading(true);
+      try {
+        let data: any[];
+        const { logs } = await searchLogs(
+          opts.q || undefined,
+          opts.s as "latest" | "view" | "like",
+          opts.r ?? 0
+        );
+        data = logs ?? [];
+
+        const processed = processLogItems(data);
+        cacheRef.current.set(key, processed);
+        setLogs(processed);
+      } catch (e: any) {
+        if (e?.name !== "AbortError") {
+          console.error("로그 불러오기 실패:", e);
+          setLogs([]);
         }
-
-        if (abortRef.current) abortRef.current.abort();
-        abortRef.current = new AbortController();
-
-        setLoading(true);
-        try {
-          let data: any[];
-          if (opts.q && opts.q.trim()) {
-            const { logs } = await searchLogs(opts.q);
-            data = logs ?? [];
-          } else {
-            const res = await getPublicLogs(); // 서버가 sort/region 받으면 여기 파라미터 붙이면 됨
-            data = Array.isArray(res) ? res : (res?.logs ?? res?.items ?? []);
-          }
-          const processed = processLogItems(data);
-          cacheRef.current.set(key, processed);
-          setLogs(processed);
-        } catch (e: any) {
-          if (e?.name !== "AbortError") {
-            console.error("로그 불러오기 실패:", e);
-            setLogs([]);
-          }
-        } finally {
-          setLoading(false);
-        }
-      },
-      [makeKey, processLogItems]
+      } finally {
+        setLoading(false);
+      }
+    },
+    [makeKey, processLogItems]
   );
 
 
@@ -129,15 +129,15 @@ const LogPage: React.FC = () => {
 
   return (
     <Container>
-      <HeaderLeft
+      <Header
         title="살구로그"
-        right={
-            !showSearch && (
-                <IconButton aria-label="검색" onClick={() => setShowSearch(true)} title="검색">
-                    <SearchIcon />
-                </IconButton>
-            )
-        }
+        // right={
+        //     !showSearch && (
+        //         <IconButton aria-label="검색" onClick={() => setShowSearch(true)} title="검색">
+        //             <SearchIcon />
+        //         </IconButton>
+        //     )
+        // }
       />
 
         <ActionContainer>

@@ -71,6 +71,7 @@ const LogPage: React.FC = () => {
     async (opts: { q: string; s: string; r: number | null }) => {
       const key = makeKey(opts.q, opts.s, opts.r);
 
+
       if (cacheRef.current.has(key)) {
         setLogs(cacheRef.current.get(key)!);
         return;
@@ -91,6 +92,7 @@ const LogPage: React.FC = () => {
           data = toArray(res);
         }
 
+
         const processed = processLogItems(data);
         cacheRef.current.set(key, processed);
         setLogs(processed);
@@ -101,6 +103,7 @@ const LogPage: React.FC = () => {
         }
       } finally {
         //setLoading(false);
+
       }
     },
     [makeKey, processLogItems]

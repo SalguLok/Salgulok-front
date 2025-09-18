@@ -128,6 +128,7 @@ const Layout = styled.div`
 const Card = styled.div`
   border-radius: 10px;
   margin-bottom: 5px;
+  background-color: white;
 `;
 const ImageContainer = styled.div`
   position: relative;

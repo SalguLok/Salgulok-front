@@ -251,7 +251,7 @@ const Layout = styled.div`
 
 const Banner = styled.div`
   position: relative;
-  margin: 20px 0 16px 0;
+  margin: 0px 0 16px 0;
   height: 160px;
   background: #eee;
   overflow: hidden;

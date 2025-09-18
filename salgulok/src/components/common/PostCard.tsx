@@ -8,6 +8,7 @@ import type { Post } from "../../types/post";
 type Props = {
   post: Post;
   onClick?: (id: number) => void;
+  onMenuClick?: (id: number) => void;
 };
 
 const Card = styled.div<{ clickable?: boolean }>`
@@ -39,9 +40,18 @@ const Meta = styled.div`
   font-size: 11px;
   color: var(--gray-300);
 `;
-const Menu = styled.div`
+const Menu = styled.button`
   font-size: 20px;
   color: var(--gray-300);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  
+  &:hover {
+    background-color: var(--gray-100);
+  }
 `;
 
 const Content = styled.div`
@@ -73,8 +83,12 @@ const CommentCount = styled.span`
   color: var(--black);
 `;
 
-export default function PostCard({ post, onClick }: Props) {
+export default function PostCard({ post, onClick, onMenuClick }: Props) {
   const handleClick = () => onClick?.(post.id);
+  const handleMenuClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onMenuClick?.(post.id);
+  };
 
   const { data: comments } = useQuery({
     queryKey: ["communityComments", post.id],
@@ -90,7 +104,7 @@ export default function PostCard({ post, onClick }: Props) {
           <User>{post.user}</User>
           <Meta>{post.date}</Meta>
         </Info>
-        <Menu>⋮</Menu>
+        <Menu onClick={handleMenuClick}>⋮</Menu>
       </Header>
 
       <Content>{post.content}</Content>

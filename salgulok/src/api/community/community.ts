@@ -12,6 +12,7 @@ export type StayStatus = 'STAYING' | 'ALL'; // 체류여부 필터링을 위한 
 // 서버 응답 타입
 export interface PostResponse {
   id: number;
+  authorId: number;
   username: string;
   region: string;
   topic: Topic;
@@ -24,6 +25,7 @@ export interface PostResponse {
 export interface CommentResponse {
   id: number;
   postId: number;
+  authorId: number;
   username: string;
   content: string;
 }
@@ -54,6 +56,7 @@ export interface PostCreateRequest {
 
 export interface CommentCreateRequest {
   content: string;
+  authorId: number;
 }
 
 

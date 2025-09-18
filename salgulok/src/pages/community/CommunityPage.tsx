@@ -1,17 +1,18 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import NavigationBar from "../../components/common/NavigationBar";
 import HeaderLeft from "../../components/common/HeaderLeft";
 import PostCard from "../../components/common/PostCard";
-import { getPosts } from "../../api/community/community";
+import { getPosts, deletePost } from "../../api/community/community";
 import type { GetPostsParams } from "../../api/community/community";
 import DefaultProfileImage from "../../assets/common/my_gray.svg";
 import { formatKst } from "../../utils/date";
 
 const CommunityPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const goDetail = (id: number) => navigate(`/community/${id}`);
 
   const [filters, setFilters] = useState<GetPostsParams>({ page: 0, size: 10 });
@@ -24,6 +25,56 @@ const CommunityPage = () => {
     queryKey: ["communityPosts", filters],
     queryFn: () => getPosts(filters),
   });
+
+
+  // 게시글 삭제 뮤테이션
+  const deletePostMutation = useMutation({
+    mutationFn: deletePost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["communityPosts"] });
+      alert("게시글이 삭제되었습니다.");
+    },
+    onError: (error) => {
+      console.error("게시글 삭제 실패:", error);
+      alert("게시글 삭제에 실패했습니다.");
+    },
+  });
+
+  // 더보기 버튼 클릭 핸들러
+  const handleMenuClick = (postId: number) => {
+    console.log("더보기 버튼 클릭됨, postId:", postId);
+    
+    const currentUserId = localStorage.getItem("userId");
+    if (!currentUserId) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    // 해당 게시글 찾기
+    const post = postsPage?.content.find(p => p.id === postId);
+    console.log("찾은 게시글:", post);
+    
+    if (!post) {
+      alert("게시글을 찾을 수 없습니다.");
+      return;
+    }
+
+    // 작성자 본인인지 확인 (userId와 authorId 비교)
+    console.log("게시글 작성자 ID:", post.authorId);
+    console.log("현재 사용자 ID:", currentUserId);
+    const isAuthor = post.authorId === parseInt(currentUserId);
+    console.log("작성자 본인 여부:", isAuthor);
+    
+    if (!isAuthor) {
+      alert("본인이 작성한 게시글만 삭제할 수 있습니다.");
+      return;
+    }
+
+    if (window.confirm("정말 삭제하시겠습니까?")) {
+      console.log("삭제 확인됨, 삭제 API 호출");
+      deletePostMutation.mutate(postId);
+    }
+  };
 
   // TODO: 필터링 UI 구현 시 핸들러 추가
   // const handleFilterChange = (newFilters: Partial<GetPostsParams>) => {
@@ -48,7 +99,7 @@ const CommunityPage = () => {
         <PostList>
           {isLoading && <div>로딩 중...</div>}
           {error && <div>에러가 발생했습니다.</div>}
-          {postsPage?.content.map(post => (
+          {(postsPage?.content ?? []).map(post => (
             <PostCard
               key={post.id}
               post={{
@@ -63,6 +114,7 @@ const CommunityPage = () => {
                 isHot: false, // 백엔드 응답에 없어 임시 처리
               }}
               onClick={() => goDetail(post.id)}
+              onMenuClick={handleMenuClick}
             />
           ))}
         </PostList>

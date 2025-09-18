@@ -41,18 +41,41 @@ const CommunityDetailPage = () => {
 
   // 3. 댓글 생성 뮤테이션
   const createCommentMutation = useMutation({
-    mutationFn: ({ content }: { content: string }) => createComment(numericPostId, { content }),
+    mutationFn: ({ content }: { content: string }) => {
+      const userId = localStorage.getItem("userId");
+      if (!userId) {
+        throw new Error("사용자 정보를 찾을 수 없습니다. 다시 로그인해주세요.");
+      }
+      return createComment(numericPostId, { content, authorId: parseInt(userId) });
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["communityComments", numericPostId] });
+    },
+    onError: (error) => {
+      console.error("댓글 생성 실패:", error);
+      alert(error.message || "댓글 생성에 실패했습니다.");
     },
   });
 
-  // 4. 댓글 삭제 뮤테이션
+  // 4. 댓글 삭제 뮤테이션 (작성자 검증 포함)
   const deleteCommentMutation = useMutation({
-    mutationFn: (commentId: number) => deleteComment(numericPostId, commentId),
-    onSuccess: () => {
+    mutationFn: (commentId: number) => {
+      console.log("[댓글삭제] mutate 호출", { postId: numericPostId, commentId });
+      return deleteComment(numericPostId, commentId);
+    },
+    onSuccess: (_, commentId) => {
+      console.log("[댓글삭제] 성공", { postId: numericPostId, commentId });
+      alert("댓글이 삭제되었습니다.");
       queryClient.invalidateQueries({ queryKey: ["communityComments", numericPostId] });
     },
+    onError: (error, commentId) => {
+      // @ts-ignore
+      const status = error?.response?.status;
+      // @ts-ignore
+      const data = error?.response?.data;
+      console.error("[댓글삭제] 실패", { postId: numericPostId, commentId, status, data, error });
+      alert(`댓글 삭제에 실패했습니다. ${status ? `(${status})` : ""}`);
+    }
   });
 
   const handleDeletePost = () => {
@@ -66,6 +89,28 @@ const CommunityDetailPage = () => {
   };
 
   const handleDeleteComment = (commentId: number) => {
+    console.log("[댓글삭제] 클릭", { commentId });
+    const currentUserId = localStorage.getItem("userId");
+    console.log("[댓글삭제] 현재 사용자", { currentUserId });
+    if (!currentUserId) {
+      alert("로그인이 필요합니다.");
+      return;
+    }
+
+    const target = comments.find((c) => c.id === commentId);
+    console.log("[댓글삭제] 타겟 댓글", target);
+    if (!target) {
+      alert("댓글을 찾을 수 없습니다.");
+      return;
+    }
+
+    const isAuthor = target.authorId === parseInt(currentUserId);
+    console.log("[댓글삭제] 본인 여부", { targetAuthorId: target.authorId, currentUserId: parseInt(currentUserId), isAuthor });
+    if (!isAuthor) {
+      alert("본인이 작성한 댓글만 삭제할 수 있습니다.");
+      return;
+    }
+
     if (window.confirm("댓글을 삭제하시겠습니까?")) {
       deleteCommentMutation.mutate(commentId);
     }
@@ -98,7 +143,11 @@ const CommunityDetailPage = () => {
 
         {/* 댓글 입력 바 */}
         <CommentInputWrapper>
-          <CommentInputBar onSubmit={handleCreateComment} />
+          <CommentInputBar 
+            onSubmit={handleCreateComment} 
+            disabled={createCommentMutation.isPending}
+            buttonText={createCommentMutation.isPending ? "등록 중..." : "등록"}
+          />
         </CommentInputWrapper>
 
         {/* 댓글 */}

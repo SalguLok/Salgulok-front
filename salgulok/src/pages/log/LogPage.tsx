@@ -3,7 +3,7 @@ import styled from "styled-components";
 import NavigationBar from "../../components/common/NavigationBar";
 import LogCardList from "../../components/common/CardListItem";
 import type { LogItem } from "../../components/common/CardListItem";
-import Header from "../../components/common/Header";
+import HeaderLeft from "../../components/common/HeaderLeft";
 import { getPublicLogs } from "../../api/log/getPublicLogs";
 import SearchIcon from "../../assets/common/search.svg?react";
 import { searchLogs } from "../../api/log/searchLogs";
@@ -129,15 +129,15 @@ const LogPage: React.FC = () => {
 
   return (
     <Container>
-      <Header
+      <HeaderLeft
         title="살구로그"
-        // right={
-        //     !showSearch && (
-        //         <IconButton aria-label="검색" onClick={() => setShowSearch(true)} title="검색">
-        //             <SearchIcon />
-        //         </IconButton>
-        //     )
-        // }
+        right={
+            !showSearch && (
+                <IconButton aria-label="검색" onClick={() => setShowSearch(true)} title="검색">
+                    <SearchIcon />
+                </IconButton>
+            )
+        }
       />
 
         <ActionContainer>

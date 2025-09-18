@@ -13,6 +13,8 @@ import CreateLogCompletePage from "./pages/log/CreateLogCompletePage";
 import CreateRegionPage from "./pages/log/CreateLogRegionPage";
 import EditProfilePage from "./pages/mypage/EditProfilePage";
 import MyPage from "./pages/mypage/MyPage";
+import WritePage from "./pages/community/WritePage.tsx";
+import CommunityDetailPage from "./pages/community/CommunityDetailPage.tsx";
 
 // 테스트용
 // import LogEntryPage from "./pages/log/LogEntryPage";
@@ -29,6 +31,8 @@ const router = createBrowserRouter([
   { path: "/", element: <ProtectedRoute element={<HomePage />} /> },
   { path: "/map", element: <ProtectedRoute element={<MapPage />} /> },
   { path: "/log", element: <ProtectedRoute element={<LogPage />} /> },
+  { path: "/log/:logId/entries", element: <ProtectedRoute element={<LogEntryPage />} /> },
+  { path: "/log/:logId", element: <ProtectedRoute element={<LogEntryPage />} /> },
   {
     path: "/community",
     element: <ProtectedRoute element={<CommunityPage />} />,
@@ -55,6 +59,30 @@ const router = createBrowserRouter([
     element: <ProtectedRoute element={<EditProfilePage />} />,
   },
   { path: "/mypage", element: <ProtectedRoute element={<MyPage />} /> },
+
+  {
+    path: "/",
+    element: <HomePage />,
+  },
+  {
+    path: "/map",
+    element: <MapPage />,
+  },
+  {
+    path: "/log",
+    element: <LogPage />,
+  },
+  { path: "/community", element: <CommunityPage /> },
+  { path: "/my", element: <MyPage /> },
+  { path: "/log/create/region", element: <CreateRegionPage />},
+  { path: "/log/create/date", element: <CreateDatePage /> },
+  { path: "/log/create/info", element: <CreateLogInfoPage />},
+  { path: "/log/complete", element: <CreateLogCompletePage />},
+  { path: "/mypage/edit", element: <EditProfilePage /> },
+  { path: "/mypage", element: <MyPage/>},
+  { path: "/community/WritePage", element: <WritePage /> },
+  { path: "/community/:postId", element: <CommunityDetailPage />}
+  
 ]);
 
 export default router;

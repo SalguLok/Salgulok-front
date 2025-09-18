@@ -30,22 +30,30 @@ const EditProfilePage: React.FC = () => {
                 setUsername(data.nickname);
                 setOriginalUsername(data.nickname);
                 setIntro(data.intro || "");
+
                 if (data.profileImg) {
+                    let previewUrl = data.profileImg;
+
                     try {
                         const presignedData = await issueGetPresigned(data.profileImg);
                         if (presignedData.items.length > 0) {
-                            setProfileImg(presignedData.items[0].presignedUrl);
+                            previewUrl = presignedData.items[0].presignedUrl;
                         }
                     } catch (e) {
-                        setProfileImg(data.profileImg);
+                        console.warn("Presigned URL 발급 실패, 원본 사용", e);
                     }
+
+                    setProfileImg(previewUrl);          // 미리보기용 URL
+                    setProfileImgObjectKey(data.profileImg); // 서버에 보낼 ObjectKey
                 }
             } catch (error) {
                 console.error("Failed to fetch profile", error);
             }
         };
+
         fetchProfile();
     }, []);
+
 
     useEffect(() => {
         if (username === originalUsername) {
@@ -102,7 +110,7 @@ const EditProfilePage: React.FC = () => {
           };
 
           if (profileImgObjectKey) {
-            profileData.profileImg = profileImgObjectKey;
+            profileData.profileImg = profileImgObjectKey ?? profileImg ?? null;
           }
 
           await updateUserProfile(profileData);

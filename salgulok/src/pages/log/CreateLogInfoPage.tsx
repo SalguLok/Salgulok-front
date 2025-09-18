@@ -43,8 +43,7 @@ const CreateLogInfoPage: React.FC = () => {
         }
       } catch (error) {
         console.error("이미지 업로드에 실패했습니다.", error);
-        // 사용자에게 오류를 알리는 UI 처리 (예: 토스트 메시지)를 여기에 추가할 수 있습니다.
-        return; // 업로드 실패 시 로그 생성을 중단합니다.
+        return;
       }
     }
 

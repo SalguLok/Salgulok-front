@@ -66,6 +66,8 @@ const ProfileImg = styled.img`
   height: 56px;
   border-radius: 50%;
   object-fit: cover;
+  object-position: center;
+  flex-shrink: 0;
 `;
 
 const TextWrapper = styled.div`

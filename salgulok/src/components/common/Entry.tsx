@@ -9,7 +9,7 @@ type EntryProps = {
   children: ReactNode;
 };
 
-function Entry({ variant="post", clickable, onClick, children }: EntryProps) {
+function Entry({ variant = "post", clickable, onClick, children }: EntryProps) {
   return (
     <Wrap $variant={variant} $clickable={!!clickable} onClick={onClick}>
       {children}
@@ -24,7 +24,13 @@ type HeaderProps = {
   onMenuClick?: (e: MouseEvent) => void;
   menu?: ReactNode; // 기본값은 ⋮
 };
-Entry.Header = function Header({ avatar, name, meta, onMenuClick, menu }: HeaderProps) {
+Entry.Header = function Header({
+  avatar,
+  name,
+  meta,
+  onMenuClick,
+  menu,
+}: HeaderProps) {
   return (
     <HeaderRow>
       <Avatar src={avatar} alt={name} />
@@ -34,7 +40,10 @@ Entry.Header = function Header({ avatar, name, meta, onMenuClick, menu }: Header
       </Info>
       <Menu
         aria-label="more"
-        onClick={(e)=>{ e.stopPropagation(); onMenuClick?.(e); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          onMenuClick?.(e);
+        }}
       >
         {menu ?? "⋮"}
       </Menu>
@@ -46,7 +55,13 @@ Entry.Body = function Body({ children }: { children: ReactNode }) {
   return <Body>{children}</Body>;
 };
 
-Entry.Footer = function Footer({ left, right }: { left?: ReactNode; right?: ReactNode }) {
+Entry.Footer = function Footer({
+  left,
+  right,
+}: {
+  left?: ReactNode;
+  right?: ReactNode;
+}) {
   return (
     <FooterRow>
       <div>{left}</div>
@@ -66,22 +81,37 @@ const Wrap = styled.div<{ $variant: "post" | "comment"; $clickable: boolean }>`
 `;
 
 const HeaderRow = styled.div`
-  display: flex; align-items: center; margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
 `;
 const Avatar = styled.img`
-  width: 36px; height: 36px; border-radius: 50%; margin-right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin-right: 12px;
 `;
-const Info = styled.div` flex: 1; `;
-const User = styled.div` font-weight: 500; font-size: 13px; `;
-const Meta = styled.div` font-size: 11px; color: var(--gray-300); `;
+const Info = styled.div`
+  flex: 1;
+`;
+const User = styled.div`
+  font-weight: 500;
+  font-size: 13px;
+`;
+const Meta = styled.div`
+  font-size: 11px;
+  color: var(--gray-300);
+`;
 const Menu = styled.button`
-  border: 0; background: transparent; font-size: 20px; color: var(--gray-300); cursor: pointer;
-`;
-
-const Body = styled.div`
-  font-size: 13px; color: var(--black); line-height: 1.6; margin-bottom: 12px;
+  border: 0;
+  background: transparent;
+  font-size: 20px;
+  color: var(--gray-300);
+  cursor: pointer;
 `;
 
 const FooterRow = styled.div`
-  display: flex; align-items: center; justify-content: space-between;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 `;

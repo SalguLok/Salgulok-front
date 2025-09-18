@@ -31,8 +31,14 @@ const router = createBrowserRouter([
   { path: "/", element: <ProtectedRoute element={<HomePage />} /> },
   { path: "/map", element: <ProtectedRoute element={<MapPage />} /> },
   { path: "/log", element: <ProtectedRoute element={<LogPage />} /> },
-  { path: "/log/:logId/entries", element: <ProtectedRoute element={<LogEntryPage />} /> },
-  { path: "/log/:logId", element: <ProtectedRoute element={<LogEntryPage />} /> },
+  {
+    path: "/log/:logId/entries",
+    element: <ProtectedRoute element={<LogEntryPage />} />,
+  },
+  {
+    path: "/log/:logId",
+    element: <ProtectedRoute element={<LogEntryPage />} />,
+  },
   {
     path: "/community",
     element: <ProtectedRoute element={<CommunityPage />} />,
@@ -74,15 +80,14 @@ const router = createBrowserRouter([
   },
   { path: "/community", element: <CommunityPage /> },
   { path: "/my", element: <MyPage /> },
-  { path: "/log/create/region", element: <CreateRegionPage />},
+  { path: "/log/create/region", element: <CreateRegionPage /> },
   { path: "/log/create/date", element: <CreateDatePage /> },
-  { path: "/log/create/info", element: <CreateLogInfoPage />},
-  { path: "/log/complete", element: <CreateLogCompletePage />},
+  { path: "/log/create/info", element: <CreateLogInfoPage /> },
+  { path: "/log/complete", element: <CreateLogCompletePage /> },
   { path: "/mypage/edit", element: <EditProfilePage /> },
-  { path: "/mypage", element: <MyPage/>},
+  { path: "/mypage", element: <MyPage /> },
   { path: "/community/WritePage", element: <WritePage /> },
-  { path: "/community/:postId", element: <CommunityDetailPage />}
-  
+  { path: "/community/:postId", element: <CommunityDetailPage /> },
 ]);
 
 export default router;

@@ -13,7 +13,7 @@ const SignupPage: React.FC = () => {
   const navigate = useNavigate();
 
   // 닉네임 중복 확인
-  const [isNicknameValid, setIsNicknameValid] = useState(false);  // 사용 가능한 닉네임인지
+  const [isNicknameValid, setIsNicknameValid] = useState(false); // 사용 가능한 닉네임인지
 
   const handleCheck = async () => {
     if (!username.trim()) {
@@ -36,7 +36,6 @@ const SignupPage: React.FC = () => {
       alert("닉네임 확인 중 오류가 발생했습니다.");
     }
   };
-
 
   // 회원가입 완료
   const [username, setUsername] = useState("");
@@ -65,12 +64,12 @@ const SignupPage: React.FC = () => {
     } catch (error) {
       console.error("회원가입 실패", error);
     }
-  }
+  };
 
   return (
     <Container>
-      <Header title="회원가입"/>
-      <Logo src={LogoImg}/>
+      <Header title="회원가입" />
+      <Logo src={LogoImg} />
       <MainInfo>회원정보 입력</MainInfo>
       <SubInfo>살구록 서비스 사용에 필요한 정보를 입력해주세요.</SubInfo>
       <FormWrapper>
@@ -89,19 +88,16 @@ const SignupPage: React.FC = () => {
           onChange={(e) => setIntro(e.target.value)}
           variant="sm"
         />
-        <ImageUpload 
+        <ImageUpload
           label="프로필 이미지"
-          //TODO: s3에 이미지 업로드 로직 추가  
+          //TODO: s3에 이미지 업로드 로직 추가
         />
       </FormWrapper>
 
-      <BottomButton
-        text="회원가입 완료하기"
-        onClick={handleSignup}
-      />
+      <BottomButton text="회원가입 완료하기" onClick={handleSignup} />
     </Container>
   );
-}
+};
 
 export default SignupPage;
 

@@ -20,10 +20,8 @@ function useDebounced<T>(value: T, delay = 300) {
   return debounced;
 }
 
-
 const LogPage: React.FC = () => {
   const [logs, setLogs] = useState<LogItem[]>([]);
-  const [loading, setLoading] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const searchBarRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
@@ -36,6 +34,10 @@ const LogPage: React.FC = () => {
   const [regionId, setRegionId] = useState<number | null>(null);
 
   const regionOptions = regions.map((r) => ({ id: r.id, name: r.nameKo }));
+
+  type AnyLogs = any[] | { logs?: any[]; items?: any[] } | null | undefined;
+  const toArray = (r: AnyLogs) =>
+    (Array.isArray(r) ? r : r?.logs ?? r?.items ?? []) as any[];
 
   const processLogItems = useCallback((items: any[]): LogItem[] => {
     return items.map((log) => ({
@@ -52,7 +54,6 @@ const LogPage: React.FC = () => {
     }));
   }, []);
 
-
   // 검색 제출 처리
   const handleSubmitSearch = (value: string) => {
     setShowSearch(false);
@@ -60,48 +61,50 @@ const LogPage: React.FC = () => {
   };
 
   const makeKey = useCallback(
-      (q: string, s: string, r: number | null) => `q=${q || ""}|s=${s}|r=${r ?? ""}`,
-      []
+    (q: string, s: string, r: number | null) =>
+      `q=${q || ""}|s=${s}|r=${r ?? ""}`,
+    []
   );
 
   // 살구로그 목록 가져오기 (검색/정렬/지역 포함) + 캐시/요청취소 관리
   const fetchLogs = useCallback(
-      async (opts: { q: string; s: string; r: number | null }) => {
-        const key = makeKey(opts.q, opts.s, opts.r);
+    async (opts: { q: string; s: string; r: number | null }) => {
+      const key = makeKey(opts.q, opts.s, opts.r);
 
-        if (cacheRef.current.has(key)) {
-          setLogs(cacheRef.current.get(key)!);
-          return;
+      if (cacheRef.current.has(key)) {
+        setLogs(cacheRef.current.get(key)!);
+        return;
+      }
+
+      if (abortRef.current) abortRef.current.abort();
+      abortRef.current = new AbortController();
+
+      //setLoading(true);
+      try {
+        let data: any[];
+
+        if (opts.q && opts.q.trim()) {
+          const res: any = await searchLogs(opts.q); // <- any 캐스팅
+          data = toArray(res); // {logs:[]} 구조든 배열이든 통일
+        } else {
+          const res: any = await getPublicLogs();
+          data = toArray(res);
         }
 
-        if (abortRef.current) abortRef.current.abort();
-        abortRef.current = new AbortController();
-
-        setLoading(true);
-        try {
-          let data: any[];
-          if (opts.q && opts.q.trim()) {
-            const { logs } = await searchLogs(opts.q);
-            data = logs ?? [];
-          } else {
-            const res = await getPublicLogs(); // 서버가 sort/region 받으면 여기 파라미터 붙이면 됨
-            data = Array.isArray(res) ? res : (res?.logs ?? res?.items ?? []);
-          }
-          const processed = processLogItems(data);
-          cacheRef.current.set(key, processed);
-          setLogs(processed);
-        } catch (e: any) {
-          if (e?.name !== "AbortError") {
-            console.error("로그 불러오기 실패:", e);
-            setLogs([]);
-          }
-        } finally {
-          setLoading(false);
+        const processed = processLogItems(data);
+        cacheRef.current.set(key, processed);
+        setLogs(processed);
+      } catch (e: any) {
+        if (e?.name !== "AbortError") {
+          console.error("로그 불러오기 실패:", e);
+          setLogs([]);
         }
-      },
-      [makeKey, processLogItems]
+      } finally {
+        //setLoading(false);
+      }
+    },
+    [makeKey, processLogItems]
   );
-
 
   // useEffect(() => {
   //   fetchLogs({ q: "", s: "latest", r: null });
@@ -111,11 +114,13 @@ const LogPage: React.FC = () => {
     fetchLogs({ q: debouncedQuery, s: sort, r: regionId });
   }, [debouncedQuery, sort, regionId, fetchLogs]);
 
-
   // 검색창 외부 클릭 시 닫기
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (searchBarRef.current && !searchBarRef.current.contains(event.target as Node)) {
+      if (
+        searchBarRef.current &&
+        !searchBarRef.current.contains(event.target as Node)
+      ) {
         setShowSearch(false);
       }
     }
@@ -132,40 +137,44 @@ const LogPage: React.FC = () => {
       <HeaderLeft
         title="살구로그"
         right={
-            !showSearch && (
-                <IconButton aria-label="검색" onClick={() => setShowSearch(true)} title="검색">
-                    <SearchIcon />
-                </IconButton>
-            )
+          !showSearch && (
+            <IconButton
+              aria-label="검색"
+              onClick={() => setShowSearch(true)}
+              title="검색"
+            >
+              <SearchIcon />
+            </IconButton>
+          )
         }
       />
 
-        <ActionContainer>
-            {showSearch ? (
-                <SearchRow ref={searchBarRef}>
-                    <SearchBar
-                        value={query}
-                        onChange={setQuery}
-                        onSubmit={handleSubmitSearch}
-                        placeholder="검색을 통해 로그를 찾아보세요"
-                    />
-                </SearchRow>
-            ) : (
-                <FilterBarContainer>
-                    <FilterBar
-                        regions={regionOptions}
-                        onChangeSort={(key) => setSort(key)}
-                        onChangeRegion={(id) => setRegionId(id)}
-                    />
-                </FilterBarContainer>
-            )}
-        </ActionContainer>
+      <ActionContainer>
+        {showSearch ? (
+          <SearchRow ref={searchBarRef}>
+            <SearchBar
+              value={query}
+              onChange={setQuery}
+              onSubmit={handleSubmitSearch}
+              placeholder="검색을 통해 로그를 찾아보세요"
+            />
+          </SearchRow>
+        ) : (
+          <FilterBarContainer>
+            <FilterBar
+              regions={regionOptions}
+              onChangeSort={(key) => setSort(key)}
+              onChangeRegion={(id) => setRegionId(id)}
+            />
+          </FilterBarContainer>
+        )}
+      </ActionContainer>
 
-        <ContentWrapper>
-          <CardContainer>
-            <LogCardList items={logs} />
-          </CardContainer>
-        </ContentWrapper>
+      <ContentWrapper>
+        <CardContainer>
+          <LogCardList items={logs} />
+        </CardContainer>
+      </ContentWrapper>
       <NavigationBar />
     </Container>
   );
@@ -181,10 +190,10 @@ const Container = styled.div`
 `;
 
 const ActionContainer = styled.div`
-    height: 56px;
-    display: flex;
-    align-items: center;
-    padding-top: 4px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  padding-top: 4px;
 `;
 
 const ContentWrapper = styled.div`
@@ -210,8 +219,8 @@ const IconButton = styled.button`
   place-items: center;
   cursor: pointer;
   position: relative;
-    
-    &:disabled {
+
+  &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
   }

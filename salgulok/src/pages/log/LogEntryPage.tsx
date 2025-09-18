@@ -2,11 +2,35 @@ import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import Header from "../../components/common/Header";
 import LogDetailHeader from "../../components/log/LogDetailIHeader.tsx";
+import TemplateCard from "../../components/common/TemplateCard.tsx";
 import TemplateCardDone from "../../components/log/TemplateCardDone.tsx";
+
+import LogEntryList from "../../components/log/LogEntryList.tsx";
+import { useEffect, useState } from "react";
+import { getLogDetail } from "../../api/log/getLogDetail.ts";
 
 const LogEntryPage: React.FC = () => {
   const { logId } = useParams<{ logId: string }>();
   const numericLogId = Number(logId);
+  const [logDetail, setLogDetail] = useState<{ startDate: string; endDate: string } | null>(null);
+  const [showTemplateCard, setShowTemplateCard] = useState(false);
+
+  useEffect(() => {
+    if (numericLogId) {
+      getLogDetail(numericLogId).then(detail => {
+        setLogDetail({
+          startDate: detail.startDate,
+          endDate: detail.endDate,
+        });
+        setShowTemplateCard(false);
+      });
+    }
+  }, [numericLogId]);
+
+  // TemplateCard 보여주는 핸들러
+  const handleSalguItemClick = () => {
+    setShowTemplateCard(true); // 보여주도록 변경
+  };
 
   return (
     <Container>
@@ -14,7 +38,21 @@ const LogEntryPage: React.FC = () => {
       <div style={{ marginTop: "15px" }}>
         <LogDetailHeader logId={numericLogId} />
       </div>
-      <TemplateCardDone title="" review="" />
+      {logDetail && (
+          <LogEntryList
+              logId={numericLogId}
+              startDate={logDetail.startDate}
+              endDate={logDetail.endDate}
+              onItemClick={handleSalguItemClick}
+          />
+      )}
+      {showTemplateCard && (
+          <TemplateCardWrapper>
+            <TemplateCard maxLength={300} />
+          </TemplateCardWrapper>
+      )}
+      {/*<TemplateCardDone title="" review="" />*/}
+
     </Container>
   );
 };
@@ -25,6 +63,12 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   padding-bottom: 67px; /* NavigationBar height */
+`;
+
+const TemplateCardWrapper = styled.div`
+  width: 90%;   
+  max-width: 600px; 
+  margin: 0 auto;   
 `;
 
 // const ActionContainer = styled.div`

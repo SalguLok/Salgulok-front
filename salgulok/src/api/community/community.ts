@@ -28,6 +28,7 @@ export interface CommentResponse {
   authorId: number;
   username: string;
   content: string;
+  authorProfileImg?: string;
 }
 
 // 페이지네이션 응답을 위한 제네릭 타입

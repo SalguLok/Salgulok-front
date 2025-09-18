@@ -8,6 +8,7 @@ import { getPostById, deletePost, createComment, deleteComment, getCommentsByPos
 import type { CommentResponse } from "../../api/community/community";
 import DefaultProfileImage from "../../assets/common/my_gray.svg";
 import { formatKst } from "../../utils/date";
+import PresignedImage from "../../components/common/PresignedImage";
 import NavigationBar from "../../components/common/NavigationBar";
 
 const CommunityDetailPage = () => {
@@ -126,7 +127,11 @@ const CommunityDetailPage = () => {
         {/* 게시글 */}
         <PostSection>
           <HeaderPost>
-            <Avatar src={post.authorProfileImg || DefaultProfileImage} alt={post.username} />
+            {post.authorProfileImg ? (
+              <AvatarPresigned objectKey={post.authorProfileImg} alt={post.username} />
+            ) : (
+              <Avatar src={DefaultProfileImage} alt={post.username} />
+            )}
             <div>
               <User>{post.username}</User>
               <Meta>
@@ -158,7 +163,11 @@ const CommunityDetailPage = () => {
           comments?.map((c: CommentResponse) => (
             <CommentBox key={c.id}>
               <HeaderPost>
-                <Avatar src={DefaultProfileImage} alt={c.username} />
+                {c.authorProfileImg ? (
+                  <AvatarPresigned objectKey={c.authorProfileImg} alt={c.username} />
+                ) : (
+                  <Avatar src={DefaultProfileImage} alt={c.username} />
+                )}
                 <div>
                   <User>{c.username}</User>
                 </div>
@@ -175,6 +184,14 @@ const CommunityDetailPage = () => {
 };
 
 export default CommunityDetailPage;
+
+const AvatarPresigned = styled(PresignedImage)`
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin-right: 12px;
+  background-color: var(--gray-100); /* 추가: 로딩 중 배경색 */
+`;
 
 // style
 const Layout = styled.div`

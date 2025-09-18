@@ -54,13 +54,11 @@ const HeaderWrapper = styled.header<{ $isVisible: boolean }>`
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding: 28px 20px 0px 20px;
+  padding: 28px 20px 8px 20px;
   box-sizing: border-box;
-  height: 44px;
+  height: 52px;
   background-color: var(--white);
   z-index: 1000;
-  opacity: ${props => props.$isVisible ? '1' : '0'};
-  transition: opacity 0.2s ease-in-out;
 `;
 
 const Title = styled.h1`
@@ -75,5 +73,5 @@ const RightSlot = styled.div`
 `;
 
 const HeaderSpacer = styled.div`
-  height: 44px;
+  height: 52px;
 `;

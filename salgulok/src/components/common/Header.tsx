@@ -40,16 +40,16 @@ const HeaderWrapper = styled.header`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 28px 20px 0px 20px;
+  padding: 28px 20px 8px 20px;
   box-sizing: border-box;
-  height: 44px;
+  background-color: var(--white);
+  height: 52px;
 `;
 
 const IconButton = styled.button`
   background: none;
   border: none;
   padding: 0;
-  padding-bottom: 5px;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -62,9 +62,9 @@ const IconButton = styled.button`
 
 const Title = styled.h1`
   flex: 1;
-  text-align: left;
+  text-align: center;
   font-size: 16px;
-  padding: 0px 10px 5px 10px;
+  padding: 0;
   margin: 0;
   font-weight: 600px;
 `;
@@ -74,5 +74,5 @@ const Spacer = styled.div`
 `;
 
 const HeaderSpacer = styled.div`
-  height: 44px;
+  height: 52px;
 `;

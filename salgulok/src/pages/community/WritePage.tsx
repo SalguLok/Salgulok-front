@@ -9,7 +9,6 @@ import dropdown from "../../assets/common/dropdown.svg";
 import { createPost } from "../../api/community/community";
 import type { PostCreateRequest, Topic } from "../../api/community/community";
 
-
 const REGIONS = [
   "서울",
   "부산",

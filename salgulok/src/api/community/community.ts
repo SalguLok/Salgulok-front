@@ -73,8 +73,22 @@ export const parseKst = (s?: string) => {
 // ================== 2. API 클라이언트 함수 ==================
 
 // 1. 게시글 목록 조회 (검색 포함)
-export const getPosts = async (params: GetPostsParams): Promise<Page<PostResponse>> => {
-  const { data } = await api.get<Page<PostResponse>>('/community/posts', { params });
+// export const getPosts = async (params: GetPostsParams): Promise<Page<PostResponse>> => {
+//   const { data } = await api.get<Page<PostResponse>>('/community/posts', { params });
+//   return data;
+// };
+
+export const getPosts = async (
+  params: GetPostsParams
+): Promise<Page<PostResponse>> => {
+  // undefined, null 값 제거
+  const cleanedParams = Object.fromEntries(
+    Object.entries(params).filter(([_, v]) => v !== undefined && v !== null)
+  );
+
+  const { data } = await api.get<Page<PostResponse>>('/community/posts', {
+    params: cleanedParams,
+  });
   return data;
 };
 

@@ -1,8 +1,10 @@
-// src/pages/community/PostCard.tsx
+// src/components/common/PostCard.tsx
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
 import { getCommentsByPostId } from "../../api/community/community";
 import CommentSvg from "../../assets/common/comment.svg";
+import DefaultProfileImage from "../../assets/common/my_gray.svg";
+import PresignedImage from "./PresignedImage";
 import type { Post } from "../../types/post";
 
 type Props = {
@@ -29,6 +31,15 @@ const Avatar = styled.img`
   border-radius: 50%;
   margin-right: 12px;
 `;
+
+const AvatarPresigned = styled(PresignedImage)`
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin-right: 12px;
+  background-color: var(--gray-100);
+`;
+
 const Info = styled.div`
   flex: 1;
 `;
@@ -99,7 +110,11 @@ export default function PostCard({ post, onClick, onMenuClick }: Props) {
   return (
     <Card clickable={!!onClick} onClick={handleClick} role={onClick ? "button" : undefined}>
       <Header>
-        <Avatar src={post.avatar} alt={post.user} />
+        {post.avatar ? (
+          <AvatarPresigned objectKey={post.avatar} alt={post.user} />
+        ) : (
+          <Avatar src={DefaultProfileImage} alt={post.user} />
+        )}
         <Info>
           <User>{post.user}</User>
           <Meta>{post.date}</Meta>

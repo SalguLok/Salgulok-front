@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import type { FC, MouseEvent } from "react";
-import { useState, useEffect } from "react";
 import Heart from "../../assets/common/heart.svg?react";
 import Comment from "../../assets/common/comment.svg?react";
 import Profile from "../../assets/common/profile_default.svg?react";

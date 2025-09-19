@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import TextInput from "../common/TextInput";
-import { saveEntrySummary } from "../../api/log/saveEntrySummary";
+import { saveEntrySummary } from "../../api/logEntry/saveEntrySummary";
 
 type ConfirmModalProps = {
   open: boolean;

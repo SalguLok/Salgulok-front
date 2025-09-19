@@ -3,7 +3,6 @@ import styled from "styled-components";
 import Header from "../../components/common/Header";
 import LogDetailHeader from "../../components/log/LogDetailIHeader.tsx";
 import TemplateCard from "../../components/common/TemplateCard.tsx";
-import TemplateCardDone from "../../components/log/TemplateCardDone.tsx";
 
 import LogEntryList from "../../components/log/LogEntryList.tsx";
 import { useEffect, useState } from "react";
@@ -48,7 +47,11 @@ const LogEntryPage: React.FC = () => {
       )}
       {showTemplateCard && (
           <TemplateCardWrapper>
-            <TemplateCard maxLength={300} />
+            {/* TODO: 임시 설정 */}
+            <TemplateCard 
+              logId={1}
+              entryDate={"2025-09-19"}
+            />
           </TemplateCardWrapper>
       )}
       {/*<TemplateCardDone title="" review="" />*/}

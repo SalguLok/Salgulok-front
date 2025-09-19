@@ -1,4 +1,5 @@
-import { FC, useState, useEffect } from "react";
+import { useState, useEffect  } from "react";
+import type { FC } from "react";
 import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 
 const PresignedImage: FC<{
@@ -31,7 +32,7 @@ const PresignedImage: FC<{
     fetchUrl();
   }, [objectKey]);
 
-  if (!url) return <div {...props} />;
+  // if (!url) return <div {...props} />;
 
   return <img src={url} {...props} />;
 };

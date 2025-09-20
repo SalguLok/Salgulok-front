@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import cameraIcon from "../../assets/common/camera.svg";
-import searchIcon from "../../assets/common/search.svg";
 import { createLogEntry } from "../../api/logEntry/createEntry";
 import type { TemplateCreateRequest } from "../../api/logEntry/createEntry";
 import { Star as StarIcon } from "lucide-react";
+import PlaceSearchField from "./PlaceSearchField";
+import type { PlaceSearchItem } from "../../types/place";
 
 type TemplateCardProps = {
   logId: number;
@@ -13,15 +14,21 @@ type TemplateCardProps = {
 
 const TemplateCard: React.FC<TemplateCardProps> = ({ logId, entryDate }) => {
   const [photoThumbUrl, setPhotoThumbUrl] = useState<string | undefined>();
-  const [place, setPlace] = useState("");
+  const [selectedPlace, setSelectedPlace] = useState<PlaceSearchItem | null>(
+    null
+  );
   const [text, setText] = useState("");
   const [star, setStar] = useState(0);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
+    if (!selectedPlace) {
+      alert("장소를 선택해주세요.");
+      return;
+    }
     setSaving(true);
     const template: TemplateCreateRequest = {
-      placeId: 1, // TODO: 실제 장소 ID 연결 필요
+      placeId: selectedPlace.id,
       text,
       star,
       imageUrls: photoThumbUrl ? [photoThumbUrl] : [],
@@ -33,9 +40,9 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ logId, entryDate }) => {
         templates: [template],
       });
       console.log(template);
-      // 초기화 - 해야하나? 안해도되면 지우기
+      // 초기화
       setPhotoThumbUrl(undefined);
-      setPlace("");
+      setSelectedPlace(null);
       setText("");
       setStar(0);
     } catch (err) {
@@ -65,14 +72,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ logId, entryDate }) => {
       </PhotoRow>
 
       <FieldLabel>장소</FieldLabel>
-      <SearchField>
-        <SearchIconImg src={searchIcon} alt="" />
-        <PlaceInput
-          value={place}
-          placeholder="장소를 입력하세요"
-          onChange={(e) => setPlace(e.target.value)}
-        />
-      </SearchField>
+      <PlaceSearchField onPlaceSelect={setSelectedPlace} />
 
       <FieldLabel>글 작성</FieldLabel>
       <TextAreaWrapper>
@@ -90,7 +90,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ logId, entryDate }) => {
           <span key={n} onClick={() => setStar(n)} style={{ cursor: "pointer" }}>
             <StarIcon
               size={21}
-              fill={n <= star ? "var(--main-pri)" : "none"}   // 색칠 여부
+              fill={n <= star ? "var(--main-pri)" : "none"} // 색칠 여부
               stroke={n <= star ? "none" : "var(--gray-300)"} // 테두리 색
             />
           </span>

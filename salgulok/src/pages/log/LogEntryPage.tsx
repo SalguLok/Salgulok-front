@@ -33,6 +33,7 @@ const LogEntryPage: React.FC = () => {
   };
   const [cards, setCards] = useState<CardData[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  selectedDate;
 
   type TemplateImage = { imageUrl: string };
   type TemplateSummary = {

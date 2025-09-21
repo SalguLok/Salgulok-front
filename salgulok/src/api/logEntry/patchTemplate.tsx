@@ -14,3 +14,5 @@ const patchTemplate = async (
     console.error(err);
   }
 };
+
+patchTemplate;

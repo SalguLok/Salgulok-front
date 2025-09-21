@@ -130,7 +130,7 @@ const LogEntryPage: React.FC = () => {
       {showTemplateCard && (
 
         <TemplateCardWrapper>
-          <TemplateCard maxLength={300} />
+          <TemplateCard />
         </TemplateCardWrapper>
 
       )}

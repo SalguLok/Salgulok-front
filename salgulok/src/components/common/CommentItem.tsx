@@ -98,7 +98,7 @@ const AuthorName = styled.div`
 
 const CommentDate = styled.div`
   font-size: 12px;
-  color: #888;
+  color: var(--gray-300);
   font-family: "Pretendard", sans-serif;
 `;
 

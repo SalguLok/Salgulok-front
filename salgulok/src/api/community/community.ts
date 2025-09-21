@@ -29,6 +29,7 @@ export interface CommentResponse {
   username: string;
   content: string;
   authorProfileImg?: string;
+  createdAt?: string; // 댓글 생성 시간 추가
 }
 
 // 페이지네이션 응답을 위한 제네릭 타입

@@ -15,7 +15,7 @@ export default function CommentItem({ comment, onDelete, canDelete = false }: Pr
     authorId: comment.authorId,
     username: comment.username,
     content: comment.content,
-    createdAt: new Date().toISOString(), // Community 댓글에는 날짜 정보가 없으므로 현재 시간 사용
+    createdAt: comment.createdAt || new Date().toISOString(), // 서버 시간이 있으면 사용, 없으면 현재 시간
     authorProfileImg: comment.authorProfileImg,
   };
 

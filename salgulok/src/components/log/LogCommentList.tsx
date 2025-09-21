@@ -60,6 +60,7 @@ const LoadingText = styled.div`
   color: #666;
   padding: 20px;
   font-size: 14px;
+  font-family: "Pretendard", sans-serif;
 `;
 
 const EmptyText = styled.div`
@@ -67,6 +68,7 @@ const EmptyText = styled.div`
   color: #999;
   padding: 40px 20px;
   font-size: 14px;
+  font-family: "Pretendard", sans-serif;
 `;
 
 const CommentsList = styled.div`

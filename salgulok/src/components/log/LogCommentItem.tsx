@@ -39,12 +39,12 @@ const LogCommentItem: React.FC<Props> = ({ comment, onDelete, canDelete = false 
           </CommentDate>
         </CommentInfo>
         {canDelete && (
-          <DeleteButton 
+          <MenuButton 
             onClick={handleDelete}
             title="댓글 삭제"
           >
-            삭제
-          </DeleteButton>
+            ⋮
+          </MenuButton>
         )}
       </Header>
       <CommentContent>{comment.content}</CommentContent>
@@ -88,24 +88,31 @@ const AuthorName = styled.div`
   font-size: 14px;
   font-weight: 600;
   color: #222;
+  font-family: "Pretendard", sans-serif;
 `;
 
 const CommentDate = styled.div`
   font-size: 12px;
   color: #888;
+  font-family: "Pretendard", sans-serif;
 `;
 
-const DeleteButton = styled.button`
+const MenuButton = styled.button`
   background: none;
   border: none;
-  color: #e74c3c;
-  font-size: 12px;
+  color: #999;
+  font-size: 18px;
   cursor: pointer;
-  padding: 4px 8px;
+  padding: 4px;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto; /* 오른쪽 끝으로 밀기 */
   
   &:hover {
-    background-color: #ffeaea;
+    background-color: #f5f5f5;
+    color: #666;
   }
 `;
 
@@ -114,4 +121,5 @@ const CommentContent = styled.div`
   line-height: 1.4;
   color: #333;
   margin-left: 40px;
+  font-family: "Pretendard", sans-serif;
 `;

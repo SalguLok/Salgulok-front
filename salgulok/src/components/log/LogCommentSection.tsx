@@ -115,10 +115,10 @@ const CommentsHeader = styled.h2`
   font-weight: 600;
   color: #222;
   margin: 0 0 16px 0;
+  font-family: "Pretendard", sans-serif;
 `;
 
 const CommentInputWrapper = styled.div`
   margin-top: 20px;
   padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
 `;

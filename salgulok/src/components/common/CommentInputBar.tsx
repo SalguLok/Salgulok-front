@@ -81,6 +81,7 @@ const Input = styled.input`
   padding: 0 12px;
     border: 1px solid #ddd;
     font-size: 14px;
+    font-family: "Pretendard", sans-serif;
 
     background-color: #fff;   
     color: #000;
@@ -100,6 +101,7 @@ const SubmitBtn = styled.button`
   color: var(--white);
   font-size: 14px;
   font-weight: 600;
+  font-family: "Pretendard", sans-serif;
 
   &:disabled {
     opacity: 0.5;

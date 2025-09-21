@@ -34,7 +34,9 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ logId, entryDate }) => {
     const currentFiles = Array.from(files);
 
     // 1. 즉시 미리보기 생성
-    const newPreviewUrls = currentFiles.map((file) => URL.createObjectURL(file));
+    const newPreviewUrls = currentFiles.map((file) =>
+      URL.createObjectURL(file)
+    );
     setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
 
     // 2. 백그라운드에서 업로드 진행
@@ -51,7 +53,9 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ logId, entryDate }) => {
       console.error("Upload failed:", err);
       alert("이미지 업로드에 실패했습니다.");
       // 실패 시 추가한 미리보기 제거
-      setPreviewUrls((prev) => prev.slice(0, prev.length - newPreviewUrls.length));
+      setPreviewUrls((prev) =>
+        prev.slice(0, prev.length - newPreviewUrls.length)
+      );
     } finally {
       setIsUploading(false);
     }
@@ -144,7 +148,11 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ logId, entryDate }) => {
       <FieldLabel>별점</FieldLabel>
       <StarRow>
         {[1, 2, 3, 4, 5].map((n) => (
-          <span key={n} onClick={() => setStar(n)} style={{ cursor: "pointer" }}>
+          <span
+            key={n}
+            onClick={() => setStar(n)}
+            style={{ cursor: "pointer" }}
+          >
             <StarIcon
               size={21}
               fill={n <= star ? "var(--main-pri)" : "none"} // 색칠 여부
@@ -196,61 +204,10 @@ const PhotoRow = styled.div`
   margin-bottom: 14px;
 `;
 
-const IconBox = styled.div`
-  width: 53px;
-  height: 53px;
-  border: 1px solid var(--gray-300);
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
-  img {
-    width: 22px;
-    height: 22px;
-  }
-`;
-
-const Thumb = styled.img`
-  width: 88px;
-  height: 88px;
-  border-radius: 10px;
-  object-fit: cover;
-  border: 1px solid var(--gray-300);
-`;
-
 const FieldLabel = styled.div`
   font-size: 13px;
   color: var(--gray-500);
   margin: 8px 0 6px;
-`;
-
-const SearchField = styled.div`
-  position: relative;
-  flex: 1;
-  height: 34px;
-  border: 1px solid var(--gray-300);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  background: var(--white);
-  margin-bottom: 12px;
-  padding-left: 36px;
-`;
-
-const SearchIconImg = styled.img`
-  position: absolute;
-  left: 10px;
-  width: 16px;
-  height: 16px;
-  pointer-events: none;
-`;
-
-const PlaceInput = styled.input`
-  flex: 1;
-  height: 100%;
-  border: 0;
-  outline: 0;
-  background: transparent;
-  font-size: 13px;
 `;
 
 const TextAreaWrapper = styled.div`

@@ -1,12 +1,11 @@
 import styled from "styled-components";
 import type { FC, MouseEvent } from "react";
-import { useState, useEffect } from "react";
 import Heart from "../../assets/common/heart.svg?react";
 import Comment from "../../assets/common/comment.svg?react";
 import Profile from "../../assets/common/profile_default.svg?react";
 import Lock from "../../assets/mypage/lock.svg?react";
 import { useNavigate } from "react-router-dom";
-import { issueGetPresigned } from "../../api/image/issueGetPresigned";
+import PresignedImage from "./PresignedImage";
 
 export type LogItem = {
   id: number;
@@ -27,41 +26,6 @@ type Props = {
   onClick?: (id: number) => void;
   onToggleLike?: (id: number, e: MouseEvent) => void;
   onClickMore?: (id: number, e: MouseEvent) => void;
-};
-
-const PresignedImage: FC<{
-  objectKey?: string | null;
-  src?: string;
-  [key: string]: any;
-}> = ({ objectKey, ...props }) => {
-  const [url, setUrl] = useState("");
-
-  useEffect(() => {
-    if (!objectKey) {
-      setUrl("");
-      return;
-    }
-
-    const fetchUrl = async () => {
-      try {
-        const res = await issueGetPresigned(objectKey);
-        if (res.items && res.items.length > 0) {
-          setUrl(res.items[0].presignedUrl);
-        } else {
-          setUrl("");
-        }
-      } catch (e) {
-        console.error("Failed to get presigned URL", e);
-        setUrl("");
-      }
-    };
-
-    fetchUrl();
-  }, [objectKey]);
-
-  // if (!url) return <div {...props} />;
-
-  return <img src={url} {...props} />;
 };
 
 const LogCardList: FC<Props> = ({ items, onClick, onClickMore }) => {

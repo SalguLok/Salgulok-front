@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import SalguOff from "../../assets/common/salgu_off.svg";
 import Salgu from "../../assets/common/salgu.svg";
 import SalguPlus from "../../assets/common/salgu_plus.svg";
+// import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 
 import { getEntryDates, type LogEntryDateListResponse } from "../../api/logEntry/getEntryDates";
 
@@ -91,7 +92,8 @@ const SalguItem: FC<Props> = ({
                     const map = await ensureDatesLoaded(logId);
                     const item = map.get(isoDate);
                     if (item) {
-                        keyOrUrl = item.thumbnailUrl ?? null;
+                        // TODO: 배포위해 일단 주석처리!! 수정필요
+                        // keyOrUrl = item.thumbnailUrl ?? null;
                         setDerivedHasLog(item.templateCount && item.templateCount > 0 ? "yes" : "no");
                     } else {
                         setDerivedHasLog("no");
@@ -114,7 +116,9 @@ const SalguItem: FC<Props> = ({
 
                 // 4) objectKey면 presigned 발급하여 실제 URL로 변환
                 if (usePresigned) {
-                    const { url } = await issueGetPresigned(keyOrUrl);
+                    // TODO: 배포위해 일단 임시로 ""로 설정. 120-121번째줄 확인 필요!!
+                    // const { url } = await issueGetPresigned(keyOrUrl);
+                    const url = "";
                     if (mountedRef.current) setResolvedSrc(url ?? null);
                 } else {
                     setResolvedSrc(null);

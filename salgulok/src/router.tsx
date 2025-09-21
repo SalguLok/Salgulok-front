@@ -15,6 +15,7 @@ import EditProfilePage from "./pages/mypage/EditProfilePage";
 import MyPage from "./pages/mypage/MyPage";
 import WritePage from "./pages/community/WritePage.tsx";
 import CommunityDetailPage from "./pages/community/CommunityDetailPage.tsx";
+import LogDetailPage from "./pages/log/LogDetailPage.tsx";
 
 // 테스트용
 // import LogEntryPage from "./pages/log/LogEntryPage";
@@ -37,7 +38,7 @@ const router = createBrowserRouter([
   },
   {
     path: "/log/:logId",
-    element: <ProtectedRoute element={<LogEntryPage />} />,
+    element: <ProtectedRoute element={<LogDetailPage />} />,
   },
   {
     path: "/community",

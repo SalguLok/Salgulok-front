@@ -119,13 +119,13 @@ const CommunityPage = () => {
     setFilters(prev => ({ ...prev, topic: newTopic, page: 0 }));
   };
 
-  const toggleStatus = () => {
-    setFilters(prev => ({
-      ...prev,
-      status: prev.status === 'staying' ? undefined : 'staying',
-      page: 0,
-    }));
-  };
+  // const toggleStatus = () => {
+  //   setFilters(prev => ({
+  //     ...prev,
+  //     status: prev.status === 'staying' ? undefined : 'staying',
+  //     page: 0,
+  //   }));
+  // };
 
   return (
     <>
@@ -295,20 +295,20 @@ const BannerSub = styled.div`
   font-family: 'pretendard', sans-serif;
 `;
 
-const StatusButton = styled.button<{$active?: boolean}>`
-  position: absolute;
-  right: 24px;
-  top: 24px;
-  font-size: 14px;
-  font-family: 'pretendard', sans-serif;
-  background: ${({$active}) => $active ? 'var(--main-pri)' : 'rgba(0,0,0,0.3)'};
-  color: var(--white);
-  border: none;
-  border-radius: 12px;
-  padding: 4px 12px;
-  cursor: pointer;
-  z-index: 2;
-`;
+// const StatusButton = styled.button<{$active?: boolean}>`
+//   position: absolute;
+//   right: 24px;
+//   top: 24px;
+//   font-size: 14px;
+//   font-family: 'pretendard', sans-serif;
+//   background: ${({$active}) => $active ? 'var(--main-pri)' : 'rgba(0,0,0,0.3)'};
+//   color: var(--white);
+//   border: none;
+//   border-radius: 12px;
+//   padding: 4px 12px;
+//   cursor: pointer;
+//   z-index: 2;
+// `;
 
 const BannerImage = styled.img`
   position: absolute;

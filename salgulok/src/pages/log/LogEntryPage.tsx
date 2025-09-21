@@ -1,10 +1,12 @@
 import { useParams } from "react-router-dom";
 import styled from "styled-components";
 import Header from "../../components/common/Header";
+
 import LogDetailHeader from "../../components/log/LogDetailIHeader";
 import TemplateCard from "../../components/common/TemplateCard";
 import TemplateCardDone from "../../components/log/TemplateCardDone";
 import LogEntryList from "../../components/log/LogEntryList";
+
 import { useEffect, useState } from "react";
 import { getLogDetail } from "../../api/log/getLogDetail";
 import { getLogEntryByDate } from "../../api/logEntry/getLogEntryByDate";
@@ -126,9 +128,11 @@ const LogEntryPage: React.FC = () => {
         </TemplateContainer>
       ))}
       {showTemplateCard && (
+
         <TemplateCardWrapper>
           <TemplateCard />
         </TemplateCardWrapper>
+
       )}
     </Container>
   );

@@ -42,7 +42,8 @@ export async function getEntryDatesWithPresignedUrls(
             if (item.thumbnailObjectKey) {
                 try {
                     const presigned: PresignedUrlResponse = await issueGetPresigned(item.thumbnailObjectKey);
-                    thumbnailUrl = presigned.presignedUrl;
+                    //TODO: 배포위해 임시 설정. 수정 필요!!
+                    thumbnailUrl = presigned.items[0]?.presignedUrl ?? null;
                 } catch (e) {
                     console.error("presigned 실패:", item.thumbnailObjectKey, e);
                 }

@@ -7,6 +7,7 @@ import HeaderLeft from "../../components/common/HeaderLeft";
 import { getPublicLogs } from "../../api/log/getPublicLogs";
 import SearchIcon from "../../assets/common/search.svg?react";
 import { searchLogs } from "../../api/log/searchLogs";
+import { getLogComments } from "../../api/log/logComment";
 import SearchBar from "../../components/log/SearchBar";
 import FilterBar from "../../components/log/FilterBar";
 import { regions } from "../../data/regions";
@@ -94,8 +95,22 @@ const LogPage: React.FC = () => {
 
 
         const processed = processLogItems(data);
-        cacheRef.current.set(key, processed);
-        setLogs(processed);
+        
+        // 댓글 수 추가 조회
+        const logsWithComments = await Promise.all(
+          processed.map(async (log) => {
+            try {
+              const commentsData = await getLogComments(log.id, { page: 0, size: 1, sort: 'createdAt' });
+              return { ...log, comments: commentsData.totalElements };
+            } catch (error) {
+              console.error(`로그 ${log.id} 댓글 수 조회 실패:`, error);
+              return { ...log, comments: 0 };
+            }
+          })
+        );
+        
+        cacheRef.current.set(key, logsWithComments);
+        setLogs(logsWithComments);
       } catch (e: any) {
         if (e?.name !== "AbortError") {
           console.error("로그 불러오기 실패:", e);

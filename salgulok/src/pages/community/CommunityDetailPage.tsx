@@ -8,13 +8,18 @@ import { getPostById, deletePost, createComment, deleteComment, getCommentsByPos
 import type { CommentResponse } from "../../api/community/community";
 import DefaultProfileImage from "../../assets/common/my_gray.svg";
 import { formatKst } from "../../utils/date";
+import PresignedImage from "../../components/common/PresignedImage";
 import NavigationBar from "../../components/common/NavigationBar";
+import CommentItem from "./CommentItem";
 
 const CommunityDetailPage = () => {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const numericPostId = Number(postId);
+  
+  // 현재 사용자 ID (실제로는 인증 상태에서 가져와야 함)
+  const currentUserId = parseInt(localStorage.getItem("userId") || "0");
 
   // 1. 게시글 상세 정보 조회
   const { data: post, isLoading, error } = useQuery({
@@ -126,7 +131,11 @@ const CommunityDetailPage = () => {
         {/* 게시글 */}
         <PostSection>
           <HeaderPost>
-            <Avatar src={post.authorProfileImg || DefaultProfileImage} alt={post.username} />
+            {post.authorProfileImg ? (
+              <AvatarPresigned objectKey={post.authorProfileImg} alt={post.username} />
+            ) : (
+              <Avatar src={DefaultProfileImage} alt={post.username} />
+            )}
             <div>
               <User>{post.username}</User>
               <Meta>
@@ -156,16 +165,12 @@ const CommunityDetailPage = () => {
           <div>댓글 로딩 중...</div>
         ) : (
           comments?.map((c: CommentResponse) => (
-            <CommentBox key={c.id}>
-              <HeaderPost>
-                <Avatar src={DefaultProfileImage} alt={c.username} />
-                <div>
-                  <User>{c.username}</User>
-                </div>
-                <Menu onClick={() => handleDeleteComment(c.id)}>⋮</Menu> {/* 댓글 삭제 기능 연결 */}
-              </HeaderPost>
-              <CommentBody>{c.content}</CommentBody>
-            </CommentBox>
+            <CommentItem 
+              key={c.id}
+              comment={c}
+              onDelete={handleDeleteComment}
+              canDelete={currentUserId === c.authorId}
+            />
           ))
         )}
       </Wrap>
@@ -175,6 +180,14 @@ const CommunityDetailPage = () => {
 };
 
 export default CommunityDetailPage;
+
+const AvatarPresigned = styled(PresignedImage)`
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  margin-right: 12px;
+  background-color: var(--gray-100); /* 추가: 로딩 중 배경색 */
+`;
 
 // style
 const Layout = styled.div`
@@ -215,12 +228,14 @@ const Avatar = styled.img`
 const User = styled.div`
   font-weight: 600;
   font-size: 14px;
+  font-family: "Pretendard", sans-serif;
 `;
 
 const Meta = styled.div`
   font-size: 12px;
   color: var(--gray-300);
   margin-top: 2px;
+  font-family: "Pretendard", sans-serif;
 `;
 
 const Body = styled.p`
@@ -243,25 +258,16 @@ const CommentTitle = styled.h3`
   font-size: 13px;
   font-weight: 600;
   margin: 16px 0 8px;
-`;
-
-const CommentBox = styled.div`
-  padding: 12px 0;
-  border-bottom: 1px solid var(--gray-100);
-`;
-
-const CommentBody = styled.p`
-  font-size: 13px;
-  margin-left: 48px; /* 아바타 오른쪽 정렬 유지 */
-  margin-top: 6px;
+  font-family: "Pretendard", sans-serif;
 `;
 
 const Menu = styled.div`
   font-size: 18px;
   color: var(--gray-400);
   cursor: pointer;
-  margin-left: auto; /* 아바타+텍스트 오른쪽 끝으로 밀기 */
+  margin-left: auto;
 `;
+
 
 const Badge = styled.span`
   padding: 2px 11px;

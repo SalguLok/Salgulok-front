@@ -127,12 +127,10 @@ const LogEntryPage: React.FC = () => {
           />
         </TemplateContainer>
       ))}
-      {showTemplateCard && (
-
+      {showTemplateCard && typeof selectedDate === "string" && (
         <TemplateCardWrapper>
-          <TemplateCard />
+          <TemplateCard logId={numericLogId} entryDate={selectedDate} />
         </TemplateCardWrapper>
-
       )}
     </Container>
   );

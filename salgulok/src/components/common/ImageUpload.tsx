@@ -1,6 +1,6 @@
 import React, { useRef, useState } from "react";
 import styled from "styled-components";
-import CameraIcon from "../../assets/common/camera.svg?react";
+import CameraIcon from "../../assets/common/camera.svg";
 
 interface ImageUploadProps {
   label?: string;

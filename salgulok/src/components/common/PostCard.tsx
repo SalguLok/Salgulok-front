@@ -2,8 +2,8 @@
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
 import { getCommentsByPostId } from "../../api/community/community";
-import CommentSvg from "../../assets/common/comment.svg?react";
-import DefaultProfileImage from "../../assets/common/my_gray.svg?react";
+import CommentSvg from "../../assets/common/comment.svg";
+import DefaultProfileImage from "../../assets/common/my_gray.svg";
 import PresignedImage from "./PresignedImage";
 import type { Post } from "../../types/post";
 

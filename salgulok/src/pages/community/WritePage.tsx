@@ -5,7 +5,7 @@ import Header from "../../components/common/Header";
 import BottomSheet from "../../components/common/BottomSheet";
 import { Chip, ChipRow } from "../../components/common/Chip";
 import { useState } from "react";
-import dropdown from "../../assets/common/dropdown.svg?react";
+import dropdown from "../../assets/common/dropdown.svg";
 import { createPost } from "../../api/community/community";
 import type { PostCreateRequest, Topic } from "../../api/community/community";
 

@@ -7,13 +7,13 @@ import HeaderLeft from "../../components/common/HeaderLeft";
 import PostCard from "../../components/common/PostCard";
 import { getPosts, deletePost } from "../../api/community/community";
 import type { GetPostsParams, Topic } from "../../api/community/community";
-import DefaultProfileImage from "../../assets/common/my_gray.svg?react";
+import DefaultProfileImage from "../../assets/common/my_gray.svg";
 import { formatKst } from "../../utils/date";
 
 //region 선택
 import BottomSheet from "../../components/common/BottomSheet";
 import { Chip, ChipRow } from "../../components/common/Chip";
-import dropdown from "../../assets/common/dropdown.svg?react";
+import dropdown from "../../assets/common/dropdown.svg";
 import regions from "../../data/regions"; // regions 데이터 임포트
 
 const topics: Topic[] = ['동행', '맛집', '숙소', '교통', '기타'];

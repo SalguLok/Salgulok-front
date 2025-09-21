@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useNavigate, Link } from "react-router-dom";
-import LogoImg from "../../assets/common/main_salgu.svg?react"
+import LogoImg from "../../assets/common/main_salgu.svg"
 import BottomButton from "../../components/common/BottomButton";
 import Header from "../../components/common/Header";
 
@@ -17,7 +17,7 @@ const CreateLogCompletePage: React.FC = () => {
         <Header title="살구로그 생성"/>
 
         <ContentWrapper>
-          <Logo><LogoImg /></Logo>
+          <Logo src={LogoImg}/>
           <MainText>로그가 생성되었어요!</MainText>
           <SubText>소중한 순간을 로그에 남겨주세요.</SubText>
         </ContentWrapper>

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import styled from "styled-components";
 
-import deleteIcon from "../../assets/common/delete.svg?react";
-import drawIcon from "../../assets/common/draw.svg?react";
+import deleteIcon from "../../assets/common/delete.svg";
+import drawIcon from "../../assets/common/draw.svg";
 
 type ActionMenuProps = {
     open: boolean;

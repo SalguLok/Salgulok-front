@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import styled from "styled-components";
-import cameraIcon from "../../assets/common/camera.svg?react";
-import searchIcon from "../../assets/common/search.svg?react";
+import cameraIcon from "../../assets/common/camera.svg";
+import searchIcon from "../../assets/common/search.svg";
 import { createLogEntry } from "../../api/logEntry/createEntry";
 import type { TemplateCreateRequest } from "../../api/logEntry/createEntry";
 import { Star as StarIcon } from "lucide-react";

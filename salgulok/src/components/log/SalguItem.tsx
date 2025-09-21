@@ -1,9 +1,9 @@
 import styled from "styled-components";
 import type { FC } from "react";
 import { useEffect, useRef, useState } from "react";
-import SalguOff from "../../assets/common/salgu_off.svg?react";
-import Salgu from "../../assets/common/salgu.svg?react";
-import SalguPlus from "../../assets/common/salgu_plus.svg?react";
+import SalguOff from "../../assets/common/salgu_off.svg";
+import Salgu from "../../assets/common/salgu.svg";
+import SalguPlus from "../../assets/common/salgu_plus.svg";
 // import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 
 import { getEntryDates, type LogEntryDateListResponse } from "../../api/logEntry/getEntryDates";

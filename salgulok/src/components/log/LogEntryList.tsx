@@ -7,6 +7,7 @@ type Props = {
   startDate: string;
   endDate: string;
   onItemClick: (date: string) => void | Promise<void>;
+  isOwner: boolean;
 };
 
 const LogEntryList: React.FC<Props> = ({
@@ -14,6 +15,7 @@ const LogEntryList: React.FC<Props> = ({
   startDate,
   endDate,
   onItemClick,
+  isOwner,
 }) => {
   // 안전한 ISO 파싱
   const start = parseISO(startDate);
@@ -32,6 +34,7 @@ const LogEntryList: React.FC<Props> = ({
           isoDate={date}
           logId={logId}
           onClick={() => onItemClick(date)}
+          isOwner={isOwner}
         />
       ))}
     </Container>

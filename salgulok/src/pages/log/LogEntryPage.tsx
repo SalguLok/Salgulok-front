@@ -22,6 +22,7 @@ const LogEntryPage: React.FC = () => {
     oneReview: string;
     startDate: string;
     endDate: string;
+    ownerId: number;
   } | null>(null);
   const [showTemplateCard, setShowTemplateCard] = useState(false);
 
@@ -108,6 +109,7 @@ const LogEntryPage: React.FC = () => {
         endDate: detail.endDate,
         isPublic: detail.isPublic,
         oneReview: detail.oneReview,
+        ownerId: detail.ownerId,
       });
       setShowTemplateCard(false);
     })();
@@ -128,6 +130,7 @@ const LogEntryPage: React.FC = () => {
           startDate={logDetail.startDate}
           endDate={logDetail.endDate}
           onItemClick={handleSalguItemClick}
+          isOwner={currentUserId === logDetail.ownerId}
         />
       )}
 

@@ -10,6 +10,7 @@ export type LogDetailResponse = {
     regionId: number;
     imgUrl: string;
     isUpload?: boolean;
+    ownerId: number;
 };
 
 export async function getLogDetail(logId: number): Promise<LogDetailResponse> {

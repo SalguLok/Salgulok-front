@@ -3,7 +3,7 @@ import type { FC } from "react";
 import { useEffect, useRef, useState } from "react";
 import SalguOff from "../../assets/common/salgu_off.svg";
 import Salgu from "../../assets/common/salgu.svg";
-//import SalguPlus from "../../assets/common/salgu_plus.svg";
+import SalguPlus from "../../assets/common/salgu_plus.svg";
 // import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 
 import {
@@ -20,6 +20,7 @@ type Props = {
   logId?: number;
   thumbnailKeyOrUrl?: string | null;
   usePresigned?: boolean;
+  isOwner?: boolean;
 };
 
 type DateMap = Map<string, LogEntryDateListResponse["items"][number]>;
@@ -48,6 +49,7 @@ const SalguItem: FC<Props> = ({
   logId,
   thumbnailKeyOrUrl,
   usePresigned = true,
+  isOwner = false,
 }) => {
   const [resolvedSrc, setResolvedSrc] = useState<string | null>(null);
   const [derivedHasLog, setDerivedHasLog] = useState<"yes" | "no">(
@@ -144,12 +146,16 @@ const SalguItem: FC<Props> = ({
     ? SalguOff
     : derivedHasLog === "yes"
     ? Salgu
-    : SalguOff; //SalguPlus
+    : isOwner
+    ? SalguPlus
+    : SalguOff;
 
   const alt = forceOff
     ? "살구로그 비활성"
     : derivedHasLog === "yes"
     ? "살구로그 있음"
+    : isOwner
+    ? "살구로그 추가"
     : "살구로그 없음";
 
   return (

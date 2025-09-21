@@ -11,6 +11,7 @@ export interface LogEntryByDate {
   templates: Array<{
     templateId: number;
     placeId: number;
+    placeName: string;
     text: string;
     star: number;
     images?: Array<{ imageId: number; imageUrl: string }>;

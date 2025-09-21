@@ -37,7 +37,7 @@ const LogCardList: FC<Props> = ({ items, onClick, onClickMore }) => {
         <Card
           key={item.id}
           onClick={() => {
-            navigate(`/log/${item.id}`);
+            navigate(`/log/${item.id}/entries`);
             onClick?.(item.id);
           }}
         >

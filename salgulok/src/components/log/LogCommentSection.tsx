@@ -14,10 +14,10 @@ type Props = {
 const LogCommentSection: React.FC<Props> = ({ logId, currentUserId }) => {
   const queryClient = useQueryClient();
 
-  // 댓글 목록 조회
+  // 댓글 목록 조회 (모든 댓글을 한 번에 로드)
   const { data: commentsData, isLoading: isCommentsLoading } = useQuery({
     queryKey: ["logComments", logId],
-    queryFn: () => getLogComments(logId, { page: 0, size: 20, sort: 'createdAt' }),
+    queryFn: () => getLogComments(logId, { page: 0, size: 1000, sort: 'createdAt' }),
     enabled: !!logId,
   });
 

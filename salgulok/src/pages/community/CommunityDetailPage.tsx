@@ -10,12 +10,16 @@ import DefaultProfileImage from "../../assets/common/my_gray.svg";
 import { formatKst } from "../../utils/date";
 import PresignedImage from "../../components/common/PresignedImage";
 import NavigationBar from "../../components/common/NavigationBar";
+import CommentItem from "./CommentItem";
 
 const CommunityDetailPage = () => {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const numericPostId = Number(postId);
+  
+  // 현재 사용자 ID (실제로는 인증 상태에서 가져와야 함)
+  const currentUserId = parseInt(localStorage.getItem("userId") || "0");
 
   // 1. 게시글 상세 정보 조회
   const { data: post, isLoading, error } = useQuery({
@@ -161,20 +165,12 @@ const CommunityDetailPage = () => {
           <div>댓글 로딩 중...</div>
         ) : (
           comments?.map((c: CommentResponse) => (
-            <CommentBox key={c.id}>
-              <HeaderPost>
-                {c.authorProfileImg ? (
-                  <AvatarPresigned objectKey={c.authorProfileImg} alt={c.username} />
-                ) : (
-                  <Avatar src={DefaultProfileImage} alt={post.username} />
-                )}
-                <div>
-                  <User>{c.username}</User>
-                </div>
-                <Menu onClick={() => handleDeleteComment(c.id)}>⋮</Menu> {/* 댓글 삭제 기능 연결 */}
-              </HeaderPost>
-              <CommentBody>{c.content}</CommentBody>
-            </CommentBox>
+            <CommentItem 
+              key={c.id}
+              comment={c}
+              onDelete={handleDeleteComment}
+              canDelete={currentUserId === c.authorId}
+            />
           ))
         )}
       </Wrap>
@@ -265,24 +261,13 @@ const CommentTitle = styled.h3`
   font-family: "Pretendard", sans-serif;
 `;
 
-const CommentBox = styled.div`
-  padding: 12px 0;
-  border-bottom: 1px solid var(--gray-100);
-`;
-
-const CommentBody = styled.p`
-  font-size: 13px;
-  margin-left: 48px; /* 아바타 오른쪽 정렬 유지 */
-  margin-top: 6px;
-  font-family: "Pretendard", sans-serif;
-`;
-
 const Menu = styled.div`
   font-size: 18px;
   color: var(--gray-400);
   cursor: pointer;
-  margin-left: auto; /* 아바타+텍스트 오른쪽 끝으로 밀기 */
+  margin-left: auto;
 `;
+
 
 const Badge = styled.span`
   padding: 2px 11px;

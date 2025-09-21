@@ -17,6 +17,7 @@ import { useState, useEffect, useMemo } from "react";
 import LogWriteButton from "../../components/home/LogWriteButton";
 import { useNavigate } from "react-router-dom";
 import { getLogFillStates, getPopularLogs } from "../../api/log/log";
+import { getLogComments } from "../../api/log/logComment";
 import { getUserTraveling } from "../../api/user/getUserTraveling";
 import { getMyInfo } from "../../api/user/getMyProfile";
 
@@ -188,8 +189,23 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
           String(item.endDate ?? "")
         ),
         likes: Number(item.likes ?? 0),
+        comments: 0, // 초기값으로 0 설정, 나중에 댓글 수 조회로 업데이트
       }));
-      setPopularLogs(mapped);
+      
+      // 댓글 수 추가 조회
+      const logsWithComments = await Promise.all(
+        mapped.map(async (log) => {
+          try {
+            const commentsData = await getLogComments(log.id, { page: 0, size: 1, sort: 'createdAt' });
+            return { ...log, comments: commentsData.totalElements };
+          } catch (error) {
+            console.error(`로그 ${log.id} 댓글 수 조회 실패:`, error);
+            return { ...log, comments: 0 };
+          }
+        })
+      );
+      
+      setPopularLogs(logsWithComments);
     } catch (e) {
       console.error(e);
       setPopularLogs([]);

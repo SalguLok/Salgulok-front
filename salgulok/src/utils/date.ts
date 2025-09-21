@@ -8,7 +8,13 @@ export const parseKst = (s?: string) => {
 export const formatKst = (s?: string) => {
   const d = parseKst(s);
   return d
-    ? d.toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit',
-                                  hour: '2-digit', minute: '2-digit' })
+    ? d.toLocaleString('ko-KR', { 
+        year: 'numeric', 
+        month: '2-digit', 
+        day: '2-digit',
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone // 클라이언트 시간대 사용
+      })
     : '-';
 };

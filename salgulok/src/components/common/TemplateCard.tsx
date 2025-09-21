@@ -1,10 +1,12 @@
-import React, { useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import styled from "styled-components";
-import cameraIcon from "../../assets/common/camera.svg";
-import searchIcon from "../../assets/common/search.svg";
 import { createLogEntry } from "../../api/logEntry/createEntry";
 import type { TemplateCreateRequest } from "../../api/logEntry/createEntry";
 import { Star as StarIcon } from "lucide-react";
+import PlaceSearchField from "./PlaceSearchField";
+import type { PlaceSearchItem } from "../../types/place";
+import { uploadImagesFlow } from "../../api/image/uploadFlow";
+import ImageSlider from "./ImageSlider";
 
 type TemplateCardProps = {
   logId: number;
@@ -12,19 +14,71 @@ type TemplateCardProps = {
 };
 
 const TemplateCard: React.FC<TemplateCardProps> = ({ logId, entryDate }) => {
-  const [photoThumbUrl, setPhotoThumbUrl] = useState<string | undefined>();
-  const [place, setPlace] = useState("");
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [selectedPlace, setSelectedPlace] = useState<PlaceSearchItem | null>(
+    null
+  );
   const [text, setText] = useState("");
   const [star, setStar] = useState(0);
   const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+
+    const currentFiles = Array.from(files);
+
+    // 1. 즉시 미리보기 생성
+    const newPreviewUrls = currentFiles.map((file) => URL.createObjectURL(file));
+    setPreviewUrls((prev) => [...prev, ...newPreviewUrls]);
+
+    // 2. 백그라운드에서 업로드 진행
+    setIsUploading(true);
+    try {
+      const filesToUpload = currentFiles.map((file) => ({ file }));
+      const result = await uploadImagesFlow(filesToUpload);
+
+      const newImageUrls = result.items.map(
+        (item) => item.presignedUrl.split("?")[0]
+      );
+      setImageUrls((prev) => [...prev, ...newImageUrls]);
+    } catch (err) {
+      console.error("Upload failed:", err);
+      alert("이미지 업로드에 실패했습니다.");
+      // 실패 시 추가한 미리보기 제거
+      setPreviewUrls((prev) => prev.slice(0, prev.length - newPreviewUrls.length));
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // 메모리 누수 방지를 위해 Object URL 해제
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [previewUrls]);
 
   const handleSave = async () => {
+    if (!selectedPlace) {
+      alert("장소를 선택해주세요.");
+      return;
+    }
+    if (imageUrls.length === 0 && previewUrls.length > 0) {
+      alert("이미지 업로드가 완료될 때까지 기다려주세요.");
+      return;
+    }
     setSaving(true);
     const template: TemplateCreateRequest = {
-      placeId: 1, // TODO: 실제 장소 ID 연결 필요
+      placeId: selectedPlace.id,
       text,
       star,
-      imageUrls: photoThumbUrl ? [photoThumbUrl] : [],
+      imageUrls,
     };
 
     try {
@@ -33,9 +87,10 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ logId, entryDate }) => {
         templates: [template],
       });
       console.log(template);
-      // 초기화 - 해야하나? 안해도되면 지우기
-      setPhotoThumbUrl(undefined);
-      setPlace("");
+      // 초기화
+      setPreviewUrls([]);
+      setImageUrls([]);
+      setSelectedPlace(null);
       setText("");
       setStar(0);
     } catch (err) {
@@ -47,32 +102,34 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ logId, entryDate }) => {
 
   return (
     <Card>
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleFileSelect}
+        accept="image/*"
+        multiple
+        style={{ display: "none" }}
+      />
       <TopRow>
         <SectionTitle>사진</SectionTitle>
-        <SaveButton type="button" disabled={saving} onClick={handleSave}>
-          {saving ? "저장중..." : "저장"}
+        <SaveButton
+          type="button"
+          disabled={saving || isUploading}
+          onClick={handleSave}
+        >
+          {saving ? "저장중..." : isUploading ? "업로드중..." : "저장"}
         </SaveButton>
       </TopRow>
 
-      <PhotoRow onClick={() => alert("사진 선택 구현")}>
-        {photoThumbUrl ? (
-          <Thumb src={photoThumbUrl} alt="사진 미리보기" />
-        ) : (
-          <IconBox>
-            <img src={cameraIcon} alt="" />
-          </IconBox>
-        )}
+      <PhotoRow>
+        <ImageSlider
+          urls={previewUrls}
+          onAddClick={() => fileInputRef.current?.click()}
+        />
       </PhotoRow>
 
       <FieldLabel>장소</FieldLabel>
-      <SearchField>
-        <SearchIconImg src={searchIcon} alt="" />
-        <PlaceInput
-          value={place}
-          placeholder="장소를 입력하세요"
-          onChange={(e) => setPlace(e.target.value)}
-        />
-      </SearchField>
+      <PlaceSearchField onPlaceSelect={setSelectedPlace} />
 
       <FieldLabel>글 작성</FieldLabel>
       <TextAreaWrapper>
@@ -90,7 +147,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({ logId, entryDate }) => {
           <span key={n} onClick={() => setStar(n)} style={{ cursor: "pointer" }}>
             <StarIcon
               size={21}
-              fill={n <= star ? "var(--main-pri)" : "none"}   // 색칠 여부
+              fill={n <= star ? "var(--main-pri)" : "none"} // 색칠 여부
               stroke={n <= star ? "none" : "var(--gray-300)"} // 테두리 색
             />
           </span>

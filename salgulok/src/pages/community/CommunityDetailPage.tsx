@@ -6,7 +6,7 @@ import Header from "../../components/common/Header";
 import CommentInputBar from "../../components/common/CommentInputBar"; // 댓글 입력창 컴포넌트
 import { getPostById, deletePost, createComment, deleteComment, getCommentsByPostId } from "../../api/community/community";
 import type { CommentResponse } from "../../api/community/community";
-import DefaultProfileImage from "../../assets/common/my_gray.svg";
+import DefaultProfileImage from "../../assets/common/my_gray.svg?react";
 import { formatKst } from "../../utils/date";
 import PresignedImage from "../../components/common/PresignedImage";
 import NavigationBar from "../../components/common/NavigationBar";
@@ -130,7 +130,7 @@ const CommunityDetailPage = () => {
             {post.authorProfileImg ? (
               <AvatarPresigned objectKey={post.authorProfileImg} alt={post.username} />
             ) : (
-              <Avatar src={DefaultProfileImage} alt={post.username} />
+              <Avatar><DefaultProfileImage /></Avatar>
             )}
             <div>
               <User>{post.username}</User>
@@ -166,7 +166,7 @@ const CommunityDetailPage = () => {
                 {c.authorProfileImg ? (
                   <AvatarPresigned objectKey={c.authorProfileImg} alt={c.username} />
                 ) : (
-                  <Avatar src={DefaultProfileImage} alt={c.username} />
+                  <Avatar><DefaultProfileImage /></Avatar>
                 )}
                 <div>
                   <User>{c.username}</User>

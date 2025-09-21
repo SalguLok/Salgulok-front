@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import BackButton from "../../assets/common/back_button.svg";
+import BackButton from "../../assets/common/back_button.svg?react";
 
 interface HeaderProps {
   title: string;
@@ -16,7 +16,7 @@ const Header: React.FC<HeaderProps> = ({ title, showBackButton = false }) => {
       <HeaderWrapper>
         {showBackButton ? (
           <IconButton onClick={() => navigate(-1)}>
-            <img src={BackButton} alt="뒤로가기" />
+            <BackButton />
           </IconButton>
           ) : (
           <Spacer />

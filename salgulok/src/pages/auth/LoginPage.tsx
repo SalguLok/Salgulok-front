@@ -1,6 +1,6 @@
 import styled from "styled-components";
-import KakaoLoginImg from "../../assets/auth/KakaoLoginButton.svg"
-import LogoImg from "../../assets/common/main_salgu.svg"
+import KakaoLoginImg from "../../assets/auth/KakaoLoginButton.svg?react"
+import LogoImg from "../../assets/common/main_salgu.svg?react"
 
 const LoginPage: React.FC = () => {
   const REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY;
@@ -13,14 +13,12 @@ const LoginPage: React.FC = () => {
 
   return (
     <Container>
-      <Logo src={LogoImg}/>
+      <Logo><LogoImg /></Logo>
       <WebName>살구록</WebName>
       <SecName>구석구석 살아보는 기록</SecName>
-      <KakaoLoginButton
-        src={KakaoLoginImg}
-        alt="카카오톡 로그인"
-        onClick={handleLogin}
-      />
+      <KakaoLoginButton onClick={handleLogin}>
+        <KakaoLoginImg />
+      </KakaoLoginButton>
     </Container>
   );
 }

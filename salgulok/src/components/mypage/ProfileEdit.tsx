@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import styled from "styled-components";
-import editIcon from "../../assets/mypage/edit_profile_img.svg";
+import editIcon from "../../assets/mypage/edit_profile_img.svg?react";
 import profile from "../../assets/common/profile_default.svg?url";
 
 interface ProfileImageProps {

@@ -19,3 +19,15 @@ export const getPopularLogs = async () => {
     console.error(err);
   }
 };
+
+// 로그 댓글 관련 API들을 re-export
+export {
+  createLogComment,
+  getLogComments,
+  deleteLogComment,
+  type LogCommentResponse,
+  type LogCommentCreateRequest,
+  type LogCommentCreateResponse,
+  type GetLogCommentsParams,
+  type Page as LogCommentPage
+} from './logComment';

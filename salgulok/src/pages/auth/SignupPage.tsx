@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import LogoImg from "../../assets/common/main_salgu.svg";
+import LogoImg from "../../assets/common/main_salgu.svg?react";
 import FormField from "../../components/common/FormField";
 import ImageUpload from "../../components/common/ImageUpload";
 import BottomButton from "../../components/common/BottomButton";

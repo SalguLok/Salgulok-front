@@ -191,12 +191,16 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
         likes: Number(item.likes ?? 0),
         comments: 0, // 초기값으로 0 설정, 나중에 댓글 수 조회로 업데이트
       }));
-      
+
       // 댓글 수 추가 조회
       const logsWithComments = await Promise.all(
         mapped.map(async (log) => {
           try {
-            const commentsData = await getLogComments(log.id, { page: 0, size: 1, sort: 'createdAt' });
+            const commentsData = await getLogComments(log.id, {
+              page: 0,
+              size: 1,
+              sort: "createdAt",
+            });
             return { ...log, comments: commentsData.totalElements };
           } catch (error) {
             console.error(`로그 ${log.id} 댓글 수 조회 실패:`, error);
@@ -204,7 +208,7 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
           }
         })
       );
-      
+
       setPopularLogs(logsWithComments);
     } catch (e) {
       console.error(e);
@@ -339,7 +343,13 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
               date={d.date} // "체류 전"에는 빈 문자열 => 날짜 표시 없음
               hasLog={d.hasLog}
               forceOff={mode === "before"} // 체류 전이면 전부 꺼진 상태로 강제
-              onClick={() => console.log("clicked:", d.date)}
+              onClick={() => {
+                if (logId) {
+                  navigate(`/log/${logId}/entries`);
+                } else {
+                  console.warn("logId가 없어 이동하지 못했습니다.");
+                }
+              }}
             />
           ))}
         </SalguContainer>

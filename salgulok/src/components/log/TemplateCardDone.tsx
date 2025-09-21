@@ -8,6 +8,7 @@ import { deleteTemplates } from "../../api/logEntry/deleteTemplate";
 
 export interface TemplateCardDoneProps {
   logId: number;
+  placeName: string;
   title: string;
   entryId: number;
   templateId: number;
@@ -24,6 +25,7 @@ export interface TemplateCardDoneProps {
 const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
   logId,
   entryId,
+  placeName,
   templateId,
   title,
   images,
@@ -77,7 +79,7 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
               <Salgu />
               <Badge aria-label="순번">{indexBadge}</Badge>
             </IconWrapper>
-            <Title title={title}>{title}</Title>
+            <Title title={placeName}>{placeName}</Title>
           </TitleArea>
           <MenuButton aria-label="more" onClick={openMenu}>
             ⋮

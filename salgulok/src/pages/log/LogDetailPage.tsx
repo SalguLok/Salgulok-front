@@ -1,5 +1,6 @@
 // pages/log/LogDetailPage.tsx
 import { useParams } from "react-router-dom";
+import { useState } from "react";
 import styled from "styled-components";
 import { useQuery } from "@tanstack/react-query";
 import Header from "../../components/common/Header";
@@ -11,6 +12,7 @@ import LogCommentSection from "../../components/log/LogCommentSection";
 const LogDetailPage = () => {
   const { logId } = useParams<{ logId: string }>();
   const numericLogId = Number(logId);
+  const [commentCount, setCommentCount] = useState(0);
 
   // 로그 상세 정보 조회
   const { data: logDetail, isLoading, error } = useQuery({
@@ -21,6 +23,11 @@ const LogDetailPage = () => {
 
   // 현재 사용자 ID (실제로는 인증 상태에서 가져와야 함)
   const currentUserId = parseInt(localStorage.getItem("userId") || "0");
+
+  // 댓글 수 변경 핸들러
+  const handleCommentCountChange = (count: number) => {
+    setCommentCount(count);
+  };
 
   if (isLoading) {
     return (
@@ -82,6 +89,7 @@ const LogDetailPage = () => {
         <LogCommentSection 
           logId={numericLogId} 
           currentUserId={currentUserId}
+          onCommentCountChange={handleCommentCountChange}
         />
       </Content>
 

@@ -9,9 +9,10 @@ import CommentInputBar from "../common/CommentInputBar";
 type Props = {
   logId: number;
   currentUserId?: number; // 현재 로그인한 사용자 ID
+  onCommentCountChange?: (count: number) => void; // 댓글 수 변경 콜백
 };
 
-const LogCommentSection: React.FC<Props> = ({ logId, currentUserId }) => {
+const LogCommentSection: React.FC<Props> = ({ logId, currentUserId, onCommentCountChange }) => {
   const queryClient = useQueryClient();
 
   // 댓글 목록 조회
@@ -23,6 +24,13 @@ const LogCommentSection: React.FC<Props> = ({ logId, currentUserId }) => {
 
   const comments = commentsData?.content || [];
   const totalComments = commentsData?.totalElements || 0;
+
+  // 댓글 수가 변경될 때마다 상위 컴포넌트에 알림
+  React.useEffect(() => {
+    if (commentsData && onCommentCountChange) {
+      onCommentCountChange(totalComments);
+    }
+  }, [totalComments, onCommentCountChange, commentsData]);
 
   // 댓글 생성 뮤테이션
   const createCommentMutation = useMutation({

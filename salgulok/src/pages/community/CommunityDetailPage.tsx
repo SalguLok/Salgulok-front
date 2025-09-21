@@ -166,7 +166,7 @@ const CommunityDetailPage = () => {
                 {c.authorProfileImg ? (
                   <AvatarPresigned objectKey={c.authorProfileImg} alt={c.username} />
                 ) : (
-                  <Avatar src={DefaultProfileImage} alt={c.username} />
+                  <Avatar src={DefaultProfileImage} alt={post.username} />
                 )}
                 <div>
                   <User>{c.username}</User>
@@ -232,12 +232,14 @@ const Avatar = styled.img`
 const User = styled.div`
   font-weight: 600;
   font-size: 14px;
+  font-family: "Pretendard", sans-serif;
 `;
 
 const Meta = styled.div`
   font-size: 12px;
   color: var(--gray-300);
   margin-top: 2px;
+  font-family: "Pretendard", sans-serif;
 `;
 
 const Body = styled.p`
@@ -260,6 +262,7 @@ const CommentTitle = styled.h3`
   font-size: 13px;
   font-weight: 600;
   margin: 16px 0 8px;
+  font-family: "Pretendard", sans-serif;
 `;
 
 const CommentBox = styled.div`
@@ -271,6 +274,7 @@ const CommentBody = styled.p`
   font-size: 13px;
   margin-left: 48px; /* 아바타 오른쪽 정렬 유지 */
   margin-top: 6px;
+  font-family: "Pretendard", sans-serif;
 `;
 
 const Menu = styled.div`

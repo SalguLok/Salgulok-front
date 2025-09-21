@@ -126,24 +126,3 @@ const NavButton = styled.button<{ $right?: boolean }>`
   border-radius: 50%;
   cursor: pointer;
 `;
-
-const Dots = styled.div`
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 8px;
-  display: flex;
-  gap: 6px;
-  justify-content: center;
-  align-items: center;
-`;
-
-const Dot = styled.button<{ $active?: boolean }>`
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  background: ${(p) =>
-    p.$active ? "var(--main-pri)" : "rgba(255,255,255,0.6)"};
-`;

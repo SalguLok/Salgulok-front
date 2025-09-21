@@ -8,11 +8,7 @@ interface ImageUploadProps {
   onUpload?: (file: File) => void;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ 
-  label, 
-  value, 
-  onUpload 
-}) => {
+const ImageUpload: React.FC<ImageUploadProps> = ({ label, onUpload }) => {
   const [preview, setPreview] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -77,8 +73,8 @@ const UploadBox = styled.div`
 `;
 
 const CameraImg = styled.img`
-    width: 22px;
-    height: 20px;
+  width: 22px;
+  height: 20px;
 `;
 
 const HiddenInput = styled.input`

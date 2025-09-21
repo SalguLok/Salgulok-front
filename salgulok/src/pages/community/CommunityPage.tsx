@@ -119,13 +119,13 @@ const CommunityPage = () => {
     setFilters(prev => ({ ...prev, topic: newTopic, page: 0 }));
   };
 
-  const toggleStatus = () => {
-    setFilters(prev => ({
-      ...prev,
-      status: prev.status === 'STAYING' ? undefined : 'STAYING',
-      page: 0,
-    }));
-  };
+  // const toggleStatus = () => {
+  //   setFilters(prev => ({
+  //     ...prev,
+  //     status: prev.status === 'staying' ? undefined : 'staying',
+  //     page: 0,
+  //   }));
+  // };
 
   return (
     <>
@@ -141,15 +141,15 @@ const CommunityPage = () => {
             </BannerTitle>
             <BannerSub>여행 예정 350명, 여행 중 137명</BannerSub>
           </BannerText>
-          <StatusButton 
-            $active={filters.status === 'STAYING'}
+          {/* <StatusButton
+            $active={filters.status === 'staying'}
             onClick={(e) => {
               e.stopPropagation(); // 배너 클릭 이벤트 전파 방지
               toggleStatus();
             }}
           >
             여행 중인 사람만
-          </StatusButton>
+          </StatusButton> */}
           <BannerImage
             src="https://mblogthumb-phinf.pstatic.net/MjAyNDA2MThfMTMx/MDAxNzE4Njc0MDcwMTM5.39fnbeAr2b_0HiCDOfeAaa31R_Zf33CDSmokYr3hg7sg.igWNKGclsAXMUN1m5JpgiJwMrucJGotyKNKmhQLL-40g.JPEG/%EC%BD%94%EB%82%9C%ED%95%B4%EB%B3%8020.JPG?type=w800"
             alt="제주"
@@ -251,7 +251,7 @@ const Layout = styled.div`
 
 const Banner = styled.div`
   position: relative;
-  margin: 20px 0 16px 0;
+  margin: 0px 0 16px 0;
   height: 160px;
   background: #eee;
   overflow: hidden;
@@ -295,20 +295,20 @@ const BannerSub = styled.div`
   font-family: 'pretendard', sans-serif;
 `;
 
-const StatusButton = styled.button<{$active?: boolean}>`
-  position: absolute;
-  right: 24px;
-  top: 24px;
-  font-size: 14px;
-  font-family: 'pretendard', sans-serif;
-  background: ${({$active}) => $active ? 'var(--main-pri)' : 'rgba(0,0,0,0.3)'};
-  color: var(--white);
-  border: none;
-  border-radius: 12px;
-  padding: 4px 12px;
-  cursor: pointer;
-  z-index: 2;
-`;
+// const StatusButton = styled.button<{$active?: boolean}>`
+//   position: absolute;
+//   right: 24px;
+//   top: 24px;
+//   font-size: 14px;
+//   font-family: 'pretendard', sans-serif;
+//   background: ${({$active}) => $active ? 'var(--main-pri)' : 'rgba(0,0,0,0.3)'};
+//   color: var(--white);
+//   border: none;
+//   border-radius: 12px;
+//   padding: 4px 12px;
+//   cursor: pointer;
+//   z-index: 2;
+// `;
 
 const BannerImage = styled.img`
   position: absolute;

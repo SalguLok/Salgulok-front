@@ -110,6 +110,9 @@ const MapPage = () => {
   const initialLng = state?.lng;
   const initialName = state?.name;
 
+  const hasDropdown =
+    showResults && (loading || !!error || query.trim().length > 0);
+
   //날짜 포맷
   const yymmdd = (iso: string | undefined) => {
     if (!iso) return "";
@@ -246,7 +249,7 @@ const MapPage = () => {
 
     if (typeof initialLat === "number" && typeof initialLng === "number") {
       const title = initialName || initialQ || "선택한 위치";
-      +focus(initialLat, initialLng, title);
+      focus(initialLat, initialLng, title);
       return;
     }
 
@@ -358,7 +361,7 @@ const MapPage = () => {
             />
           </SearchBar>
 
-          {showResults && (
+          {hasDropdown && (
             <ResultsContainer>
               {loading && <ResultWrapper>검색 중…</ResultWrapper>}
               {error && <ErrorWrapper>{error}</ErrorWrapper>}

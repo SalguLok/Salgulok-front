@@ -34,6 +34,7 @@ type LogDataItem = { date: string; hasLog: "yes" | "no" };
 type UserTravelingResponse = {
   traveling: boolean;
   logId?: number;
+  regionId?: number;
 };
 
 const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
@@ -45,8 +46,20 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
   const [logData, setLogData] = useState<LogDataItem[]>([]);
   const [isTraveling, setIsTraveling] = useState(false);
   const [logId, setLogId] = useState<number>();
+  const [regionId, setRegionId] = useState<number>();
+  const [regionNameKo, setRegionNameKo] = useState<string>("");
   const [popularLogs, setPopularLogs] = useState<LogItem[]>([]);
   const [name, setName] = useState("");
+  isTraveling;
+  //traveling id 바뀔때마다 nameKo 바꾸기
+  useEffect(() => {
+    if (regionId == null) {
+      setRegionNameKo("");
+      return;
+    }
+    const found = regions.find((r) => Number(r.id) === Number(regionId));
+    setRegionNameKo(found?.nameKo ?? "");
+  }, [regionId]);
 
   const toMMDD = (iso: string) => {
     const parts = iso.split("-");
@@ -80,6 +93,7 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
         const travelingNow = !!data.traveling;
         setIsTraveling(travelingNow);
         setLogId(data.logId);
+        setRegionId(data.regionId);
 
         if (travelingNow) {
           setMode("during");
@@ -148,7 +162,6 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
     }));
     setPopularPlaceItems(mapped);
   };
-  const regionId = 1;
 
   const rangeToYYMMDDDash = (start: string, end: string) => {
     const fmt = (s: string) => {
@@ -185,6 +198,7 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
 
   //인기장소 지역별 검색 API 연결
   const readPopularPlaceByRegion = async () => {
+    if (regionId == null) return;
     const response = await getPopularPlaceByRegion(regionId);
     const payload = toArray(response);
     const mapped: PlaceItem[] = payload.map((p: any, i: number) => ({
@@ -266,13 +280,21 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
           <Greeting>
             {mode === "before" ? (
               <>
-                안녕하세요 {name}님, <br />
+                안녕하세요{" "}
+                <span style={{ color: "var(--main-pri)", fontWeight: 700 }}>
+                  {name}
+                </span>
+                님, <br />
                 새로운 살구로그를 생성해보세요!
               </>
             ) : (
               <>
-                안녕하세요 {name}님, <br />
-                여행 중 순간을 살구로그에 기록해보세요!
+                {regionNameKo} 체류중인{" "}
+                <span style={{ color: "var(--main-pri)", fontWeight: 700 }}>
+                  {name}
+                </span>
+                님, <br />
+                오늘 있었던 일을 살구로그에 기록해보세요!
               </>
             )}
           </Greeting>
@@ -392,8 +414,9 @@ const GreetingContainer = styled.div`
   margin: 10px 20px 30px 20px;
 `;
 const Greeting = styled.text`
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 500;
+  line-height: 30px;
 `;
 const ProgressRow = styled.div`
   display: flex;
@@ -488,10 +511,7 @@ const Title = styled.text`
   font-size: 20px;
   font-weight: 600;
 `;
-const More = styled.text`
-  color: var(--gray-400);
-  font-size: 16px;
-`;
+
 const CardContainer = styled.div`
   display: flex;
   flex-direction: row;

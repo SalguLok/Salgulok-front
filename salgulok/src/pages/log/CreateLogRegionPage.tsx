@@ -50,10 +50,11 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
+  margin-bottom: 70px;
 `;
 
 const List = styled.div`
-  margin: 30px 20px;
+  margin: 20px 20px 30px 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;

@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Header from "../../components/common/Header";
 import BottomSheet from "../../components/common/BottomSheet";
 import { Chip, ChipRow } from "../../components/common/Chip";
@@ -8,7 +8,6 @@ import { useState } from "react";
 import dropdown from "../../assets/common/dropdown.svg";
 import { createPost } from "../../api/community/community";
 import type { PostCreateRequest, Topic } from "../../api/community/community";
-
 
 const REGIONS = [
   "서울",
@@ -24,7 +23,7 @@ const REGIONS = [
   "전라",
   "경상",
   "강원",
-  "제주"
+  "제주",
 ];
 
 const TOPICS: Topic[] = ["동행", "맛집", "숙소", "교통", "기타"];
@@ -38,20 +37,20 @@ const WritePage = () => {
 
   const [region, setRegion] = useState<string | null>(null);
   const regionMap: Record<string, number> = {
-    "서울": 1,
-    "부산": 2,
-    "대구": 3,
-    "인천": 4,
-    "광주": 5,
-    "대전": 6,
-    "울산": 7,
-    "세종": 8,
-    "경기": 9,
-    "충청": 10,
-    "전라": 11,
-    "경상": 12,
-    "강원": 13,
-    "제주": 14,
+    서울: 1,
+    부산: 2,
+    대구: 3,
+    인천: 4,
+    광주: 5,
+    대전: 6,
+    울산: 7,
+    세종: 8,
+    경기: 9,
+    충청: 10,
+    전라: 11,
+    경상: 12,
+    강원: 13,
+    제주: 14,
   };
   const [topic, setTopic] = useState<Topic | null>(null);
   const [content, setContent] = useState("");
@@ -78,8 +77,8 @@ const WritePage = () => {
     }
     const userId = localStorage.getItem("userId");
     if (!userId) {
-        alert("사용자 정보를 가져올 수 없습니다. 다시 로그인해주세요.");
-        return;
+      alert("사용자 정보를 가져올 수 없습니다. 다시 로그인해주세요.");
+      return;
     }
 
     const postData: PostCreateRequest = {
@@ -94,9 +93,8 @@ const WritePage = () => {
 
   return (
     <>
+      <Header title="글쓰기" showBackButton={true} />
       <Layout>
-        <Header title="글쓰기" showBackButton={true} />
-
         <SelectRow>
           <SelectBtn
             type="button"
@@ -219,22 +217,6 @@ const SelectBtn = styled.button`
   gap: 8px;
 `;
 
-const InputTitle = styled.input`
-  width: 100%;
-  border: none;
-  border-radius: 0;
-  border-bottom: 1px solid var(--black);
-  font-size: 16px;
-  font-family: pretendard, sans-serif;
-  padding: 16px 0 8px 0;
-  margin-bottom: 8px;
-  outline: none;
-  color: var(--black);
-  &::placeholder {
-    color: var(--gray-400);
-  }
-`;
-
 const InputContent = styled.textarea`
   width: 100%;
   border: none;
@@ -289,4 +271,3 @@ const WriteButton = styled.button`
   font-family: "pretendard", sans-serif;
   cursor: pointer;
 `;
-

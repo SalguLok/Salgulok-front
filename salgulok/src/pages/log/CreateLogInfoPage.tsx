@@ -110,5 +110,5 @@ const FormWrapper = styled.div`
   display: flex;
   flex-direction: column;
   gap: 25px;
-  margin: 30px 20px;
+  margin: 20px 20px 30px 20px;
 `;

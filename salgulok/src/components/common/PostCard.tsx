@@ -14,8 +14,8 @@ type Props = {
 };
 
 const Card = styled.div<{ clickable?: boolean }>`
-  padding: 20px;
-  border-bottom: 1px solid var(--gray-100);
+  padding: 18px 20px;
+  border-bottom: 1px solid #f0f0f0;
   background: var(--white);
   cursor: ${({ clickable }) => (clickable ? "pointer" : "default")};
 `;
@@ -23,63 +23,90 @@ const Card = styled.div<{ clickable?: boolean }>`
 const Header = styled.div`
   display: flex;
   align-items: center;
+  gap: 8px;
+  margin-top: 10px;
   margin-bottom: 8px;
 `;
+
 const Avatar = styled.img`
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  margin-right: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  object-fit: cover;
 `;
 
 const AvatarPresigned = styled(PresignedImage)`
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  margin-right: 12px;
-  background-color: var(--gray-100);
+  overflow: hidden;
+  flex-shrink: 0;
+  object-fit: cover;
 `;
 
 const Info = styled.div`
   flex: 1;
 `;
+
 const User = styled.div`
-  font-weight: 500;
   font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 3px;
+  color: #222;
+  font-family: "Pretendard", sans-serif;
 `;
+
 const Meta = styled.div`
-  font-size: 11px;
+  font-size: 12px;
+  margin-top: 3px;
   color: var(--gray-300);
+  font-family: "Pretendard", sans-serif;
 `;
+
 const Menu = styled.button`
-  font-size: 20px;
-  color: var(--gray-300);
   background: none;
   border: none;
+  color: #999;
+  font-size: 18px;
   cursor: pointer;
   padding: 4px;
   border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: auto;
   
   &:hover {
-    background-color: var(--gray-100);
+    background-color: #f5f5f5;
+    color: #666;
   }
 `;
 
 const Content = styled.div`
   font-size: 13px;
-  color: var(--black);
-  margin-bottom: 12px;
+  line-height: 1.4;
+  color: #333;
+  margin-left: 40px;
+  margin-top: 13px;
+  margin-bottom: 10px;
+  font-family: "Pretendard", sans-serif;
 `;
+
 const Footer = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
   justify-content: flex-end;
+  margin-left: 40px;
 `;
+
 const CommentIcon = styled.span`
   display: flex;
   align-items: center;
 `;
+
 const Badge = styled.span`
   padding: 2px 11px;
   border-radius: 25px;
@@ -87,10 +114,11 @@ const Badge = styled.span`
   color: var(--main-pri);
   font-size: 12px;
 `;
+
 const CommentCount = styled.span`
-  font-size: 13px; /* ← 여기서 크기 조절 */
+  font-size: 13px;
   line-height: 1;
-  font-family: "pretendard", sans-serif;
+  font-family: "Pretendard", sans-serif;
   color: var(--black);
 `;
 

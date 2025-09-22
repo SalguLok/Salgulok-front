@@ -128,9 +128,11 @@ export default ActionMenu;
 const Backdrop = styled.div<{ $center?: boolean }>`
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.12);
+  //background: rgba(0, 0, 0, 0.12);
+  background: ${(p) => (p.$center ? "rgba(0, 0, 0, 0.12)" : "transparent")};
   z-index: 1000;
-  display: ${(p) => (p.$center ? "grid" : "flex")};
+  // display: ${(p) => (p.$center ? "grid" : "flex")};
+  display: ${(p) => (p.$center ? "grid" : "block")};
   place-items: ${(p) => (p.$center ? "center" : "unset")};
 `;
 
@@ -152,7 +154,15 @@ const Card = styled.div<{ $variant: "context" | "modal" }>`
   padding: 8px 0 10px;
   overflow: hidden;
 
-  ${(p) => p.$variant === "context" && `position: absolute;`}
+  ${(p) =>
+      p.$variant === "context" &&
+      `
+      position: absolute;
+      transform: translate(calc(-100% - -10px), 5%); 
+      /* ← 버튼 왼쪽으로 8px 띄우고, y는 중앙에 맞춤 */
+    `}
+
+  // ${(p) => p.$variant === "context" && `position: absolute;`}
   ${(p) => p.$variant === "modal" && `position: relative; width: 220px;`}
 `;
 

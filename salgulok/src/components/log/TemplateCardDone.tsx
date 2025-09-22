@@ -45,6 +45,18 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
   menuPos;
   const menuBtnRef = useRef<HTMLButtonElement>(null);
 
+  const openMenu = () => {
+    onMenuClick?.();
+    const rect = menuBtnRef.current?.getBoundingClientRect();
+
+    const GAP = 8; // 버튼과 메뉴 사이 간격
+    const x = rect ? rect.left : 0;                  // 버튼의 왼쪽
+    const y = rect ? rect.top + rect.height / 2 : 0; // 버튼의 세로 중앙
+
+    setMenuPos({ x, y });
+    setMenuOpen(true);
+  };
+
   //삭제 API 연결
   const delTemplate = async () => {
     if (deleting) return;
@@ -60,15 +72,15 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
     }
   };
 
-  const openMenu = () => {
-    onMenuClick?.();
-    const rect = menuBtnRef.current?.getBoundingClientRect();
-    // 살짝 오른쪽으로 띄우기
-    const x = (rect?.left ?? 0) - 100;
-    const y = (rect?.bottom ?? 0) + 8;
-    setMenuPos({ x, y });
-    setMenuOpen(true);
-  };
+  // const openMenu = () => {
+  //   onMenuClick?.();
+  //   const rect = menuBtnRef.current?.getBoundingClientRect();
+  //   // 살짝 오른쪽으로 띄우기
+  //   const x = (rect?.left ?? 0) - 100;
+  //   const y = (rect?.bottom ?? 0) + 8;
+  //   setMenuPos({ x, y });
+  //   setMenuOpen(true);
+  // };
 
   return (
     <Layout aria-label={`${title} 카드`}>
@@ -81,7 +93,7 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
             </IconWrapper>
             <Title title={placeName}>{placeName}</Title>
           </TitleArea>
-          <MenuButton aria-label="more" onClick={openMenu}>
+          <MenuButton ref={menuBtnRef} aria-label="more" onClick={openMenu}>
             ⋮
           </MenuButton>
         </Header>
@@ -109,7 +121,10 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
         onClose={() => setMenuOpen(false)}
         onEdit={() => onEditClick?.()}
         onDelete={delTemplate}
-        variant="modal"
+        variant="context"
+        x={menuPos.x}
+        y={menuPos.y}
+        maxWidth={220}
         viewportWidth={375}
       />
     </Layout>

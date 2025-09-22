@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import { getLogDetail } from "../../api/log/getLogDetail";
 import { getLogEntryByDate } from "../../api/logEntry/getLogEntryByDate";
 import { createLogEntry } from "../../api/logEntry/createEntry";
+import { getEntryDates } from "../../api/logEntry/getEntryDates";
 import LogCommentSection from "../../components/log/LogCommentSection";
 
 const LogEntryPage: React.FC = () => {
@@ -174,7 +175,8 @@ const LogEntryPage: React.FC = () => {
     logId: number,
     entryId: number | null,
     templates: TemplateSummary[] = []
-  ): CardData[] =>
+  ):
+    CardData[] =>
     templates.map((t, i) => ({
       id: t.templateId,
       placeId: t.placeId,
@@ -220,6 +222,7 @@ const LogEntryPage: React.FC = () => {
   useEffect(() => {
     if (!numericLogId) return;
     (async () => {
+      // 1. 로그 기본 정보 가져오기
       const detail = await getLogDetail(numericLogId);
       setLogDetail({
         startDate: detail.startDate,
@@ -229,6 +232,15 @@ const LogEntryPage: React.FC = () => {
         ownerId: detail.ownerId,
       });
       setEditingTemplate(null);
+
+      // 2. 어떤 날짜에 기록이 있는지 미리 가져와서 상태 설정
+      const entryDatesResponse = await getEntryDates(numericLogId);
+      const newStates = new Map<string, "yes" | "no">();
+      entryDatesResponse.items.forEach(item => {
+        newStates.set(item.entryDate, "yes");
+      });
+      setSalguItemStates(newStates);
+
     })();
   }, [numericLogId]);
 

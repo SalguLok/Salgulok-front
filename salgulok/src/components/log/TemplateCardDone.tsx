@@ -20,6 +20,7 @@ export interface TemplateCardDoneProps {
   onChangeRating?: (value: number) => void;
   onEditClick?: () => void;
   onDeleteClick?: (templateId: number) => void;
+  isOwner?: boolean;
 }
 
 const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
@@ -35,6 +36,7 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
   onMenuClick,
   onEditClick,
   onDeleteClick,
+    isOwner = false,
 }) => {
   const [deleting, setDeleting] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -44,6 +46,18 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
   });
   menuPos;
   const menuBtnRef = useRef<HTMLButtonElement>(null);
+
+  const openMenu = () => {
+    onMenuClick?.();
+    const rect = menuBtnRef.current?.getBoundingClientRect();
+
+    const GAP = 8; // 버튼과 메뉴 사이 간격
+    const x = rect ? rect.left : 0;                  // 버튼의 왼쪽
+    const y = rect ? rect.top + rect.height / 2 : 0; // 버튼의 세로 중앙
+
+    setMenuPos({ x, y });
+    setMenuOpen(true);
+  };
 
   //삭제 API 연결
   const delTemplate = async () => {
@@ -60,16 +74,6 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
     }
   };
 
-  const openMenu = () => {
-    onMenuClick?.();
-    const rect = menuBtnRef.current?.getBoundingClientRect();
-    // 살짝 오른쪽으로 띄우기
-    const x = (rect?.left ?? 0) - 100;
-    const y = (rect?.bottom ?? 0) + 8;
-    setMenuPos({ x, y });
-    setMenuOpen(true);
-  };
-
   return (
     <Layout aria-label={`${title} 카드`}>
       <CardContainer>
@@ -81,10 +85,26 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
             </IconWrapper>
             <Title title={placeName}>{placeName}</Title>
           </TitleArea>
-          <MenuButton aria-label="more" onClick={openMenu}>
-            ⋮
-          </MenuButton>
+          {isOwner && (
+              <MenuButton ref={menuBtnRef} aria-label="more" onClick={openMenu}>
+                ⋮
+              </MenuButton>
+          )}
         </Header>
+
+        {isOwner && (
+            <ActionMenu
+                open={menuOpen}
+                onClose={() => setMenuOpen(false)}
+                onEdit={() => onEditClick?.()}
+                onDelete={delTemplate}
+                variant="context"
+                x={menuPos.x}
+                y={menuPos.y}
+                maxWidth={220}
+                viewportWidth={375}
+            />
+        )}
 
         <ImageSlider images={images} />
 
@@ -109,7 +129,10 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
         onClose={() => setMenuOpen(false)}
         onEdit={() => onEditClick?.()}
         onDelete={delTemplate}
-        variant="modal"
+        variant="context"
+        x={menuPos.x}
+        y={menuPos.y}
+        maxWidth={220}
         viewportWidth={375}
       />
     </Layout>
@@ -160,8 +183,8 @@ const IconWrapper = styled.div`
 const Badge = styled.span`
   z-index: 999;
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 3.2px;
+  right: 0.5px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -169,15 +192,16 @@ const Badge = styled.span`
   height: 20px;
   border-radius: 50%;
   color: white;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 15px;
 `;
 const Title = styled.h2`
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-left: -3px;
 `;
 
 const MenuButton = styled.button`

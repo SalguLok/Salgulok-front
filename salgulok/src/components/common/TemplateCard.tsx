@@ -1,8 +1,6 @@
 // components/common/TemplateCard.tsx
 import React, { useRef, useState, useEffect } from "react";
 import styled from "styled-components";
-import { createLogEntry } from "../../api/logEntry/createEntry";
-import type { TemplateCreateRequest } from "../../api/logEntry/createEntry";
 import { patchTemplate } from "../../api/logEntry/patchTemplate";
 import { Star as StarIcon } from "lucide-react";
 import PlaceSearchField from "./PlaceSearchField";
@@ -26,7 +24,15 @@ type TemplateCardProps = {
   initialImages?: string[];
 
   // 저장/취소 콜백
-  onSaved?: (updated: { text: string; star: number }) => void;
+  onSaved?: (
+    updated: {
+      text: string;
+      star: number;
+      placeId?: number;
+      placeName?: string;
+      imageUrls?: string[];
+    }
+  ) => void;
   onCancel?: () => void;
 };
 
@@ -127,7 +133,6 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
         await patchTemplate(logId, entryId, templateId, {
           text,
           star,
-          // imageIds: [] // 추후 imageIds 플로우 붙이면 여기로 교체 가능
         });
         onSaved?.({ text, star });
         return;
@@ -143,16 +148,13 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
         return;
       }
 
-      const template: TemplateCreateRequest = {
+      // API 호출 대신, 모든 데이터를 onSaved 콜백으로 전달
+      onSaved?.({
         placeId: selectedPlace.id,
+        placeName: selectedPlace.name,
         text,
         star,
         imageUrls,
-      };
-
-      await createLogEntry(logId, {
-        entryDate,
-        templates: [template],
       });
 
       // 초기화
@@ -161,7 +163,6 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
       setSelectedPlace(null);
       setText("");
       setStar(0);
-      onSaved?.({ text: "", star: 0 });
     } catch (err) {
       console.error(err);
       alert("저장에 실패했습니다.");
@@ -290,7 +291,7 @@ const SaveButton = styled.button`
   }
 `;
 const CancelButton = styled.button`
-  border: 1px solid #e5e7eb;
+  border: none;
   background: white;
   font-size: 12px;
   padding: 4px 8px;
@@ -331,3 +332,5 @@ const StarRow = styled.div`
   gap: 6px;
   align-items: center;
 `;
+
+

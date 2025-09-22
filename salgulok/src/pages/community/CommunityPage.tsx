@@ -1,11 +1,11 @@
 import styled from "styled-components";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import NavigationBar from "../../components/common/NavigationBar";
 import Header from "../../components/common/Header";
 import PostCard from "../../components/common/PostCard";
-import { getPosts, deletePost } from "../../api/community/community";
+import { getPosts } from "../../api/community/community";
 import type { GetPostsParams, Topic } from "../../api/community/community";
 import DefaultProfileImage from "../../assets/common/my_gray.svg";
 import { formatKst } from "../../utils/date";
@@ -20,7 +20,6 @@ const topics: Topic[] = ['동행', '맛집', '숙소', '교통', '기타'];
 
 const CommunityPage = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const goDetail = (id: number) => navigate(`/community/${id}`);
   const [searchParams] = useSearchParams();
   const initialRegionId = searchParams.get("region_id");
@@ -63,51 +62,6 @@ const CommunityPage = () => {
   const currentRegion = regions.find(r => r.id === filters.regionId)?.nameKo ?? "전체 지역";
   const currentTopic = filters.topic ?? "전체 주제";
 
-  // 게시글 삭제 뮤테이션
-  const deletePostMutation = useMutation({
-    mutationFn: deletePost,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["communityPosts"] });
-      alert("게시글이 삭제되었습니다.");
-    },
-    onError: (error) => {
-      console.error("게시글 삭제 실패:", error);
-      alert("게시글 삭제에 실패했습니다.");
-    },
-  });
-
-  // 더보기 버튼 클릭 핸들러
-  const handleMenuClick = (postId: number, event: React.MouseEvent) => {
-    console.log("더보기 버튼 클릭됨, postId:", postId);
-    
-    const currentUserId = localStorage.getItem("userId");
-    if (!currentUserId) {
-      alert("로그인이 필요합니다.");
-      return;
-    }
-
-    // 해당 게시글 찾기
-    const post = postsPage?.content.find(p => p.id === postId);
-    console.log("찾은 게시글:", post);
-    
-    if (!post) {
-      alert("게시글을 찾을 수 없습니다.");
-      return;
-    }
-
-    // 작성자 본인인지 확인 (userId와 authorId 비교)
-    console.log("게시글 작성자 ID:", post.authorId);
-    console.log("현재 사용자 ID:", currentUserId);
-    const isAuthor = post.authorId === parseInt(currentUserId);
-    console.log("작성자 본인 여부:", isAuthor);
-    
-    if (!isAuthor) {
-      alert("본인이 작성한 게시글만 삭제할 수 있습니다.");
-      return;
-    }
-
-   
-  };
 
   // 필터 변경 핸들러
   const handleRegionChange = (newRegionId?: number) => {

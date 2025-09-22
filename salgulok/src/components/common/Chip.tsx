@@ -9,5 +9,8 @@ export const Chip = styled.button<{selected?: boolean}>`
   font-size: 13px; cursor: pointer;
 `;
 export const ChipRow = styled.div`
-  display: flex; flex-wrap: wrap; gap: 9px 7px; padding: 8px 0 16px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 한 줄에 5개 요소 */
+  gap: 7px;
+  padding: 8px 0 16px;
 `;

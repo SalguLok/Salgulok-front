@@ -29,9 +29,12 @@ const CommunityPage = () => {
     page: 0,
     size: 10,
     regionId: initialRegionId ? parseInt(initialRegionId) : undefined,
+    sort: 'createdAt,desc', // 최신순 정렬 추가
   });
 
-  const [openFilter, setOpenFilter] = useState(false);
+  const [openRegionFilter, setOpenRegionFilter] = useState(false);
+  const [openTopicFilter, setOpenTopicFilter] = useState(false);
+  const [onlyTraveling, setOnlyTraveling] = useState(false);
 
   useEffect(() => {
     const regionIdFromParams = searchParams.get("region_id");
@@ -117,42 +120,31 @@ const CommunityPage = () => {
     setFilters(prev => ({ ...prev, topic: newTopic, page: 0 }));
   };
 
-  // const toggleStatus = () => {
-  //   setFilters(prev => ({
-  //     ...prev,
-  //     status: prev.status === 'staying' ? undefined : 'staying',
-  //     page: 0,
-  //   }));
-  // };
-
   return (
     <>
       <Layout>
         <Header title="커뮤니티" showBackButton={true} />
-        <Banner onClick={() => setOpenFilter(true)}>
-          <BannerText>
-            <BannerTitle>
-              {currentRegion}, {currentTopic}
-              <Icon>
-                <img src={dropdown} alt="dropdown icon" />
-              </Icon>
-            </BannerTitle>
-            <BannerSub>여행 예정 350명, 여행 중 137명</BannerSub>
-          </BannerText>
-          {/* <StatusButton
-            $active={filters.status === 'staying'}
-            onClick={(e) => {
-              e.stopPropagation(); // 배너 클릭 이벤트 전파 방지
-              toggleStatus();
-            }}
-          >
-            여행 중인 사람만
-          </StatusButton> */}
-          <BannerImage
-            src="https://mblogthumb-phinf.pstatic.net/MjAyNDA2MThfMTMx/MDAxNzE4Njc0MDcwMTM5.39fnbeAr2b_0HiCDOfeAaa31R_Zf33CDSmokYr3hg7sg.igWNKGclsAXMUN1m5JpgiJwMrucJGotyKNKmhQLL-40g.JPEG/%EC%BD%94%EB%82%9C%ED%95%B4%EB%B3%8020.JPG?type=w800"
-            alt="제주"
-          />
-        </Banner>
+        <FilterBar>
+          <FilterItem onClick={() => setOpenRegionFilter(true)}>
+            <FilterText>{currentRegion}</FilterText>
+            <DropdownIcon src={dropdown} alt="dropdown" />
+          </FilterItem>
+          <FilterItem onClick={() => setOpenTopicFilter(true)}>
+            <FilterText>{currentTopic}</FilterText>
+            <DropdownIcon src={dropdown} alt="dropdown" />
+          </FilterItem>
+        </FilterBar>
+        <CheckboxContainer>
+          <CheckboxWrapper>
+            <input
+              type="checkbox"
+              id="onlyTraveling"
+              checked={onlyTraveling}
+              onChange={(e) => setOnlyTraveling(e.target.checked)}
+            />
+            <label htmlFor="onlyTraveling">여행 중인 사람만</label>
+          </CheckboxWrapper>
+        </CheckboxContainer>
         <PostList>
           {isLoading && <div>로딩 중...</div>}
           {error && <div>에러가 발생했습니다.</div>}
@@ -183,53 +175,58 @@ const CommunityPage = () => {
       </WriteButton>
 
       <NavigationBar />
+      {/* 지역 선택 BottomSheet */}
       <BottomSheet
-        open={openFilter}
-        title="필터"
-        onClose={() => setOpenFilter(false)}
+        open={openRegionFilter}
+        title="지역"
+        onClose={() => setOpenRegionFilter(false)}
         primaryLabel="적용"
-        onPrimary={() => setOpenFilter(false)}
+        onPrimary={() => setOpenRegionFilter(false)}
       >
-        <FilterSection>
-          <FilterTitle>지역</FilterTitle>
-          <ChipRow>
+        <ChipRow>
+          <Chip
+            onClick={() => handleRegionChange(undefined)}
+            selected={filters.regionId === undefined}
+          >
+            전체
+          </Chip>
+          {regions.map(r => (
             <Chip
-              onClick={() => handleRegionChange(undefined)}
-              selected={filters.regionId === undefined}
+              key={r.id}
+              onClick={() => handleRegionChange(r.id)}
+              selected={filters.regionId === r.id}
             >
-              전체
+              {r.nameKo}
             </Chip>
-            {regions.map(r => (
-              <Chip
-                key={r.id}
-                onClick={() => handleRegionChange(r.id)}
-                selected={filters.regionId === r.id}
-              >
-                {r.nameKo}
-              </Chip>
-            ))}
-          </ChipRow>
-        </FilterSection>
-        <FilterSection>
-          <FilterTitle>주제</FilterTitle>
-          <ChipRow>
+          ))}
+        </ChipRow>
+      </BottomSheet>
+
+      {/* 주제 선택 BottomSheet */}
+      <BottomSheet
+        open={openTopicFilter}
+        title="주제"
+        onClose={() => setOpenTopicFilter(false)}
+        primaryLabel="적용"
+        onPrimary={() => setOpenTopicFilter(false)}
+      >
+        <ChipRow>
+          <Chip
+            onClick={() => handleTopicChange(undefined)}
+            selected={filters.topic === undefined}
+          >
+            전체
+          </Chip>
+          {topics.map(t => (
             <Chip
-              onClick={() => handleTopicChange(undefined)}
-              selected={filters.topic === undefined}
+              key={t}
+              onClick={() => handleTopicChange(t)}
+              selected={filters.topic === t}
             >
-              전체
+              {t}
             </Chip>
-            {topics.map(t => (
-              <Chip
-                key={t}
-                onClick={() => handleTopicChange(t)}
-                selected={filters.topic === t}
-              >
-                {t}
-              </Chip>
-            ))}
-          </ChipRow>
-        </FilterSection>
+          ))}
+        </ChipRow>
       </BottomSheet>
     </>
   );
@@ -247,92 +244,46 @@ const Layout = styled.div`
   padding-bottom: 120px;
 `;
 
-const Banner = styled.div`
-  position: relative;
-  margin: 12px 0 16px 0;
-  height: 160px;
-  background: #eee;
-  overflow: hidden;
-  z-index: 100;
-  cursor: pointer; /* 클릭 가능한 요소임을 시각적으로 알려줌 */
-`;
-
-const BannerText = styled.div`
-  position: absolute;
-  left: 24px;
-  top: 24px;
-  font-family: 'pretendard', sans-serif;
-  z-index: 2;
+const FilterBar = styled.div`
   display: flex;
-  flex-direction: column;
+  padding: 15px 0px 0px 21px;
+  gap: 12px;
 `;
 
-const BannerTitle = styled.div`
-  font-size: 20px;
-  font-weight: 500;
-  font-family: 'pretendard', sans-serif;
-  margin-bottom: 8px;
-  background: none;
-  border: none;
+const FilterItem = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 0px 12px;
+  height: 30px;
+  border: 1px solid var(--gray-200);
+  border-radius: 20px;
+  background: var(--white);
+  color: var(--black);
+  font-size: 13px;
+  font-family: pretendard, sans-serif;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px; /* 아이콘과의 간격 */
+  gap: 8px;
+  
+  &:hover {
+    border-color: var(--gray-300);
+  }
 `;
 
-const Icon = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
+const FilterText = styled.span`
+  font-size: 13px;
+  color: var(--black);
+  font-family: pretendard, sans-serif;
+`;
+
+const DropdownIcon = styled.img`
   width: 10px;
   height: 10px;
-`;
-
-const BannerSub = styled.div`
-  font-size: 11px;
-  color: var(--black);
-  font-family: 'pretendard', sans-serif;
-`;
-
-// const StatusButton = styled.button<{$active?: boolean}>`
-//   position: absolute;
-//   right: 24px;
-//   top: 24px;
-//   font-size: 14px;
-//   font-family: 'pretendard', sans-serif;
-//   background: ${({$active}) => $active ? 'var(--main-pri)' : 'rgba(0,0,0,0.3)'};
-//   color: var(--white);
-//   border: none;
-//   border-radius: 12px;
-//   padding: 4px 12px;
-//   cursor: pointer;
-//   z-index: 2;
-// `;
-
-const BannerImage = styled.img`
-  position: absolute;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  filter: brightness(0.95);
+  opacity: 0.6;
 `;
 
 const PostList = styled.div`
   margin: 0 0 80px 0;
 `;
-
-const FilterSection = styled.div`
-  margin-bottom: 24px;
-`;
-
-const FilterTitle = styled.h3`
-  font-size: 16px;
-  font-weight: 600;
-  margin: 0 0 12px 0;
-  padding-left: 4px;
-`;
-
 const NAV_H = 76;         // 네비게이션 높이(프로젝트 값에 맞춰 조정)
 const APP_W = 375;        // 프레임 너비
 
@@ -363,4 +314,51 @@ const Plus = styled.span`
   font-size: 11px;
   line-height: 1;
   font-family: 'pretendard', sans-serif;
+`;
+
+const CheckboxContainer = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 25px 0px 20px;
+`;
+
+const CheckboxWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--gray-500);
+  font-family: 'Pretendard', sans-serif;
+
+  input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    border: 1px solid var(--gray-300);
+    border-radius: 3px;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    position: relative;
+    background: var(--white);
+
+    &:checked {
+      background-color: var(--main-pri);
+      border-color: var(--main-pri);
+    }
+
+    &:checked::after {
+      content: '✓';
+      font-size: 12px;
+      color: #fff;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+  label {
+    cursor: pointer;
+    user-select: none;
+  }
 `;

@@ -91,14 +91,16 @@ const CommentInfo = styled.div`
 `;
 
 const AuthorName = styled.div`
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 3px;
   color: #222;
   font-family: "Pretendard", sans-serif;
 `;
 
 const CommentDate = styled.div`
   font-size: 12px;
+  margin-top: 3px;
   color: var(--gray-300);
   font-family: "Pretendard", sans-serif;
 `;
@@ -127,7 +129,7 @@ const CommentContent = styled.div`
   line-height: 1.4;
   color: #333;
   margin-left: 40px;
-  margin-top: 10px;
+  margin-top: 13px;
   margin-bottom: 10px;
   font-family: "Pretendard", sans-serif;
 `;

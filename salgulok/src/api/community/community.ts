@@ -49,6 +49,7 @@ export interface GetPostsParams {
   status?: StayStatus;
   page?: number;
   size?: number;
+  sort?: string; // 정렬 파라미터 추가
 }
 
 export interface PostCreateRequest {

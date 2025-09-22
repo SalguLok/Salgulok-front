@@ -1,24 +1,30 @@
 import React, { useMemo, useRef, useState } from "react";
-import styled, { css } from "styled-components";
+import styled from "styled-components";
+
+type ImgLike = string | { url: string };
 
 interface ImageSliderProps {
-  images?: string[];
-  title: string;
+  images?: ImgLike[];
 }
 
-const ImageSlider: React.FC<ImageSliderProps> = ({ images, title }) => {
-  const safeImages = useMemo(
+const ImageSlider: React.FC<ImageSliderProps> = ({ images }) => {
+  const safeImages = useMemo<string[]>(
     () =>
       images?.length
         ? images
+            .map((it) => (typeof it === "string" ? it : it.url))
+            .filter(Boolean)
         : ["https://via.placeholder.com/600x400?text=No+Image"],
     [images]
   );
+
   const [current, setCurrent] = useState(0);
   const touchStartX = useRef<number | null>(null);
 
   const goTo = (i: number) =>
-    setCurrent(() => (i + safeImages.length) % safeImages.length);
+    setCurrent(
+      ((i % safeImages.length) + safeImages.length) % safeImages.length
+    );
   const next = () => goTo(current + 1);
   const prev = () => goTo(current - 1);
 
@@ -30,15 +36,14 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images, title }) => {
   const onTouchStart: React.TouchEventHandler<HTMLDivElement> = (e) => {
     touchStartX.current = e.touches[0].clientX;
   };
-
   const onTouchEnd: React.TouchEventHandler<HTMLDivElement> = (e) => {
     if (touchStartX.current === null) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(dx) > 40) {
-      dx < 0 ? next() : prev();
-    }
+    if (Math.abs(dx) > 40) dx < 0 ? next() : prev();
     touchStartX.current = null;
   };
+
+  const showNav = safeImages.length > 1;
 
   return (
     <Slider
@@ -47,20 +52,20 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images, title }) => {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
       aria-roledescription="carousel"
-      aria-label={`${title} 이미지 슬라이더`}
     >
-      <Track $index={current} $count={safeImages.length}>
+      <Track $index={current}>
         {safeImages.map((src, i) => (
           <Slide
-            key={i}
+            key={`${src}-${i}`}
             role="group"
             aria-label={`${i + 1} / ${safeImages.length}`}
           >
-            <SlideImage src={src} alt={`${title} 이미지 ${i + 1}`} />
+            <SlideImage src={src} alt={` 이미지 ${i + 1}`} />
           </Slide>
         ))}
       </Track>
-      {safeImages.length > 1 && (
+
+      {showNav && (
         <>
           <NavButton onClick={prev} aria-label="이전">
             ‹
@@ -68,16 +73,6 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images, title }) => {
           <NavButton onClick={next} aria-label="다음" $right>
             ›
           </NavButton>
-          <Dots>
-            {safeImages.map((_, i) => (
-              <Dot
-                key={i}
-                aria-label={`${i + 1}번째로 이동`}
-                $active={i === current}
-                onClick={() => goTo(i)}
-              />
-            ))}
-          </Dots>
         </>
       )}
     </Slider>
@@ -88,25 +83,24 @@ export default ImageSlider;
 
 const Slider = styled.div`
   position: relative;
-  width: 100%;
-  height: 190px;
-  border-radius: 12px;
   overflow: hidden;
   outline: none;
+  margin-bottom: 10px;
 `;
-const Track = styled.div<{ $index: number; $count: number }>`
+
+const Track = styled.div<{ $index: number }>`
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: 100%;
   height: 100%;
   transform: translateX(${(p) => `-${p.$index * 100}%`});
-  transition: transform 350ms ease;
+  transition: transform 300ms ease;
 `;
 
 const Slide = styled.div`
   position: relative;
-  width: 100%;
-  height: 100%;
+  width: 181px;
+  height: 139px;
 `;
 
 const SlideImage = styled.img`
@@ -114,48 +108,21 @@ const SlideImage = styled.img`
   height: 100%;
   object-fit: cover;
   display: block;
+  background-color: var(--gray-300);
 `;
 
 const NavButton = styled.button<{ $right?: boolean }>`
   position: absolute;
   top: 50%;
-  ${(p) =>
-    p.$right
-      ? css`
-          right: 8px;
-        `
-      : css`
-          left: 8px;
-        `}
+  ${(p) => (p.$right ? "right: 8px;" : "left: 8px;")}
   transform: translateY(-50%);
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
   border: none;
   background: rgba(0, 0, 0, 0.35);
   color: #fff;
-  font-size: 22px;
-  line-height: 0;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-`;
-
-const Dots = styled.div`
-  position: absolute;
-  left: 50%;
-  bottom: 8px;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 6px;
-`;
-
-const Dot = styled.button<{ $active?: boolean }>`
-  width: 8px;
-  height: 8px;
+  font-size: 20px;
+  line-height: 1;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  border: none;
-  background: ${(p) => (p.$active ? "#fb923c" : "rgba(255,255,255,0.7)")};
-  outline: 1px solid rgba(0, 0, 0, 0.15);
   cursor: pointer;
 `;

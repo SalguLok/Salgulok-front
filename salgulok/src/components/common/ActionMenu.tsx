@@ -5,7 +5,17 @@ import deleteIcon from "../../assets/common/delete.svg";
 import drawIcon from "../../assets/common/draw.svg";
 
 // ...imports 동일
+// ...imports 동일
 type ActionMenuProps = {
+  open: boolean;
+  onClose: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
+  x?: number;
+  y?: number;
+  maxWidth?: number;
+  variant?: "context" | "modal"; // ★ 추가
+  viewportWidth?: number; // ★ 추가 (기본 375)
   open: boolean;
   onClose: () => void;
   onEdit: () => void;
@@ -18,6 +28,17 @@ type ActionMenuProps = {
 };
 
 const ActionMenu: React.FC<ActionMenuProps> = ({
+  open,
+  onClose,
+  onEdit,
+  onDelete,
+  x = 0,
+  y = 0,
+  maxWidth = 280,
+  variant = "context",
+  viewportWidth = 375, // ★ 기본 375px
+}) => {
+  const menuRef = useRef<HTMLDivElement>(null);
   open,
   onClose,
   onEdit,
@@ -46,7 +67,17 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
     document.addEventListener("mousedown", onClickOutside);
     return () => document.removeEventListener("mousedown", onClickOutside);
   }, [open, onClose]);
+  useEffect(() => {
+    if (!open) return;
+    const onClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node))
+        onClose();
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [open, onClose]);
 
+  if (!open) return null;
   if (!open) return null;
 
   const style =
@@ -153,25 +184,6 @@ const Card = styled.div<{ $variant: "context" | "modal" }>`
   min-width: 180px;
   padding: 8px 0 10px;
   overflow: hidden;
-
-  ${(p) =>
-      p.$variant === "context" &&
-      `
-      position: absolute;
-      transform: translate(calc(-100% - -10px), 5%); 
-      /* ← 버튼 왼쪽으로 8px 띄우고, y는 중앙에 맞춤 */
-    `}
-
-  // ${(p) => p.$variant === "context" && `position: absolute;`}
-  ${(p) => p.$variant === "modal" && `position: relative; width: 220px;`}
-`;
-
-const HandleBar = styled.div`
-  width: 72px;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.12);
-  margin: 8px auto 6px;
 `;
 
 const List = styled.ul`

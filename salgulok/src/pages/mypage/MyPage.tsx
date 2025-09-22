@@ -12,6 +12,7 @@ import { logout } from "../../api/auth/logout";
 import { deleteMyLogs } from "../../api/log/getMyLog";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import { getMyInfo } from "../../api/user/getMyProfile";
+import Pagination from "../../components/common/Pagination";
 
 const MyPage: React.FC = () => {
   const [logs, setLogs] = useState<LogItem[]>([]);
@@ -23,41 +24,50 @@ const MyPage: React.FC = () => {
   const [isDeleting, setIsDeleting] = useState(false);
   const location = useLocation();
 
+  // 페이지네이션
+  const [page, setPage] = useState(1); // UI 1-based
+  const [totalPages, setTotalPages] = useState(1);
+
+  // 페이지 기반 로그 가져오기
+  const fetchLogs = async (pageNum: number) => {
+    try {
+      // pageNum: 1-based, API에는 0-based 전달
+      const [logsRes, userInfo] = await Promise.all([
+        getMyLogs(pageNum - 1),
+        getMyInfo(),
+      ]);
+
+      const processedLogs = logsRes.logs.map(
+        (log) =>
+          ({
+            id: log.logId,
+            image: log.imgUrl,
+            writer: log.writer,
+            writerProfile:
+              log.writer === userInfo.nickname
+                ? userInfo.profileImg
+                : log.writerProfile,
+            title: log.title,
+            isPublic: log.isPublic,
+            date: `${log.startDate} - ${log.endDate}`,
+            likes: 0,
+            comments: 0,
+          } as LogItem)
+      );
+
+      setLogs(processedLogs);
+
+      // 페이징 정보 업데이트
+      setTotalPages(logsRes.totalPages);
+      setPage(logsRes.currentPage + 1); // 0-based -> 1-based
+    } catch (err) {
+      console.error("내 로그/유저 정보 불러오기 실패", err);
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [logsRes, userInfo] = await Promise.all([
-          getMyLogs(),
-          getMyInfo(),
-        ]);
-
-        const processedLogs = logsRes.logs.map(
-          (log) =>
-            ({
-              id: log.logId,
-              image: log.imgUrl, // S3 Key 전달
-              writer: log.writer,
-              // 내 프로필 이미지 키 또는 다른 사람의 프로필 이미지 키 전달
-              writerProfile:
-                log.writer === userInfo.nickname
-                  ? userInfo.profileImg
-                  : log.writerProfile,
-              title: log.title,
-              isPublic: log.isPublic,
-              date: `${log.startDate} - ${log.endDate}`,
-              likes: 0,
-              comments: 0,
-            } as LogItem)
-        );
-
-        setLogs(processedLogs);
-      } catch (err) {
-        console.error("내 로그/유저 정보 불러오기 실패", err);
-      }
-    };
-
-    fetchData();
-  }, [location]);
+    fetchLogs(page);
+  }, [location, page]);
 
   //로그아웃 API 연결
   const readLogout = async () => {
@@ -93,6 +103,7 @@ const MyPage: React.FC = () => {
       setDelLogId(null);
     }
   };
+
   return (
     <Container>
       <HeaderLeft
@@ -119,6 +130,15 @@ const MyPage: React.FC = () => {
             onClickMore={handleClickMore}
           />
         </CardContainer>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <Pagination
+            totalPages={totalPages}
+            currentPage={page}
+            onPageChange={(p) => setPage(p)}
+          />
+        )}
       </ContentWrapper>
 
       {/*로그아웃 모달*/}

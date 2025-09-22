@@ -20,6 +20,7 @@ export interface TemplateCardDoneProps {
   onChangeRating?: (value: number) => void;
   onEditClick?: () => void;
   onDeleteClick?: (templateId: number) => void;
+  isOwner?: boolean;
 }
 
 const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
@@ -35,6 +36,7 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
   onMenuClick,
   onEditClick,
   onDeleteClick,
+    isOwner = false,
 }) => {
   const [deleting, setDeleting] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -72,16 +74,6 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
     }
   };
 
-  // const openMenu = () => {
-  //   onMenuClick?.();
-  //   const rect = menuBtnRef.current?.getBoundingClientRect();
-  //   // 살짝 오른쪽으로 띄우기
-  //   const x = (rect?.left ?? 0) - 100;
-  //   const y = (rect?.bottom ?? 0) + 8;
-  //   setMenuPos({ x, y });
-  //   setMenuOpen(true);
-  // };
-
   return (
     <Layout aria-label={`${title} 카드`}>
       <CardContainer>
@@ -93,10 +85,26 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
             </IconWrapper>
             <Title title={placeName}>{placeName}</Title>
           </TitleArea>
-          <MenuButton ref={menuBtnRef} aria-label="more" onClick={openMenu}>
-            ⋮
-          </MenuButton>
+          {isOwner && (
+              <MenuButton ref={menuBtnRef} aria-label="more" onClick={openMenu}>
+                ⋮
+              </MenuButton>
+          )}
         </Header>
+
+        {isOwner && (
+            <ActionMenu
+                open={menuOpen}
+                onClose={() => setMenuOpen(false)}
+                onEdit={() => onEditClick?.()}
+                onDelete={delTemplate}
+                variant="context"
+                x={menuPos.x}
+                y={menuPos.y}
+                maxWidth={220}
+                viewportWidth={375}
+            />
+        )}
 
         <ImageSlider images={images} />
 

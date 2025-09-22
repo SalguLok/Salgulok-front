@@ -331,6 +331,7 @@ const LogEntryPage: React.FC = () => {
               rating={c.rating}
               review={c.review}
               indexBadge={idx + 1}
+              isOwner={currentUserId === (logDetail?.ownerId ?? -1)}
               onEditClick={() =>
                 setEditing({
                   logId: c.logId,

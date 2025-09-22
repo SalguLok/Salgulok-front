@@ -27,13 +27,18 @@ const LogEntryPage: React.FC = () => {
     endDate: string;
     ownerId: number;
   } | null>(null);
+
+  const isOwner = logDetail ? currentUserId === logDetail.ownerId : false;
+
   const [editingTemplate, setEditingTemplate] = useState<{
     date: string;
     isNew: boolean;
   } | null>(null);
 
   // 각 날짜별 SalguItem 상태 관리
-  const [salguItemStates, setSalguItemStates] = useState<Map<string, "yes" | "no">>(new Map());
+  const [salguItemStates, setSalguItemStates] = useState<
+    Map<string, "yes" | "no">
+  >(new Map());
 
   // 템플릿 작성 모드 상태
   const [isTemplateWritingMode, setIsTemplateWritingMode] = useState(false);
@@ -104,7 +109,7 @@ const LogEntryPage: React.FC = () => {
         isEditing: true,
         isNew: true,
       };
-      setCards(prev => [...prev, newEditingCard]);
+      setCards((prev) => [...prev, newEditingCard]);
     }
   };
 
@@ -115,16 +120,18 @@ const LogEntryPage: React.FC = () => {
     }
 
     const newTemplates = cards
-      .filter(card => card.isNew)
-      .map(card => ({
+      .filter((card) => card.isNew)
+      .map((card) => ({
         placeId: card.placeId,
         text: card.review,
         star: card.rating,
         imageUrls: card.images,
       }));
 
-    if (newTemplates.some(t => !t.placeId)) {
-      alert("장소가 선택되지 않은 템플릿이 있습니다. 각 템플릿을 저장해주세요.");
+    if (newTemplates.some((t) => !t.placeId)) {
+      alert(
+        "장소가 선택되지 않은 템플릿이 있습니다. 각 템플릿을 저장해주세요."
+      );
       return;
     }
 
@@ -146,8 +153,9 @@ const LogEntryPage: React.FC = () => {
 
       const data = await getLogEntryByDate(numericLogId, editingTemplate.date);
       setCards(toCards(data.logId, data.entryId, data.templates ?? []));
-      setSalguItemStates(prev => new Map(prev).set(editingTemplate.date, "yes"));
-
+      setSalguItemStates((prev) =>
+        new Map(prev).set(editingTemplate.date, "yes")
+      );
     } catch (error) {
       console.error("템플릿 등록 중 에러:", error);
       alert("템플릿 등록 중 오류가 발생했습니다.");
@@ -175,8 +183,7 @@ const LogEntryPage: React.FC = () => {
     logId: number,
     entryId: number | null,
     templates: TemplateSummary[] = []
-  ):
-    CardData[] =>
+  ): CardData[] =>
     templates.map((t, i) => ({
       id: t.templateId,
       placeId: t.placeId,
@@ -190,7 +197,6 @@ const LogEntryPage: React.FC = () => {
       review: t.text ?? "",
     }));
 
-
   const handleSalguItemClick = async (date: string) => {
     if (!numericLogId) return;
     setSelectedDate(date);
@@ -201,13 +207,25 @@ const LogEntryPage: React.FC = () => {
         date
       );
 
-      const hasTemplates = data.templateCount > 0 && data.templates && data.templates.length > 0;
-      setSalguItemStates(prev => new Map(prev).set(date, hasTemplates ? "yes" : "no"));
+      const hasTemplates =
+        data.templateCount > 0 && data.templates && data.templates.length > 0;
+      setSalguItemStates((prev) =>
+        new Map(prev).set(date, hasTemplates ? "yes" : "no")
+      );
 
       if (!hasTemplates) {
-        setEditingTemplate({ date, isNew: true });
-        setCards([]);
-        setIsTemplateWritingMode(true);
+        if (isOwner) {
+          // 작성자일 때만 새 템플릿 작성 모드로 진입
+          setEditingTemplate({ date, isNew: true });
+          setCards([]);
+          setIsTemplateWritingMode(true);
+        } else {
+          // 작성자가 아니면 아무 것도 띄우지 않음 (필요하면 아래 alert 주석 해제)
+          setEditingTemplate(null);
+          setIsTemplateWritingMode(false);
+          setCards([]);
+          // alert("작성자가 아닌 경우 새 템플릿을 만들 수 없습니다.");
+        }
       } else {
         setCards(toCards(data.logId, data.entryId, data.templates ?? []));
         setEditingTemplate(null);
@@ -236,11 +254,10 @@ const LogEntryPage: React.FC = () => {
       // 2. 어떤 날짜에 기록이 있는지 미리 가져와서 상태 설정
       const entryDatesResponse = await getEntryDates(numericLogId);
       const newStates = new Map<string, "yes" | "no">();
-      entryDatesResponse.items.forEach(item => {
+      entryDatesResponse.items.forEach((item) => {
         newStates.set(item.entryDate, "yes");
       });
       setSalguItemStates(newStates);
-
     })();
   }, [numericLogId]);
 
@@ -273,25 +290,29 @@ const LogEntryPage: React.FC = () => {
               mode="create"
               onSaved={(savedData) => {
                 if (editingTemplate?.date) {
-                  setCards(prev => prev.map(card =>
-                    card.id === c.id
-                      ? {
-                          ...card,
-                          isEditing: false,
-                          review: savedData.text,
-                          rating: savedData.star,
-                          placeId: savedData.placeId ?? 0,
-                          placeName: savedData.placeName ?? "저장된 장소",
-                          title: savedData.placeName ?? "저장된 장소",
-                          images: savedData.imageUrls ?? [],
-                        }
-                      : card
-                  ));
-                  setSalguItemStates(prev => new Map(prev).set(editingTemplate.date, "yes"));
+                  setCards((prev) =>
+                    prev.map((card) =>
+                      card.id === c.id
+                        ? {
+                            ...card,
+                            isEditing: false,
+                            review: savedData.text,
+                            rating: savedData.star,
+                            placeId: savedData.placeId ?? 0,
+                            placeName: savedData.placeName ?? "저장된 장소",
+                            title: savedData.placeName ?? "저장된 장소",
+                            images: savedData.imageUrls ?? [],
+                          }
+                        : card
+                    )
+                  );
+                  setSalguItemStates((prev) =>
+                    new Map(prev).set(editingTemplate.date, "yes")
+                  );
                 }
               }}
               onCancel={() => {
-                setCards(prev => prev.filter(card => card.id !== c.id));
+                setCards((prev) => prev.filter((card) => card.id !== c.id));
                 if (cards.length <= 1) {
                   setIsTemplateWritingMode(false);
                   setEditingTemplate(null);
@@ -355,7 +376,7 @@ const LogEntryPage: React.FC = () => {
           <TemplateActionButtons
             onAdd={handleAddTemplate}
             onSubmit={handleSubmitTemplates}
-            disabled={cards.some(c => c.isEditing)}
+            disabled={cards.some((c) => c.isEditing)}
           />
         </ActionButtonsContainer>
       )}
@@ -368,7 +389,10 @@ const LogEntryPage: React.FC = () => {
               {logDetail.isPublic ? "공개" : "비공개"}
             </LogVisibility>
           )}
-          <LogCommentSection logId={numericLogId} currentUserId={currentUserId} />
+          <LogCommentSection
+            logId={numericLogId}
+            currentUserId={currentUserId}
+          />
         </BottomContainer>
       )}
     </Container>
@@ -423,4 +447,3 @@ const LogReview = styled.div`
   margin-top: -5px;
   margin-bottom: 12px;
 `;
-

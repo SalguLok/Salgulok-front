@@ -13,7 +13,11 @@ const LogDetailPage = () => {
   const numericLogId = Number(logId);
 
   // 로그 상세 정보 조회
-  const { data: logDetail, isLoading, error } = useQuery({
+  const {
+    data: logDetail,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["logDetail", numericLogId],
     queryFn: () => getLogDetail(numericLogId),
     enabled: !!numericLogId, // logId가 유효할 때만 쿼리 실행
@@ -57,7 +61,7 @@ const LogDetailPage = () => {
   return (
     <Container>
       <Header title="살구로그" showBackButton={true} />
-      
+
       <Content>
         {/* 로그 상세 정보 */}
         <LogInfoSection>
@@ -70,19 +74,12 @@ const LogDetailPage = () => {
               <PresignedImage src={imgUrl} alt={title} />
             </LogImage>
           )}
-          {oneReview && (
-            <LogReview>{oneReview}</LogReview>
-          )}
-          <LogVisibility>
-            {isPublic ? "공개" : "비공개"}
-          </LogVisibility>
+          {oneReview && <LogReview>{oneReview}</LogReview>}
+          <LogVisibility>{isPublic ? "공개" : "비공개"}</LogVisibility>
         </LogInfoSection>
 
         {/* 댓글 섹션 */}
-        <LogCommentSection 
-          logId={numericLogId} 
-          currentUserId={currentUserId}
-        />
+        <LogCommentSection logId={numericLogId} currentUserId={currentUserId} />
       </Content>
 
       <NavigationBar />
@@ -150,7 +147,7 @@ const LogImage = styled.div`
   border-radius: 8px;
   overflow: hidden;
   margin-bottom: 16px;
-  
+
   img {
     width: 100%;
     height: 100%;

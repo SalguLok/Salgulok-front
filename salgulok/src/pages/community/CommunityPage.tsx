@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import NavigationBar from "../../components/common/NavigationBar";
-import HeaderLeft from "../../components/common/HeaderLeft";
+import Header from "../../components/common/Header";
 import PostCard from "../../components/common/PostCard";
 import { getPosts, deletePost } from "../../api/community/community";
 import type { GetPostsParams, Topic } from "../../api/community/community";
@@ -25,8 +25,6 @@ const CommunityPage = () => {
   const [searchParams] = useSearchParams();
   const initialRegionId = searchParams.get("region_id");
 
-
-  // const [filters, setFilters] = useState<GetPostsParams>({ page: 0, size: 10 });
   const [filters, setFilters] = useState<GetPostsParams>({
     page: 0,
     size: 10,
@@ -130,7 +128,7 @@ const CommunityPage = () => {
   return (
     <>
       <Layout>
-        <HeaderLeft title="커뮤니티" />
+        <Header title="커뮤니티" showBackButton={true} />
         <Banner onClick={() => setOpenFilter(true)}>
           <BannerText>
             <BannerTitle>
@@ -251,10 +249,11 @@ const Layout = styled.div`
 
 const Banner = styled.div`
   position: relative;
-  margin: 0px 0 16px 0;
+  margin: 12px 0 16px 0;
   height: 160px;
   background: #eee;
   overflow: hidden;
+  z-index: 100;
   cursor: pointer; /* 클릭 가능한 요소임을 시각적으로 알려줌 */
 `;
 

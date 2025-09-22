@@ -77,16 +77,31 @@ const Sheet = styled.div`
   }
 `;
 const Title = styled.h3`
-  margin: 20px 20px 8px; font-size: 18px; font-weight: 700;
+  margin: 28px 24px 8px; 
+  font-size: 16px; 
+  font-weight: 600;
+  font-family: 'Pretendard', sans-serif;
 `;
 const Content = styled.div`
-  padding: 8px 20px 0; overflow: auto;
+  padding: 9px 21px 0; 
+  overflow: auto;
+  font-family: 'Pretendard', sans-serif;
+  font-color: var(--gray-500);
 `;
 const Footer = styled.div`
   padding: 12px 20px calc(12px + env(safe-area-inset-bottom));
+  display: flex;
+  justify-content: center;
 `;
 const Primary = styled.button`
-  width: 100%; height: 52px; border: 0; border-radius: 14px;
-  background: var(--main-pri); color: #fff; font-size: 17px; font-weight: 600;
+  width: 100%; 
+  height: 48px; 
+  border: 0; 
+  border-radius: 10px;
+  background: var(--main-pri); 
+  color: #fff; 
+  font-size: 16px; 
+  font-weight: 500;
+  font-family: 'Pretendard', sans-serif;
   &:disabled { opacity: .4; }
 `;

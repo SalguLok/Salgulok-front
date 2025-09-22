@@ -4,7 +4,6 @@ import NavigationBar from "../../components/common/NavigationBar";
 import LogCardList from "../../components/common/CardListItem";
 import type { LogItem } from "../../components/common/CardListItem";
 import HeaderLeft from "../../components/common/HeaderLeft";
-import { getPublicLogs } from "../../api/log/getPublicLogs";
 import SearchIcon from "../../assets/common/search.svg?react";
 import { searchLogs } from "../../api/log/searchLogs";
 import SearchBar from "../../components/log/SearchBar";
@@ -29,8 +28,8 @@ const LogPage: React.FC = () => {
   const cacheRef = useRef<Map<string, LogItem[]>>(new Map());
   const abortRef = useRef<AbortController | null>(null);
 
-  // 필터 상태
-  const [sort, setSort] = useState("latest");
+  // 필터 상태 (FilterBar에서 콜백으로 전달받음)
+  const [sort, setSort] = useState<"latest" | "view" | "like">("latest");
   const [regionId, setRegionId] = useState<number | null>(null);
 
   const regionOptions = regions.map((r) => ({ id: r.id, name: r.nameKo }));
@@ -66,11 +65,10 @@ const LogPage: React.FC = () => {
     []
   );
 
-  // 살구로그 목록 가져오기 (검색/정렬/지역 포함) + 캐시/요청취소 관리
+  // 로그 목록 가져오기 (검색/정렬/지역 포함) + 캐시/요청취소 관리
   const fetchLogs = useCallback(
-    async (opts: { q: string; s: string; r: number | null }) => {
+    async (opts: { q: string; s: "latest" | "view" | "like"; r: number | null }) => {
       const key = makeKey(opts.q, opts.s, opts.r);
-
 
       if (cacheRef.current.has(key)) {
         setLogs(cacheRef.current.get(key)!);
@@ -80,18 +78,14 @@ const LogPage: React.FC = () => {
       if (abortRef.current) abortRef.current.abort();
       abortRef.current = new AbortController();
 
-      //setLoading(true);
       try {
-        let data: any[];
-
-        if (opts.q && opts.q.trim()) {
-          const res: any = await searchLogs(opts.q); // <- any 캐스팅
-          data = toArray(res); // {logs:[]} 구조든 배열이든 통일
-        } else {
-          const res: any = await getPublicLogs();
-          data = toArray(res);
-        }
-
+        const res: any = await searchLogs(
+          opts.q,
+          opts.s,
+          opts.r ?? 0
+        );
+        const data = toArray(res);
+        console.log("API 실행됨:", opts);
 
         const processed = processLogItems(data);
         cacheRef.current.set(key, processed);
@@ -101,18 +95,12 @@ const LogPage: React.FC = () => {
           console.error("로그 불러오기 실패:", e);
           setLogs([]);
         }
-      } finally {
-        //setLoading(false);
-
       }
     },
     [makeKey, processLogItems]
   );
 
-  // useEffect(() => {
-  //   fetchLogs({ q: "", s: "latest", r: null });
-  // }, [fetchLogs]);
-
+  // query, sort, regionId 변하면 다시 호출
   useEffect(() => {
     fetchLogs({ q: debouncedQuery, s: sort, r: regionId });
   }, [debouncedQuery, sort, regionId, fetchLogs]);
@@ -166,6 +154,8 @@ const LogPage: React.FC = () => {
           <FilterBarContainer>
             <FilterBar
               regions={regionOptions}
+              defaultSort="latest"
+              defaultRegionId={null}
               onChangeSort={(key) => setSort(key)}
               onChangeRegion={(id) => setRegionId(id)}
             />

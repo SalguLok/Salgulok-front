@@ -8,6 +8,7 @@ type Props = {
   endDate: string;
   onItemClick: (date: string) => void | Promise<void>;
   isOwner: boolean;
+  salguItemStates?: Map<string, "yes" | "no">;
 };
 
 const LogEntryList: React.FC<Props> = ({
@@ -16,6 +17,7 @@ const LogEntryList: React.FC<Props> = ({
   endDate,
   onItemClick,
   isOwner,
+  salguItemStates,
 }) => {
   // 안전한 ISO 파싱
   const start = parseISO(startDate);
@@ -35,6 +37,7 @@ const LogEntryList: React.FC<Props> = ({
           logId={logId}
           onClick={() => onItemClick(date)}
           isOwner={isOwner}
+          forceHasLog={salguItemStates?.get(date)}
         />
       ))}
     </Container>

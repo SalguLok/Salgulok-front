@@ -21,6 +21,7 @@ type Props = {
   thumbnailKeyOrUrl?: string | null;
   usePresigned?: boolean;
   isOwner?: boolean;
+  forceHasLog?: "yes" | "no"; // 외부에서 hasLog 상태 강제 설정
 };
 
 type DateMap = Map<string, LogEntryDateListResponse["items"][number]>;
@@ -50,6 +51,7 @@ const SalguItem: FC<Props> = ({
   thumbnailKeyOrUrl,
   usePresigned = true,
   isOwner = false,
+  forceHasLog,
 }) => {
   const [resolvedSrc, setResolvedSrc] = useState<string | null>(null);
   const [derivedHasLog, setDerivedHasLog] = useState<"yes" | "no">(
@@ -79,6 +81,13 @@ const SalguItem: FC<Props> = ({
       setDisplayDate(date);
     }
   }, [isoDate, date]);
+
+  // forceHasLog가 있으면 강제로 상태 업데이트
+  useEffect(() => {
+    if (forceHasLog) {
+      setDerivedHasLog(forceHasLog);
+    }
+  }, [forceHasLog]);
 
   // 대표 이미지 찾아서 presigned까지 처리
   useEffect(() => {

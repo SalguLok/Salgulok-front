@@ -24,7 +24,13 @@ const LogEntryPage: React.FC = () => {
     endDate: string;
     ownerId: number;
   } | null>(null);
-  const [showTemplateCard, setShowTemplateCard] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<{
+    date: string;
+    isNew: boolean;
+  } | null>(null);
+  
+  // 각 날짜별 SalguItem 상태 관리
+  const [salguItemStates, setSalguItemStates] = useState<Map<string, "yes" | "no">>(new Map());
 
   type EditState = {
     logId: number;
@@ -48,10 +54,33 @@ const LogEntryPage: React.FC = () => {
     images: string[];
     rating: number;
     review: string;
+    isEditing?: boolean; // 편집 중인 템플릿인지
+    isNew?: boolean; // 새로 생성하는 템플릿인지
   };
   const [cards, setCards] = useState<CardData[]>([]);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   selectedDate;
+
+  // editingTemplate이 있을 때 cards에 편집 중인 템플릿 추가
+  useEffect(() => {
+    if (editingTemplate && editingTemplate.isNew) {
+      const newEditingCard: CardData = {
+        id: -1, // 임시 ID
+        placeId: 0,
+        placeName: "",
+        logId: numericLogId,
+        entryId: 0,
+        templateId: -1, // 임시 ID
+        title: "새 템플릿",
+        images: [],
+        rating: 0,
+        review: "",
+        isEditing: true,
+        isNew: true,
+      };
+      setCards(prev => [...prev, newEditingCard]);
+    }
+  }, [editingTemplate, numericLogId]);
 
   type TemplateImage = { imageUrl: string };
   type TemplateSummary = {
@@ -88,6 +117,7 @@ const LogEntryPage: React.FC = () => {
       review: t.text ?? "",
     }));
 
+
   const handleSalguItemClick = async (date: string) => {
     if (!numericLogId) return;
     setSelectedDate(date);
@@ -96,8 +126,19 @@ const LogEntryPage: React.FC = () => {
       date
     );
     console.log("data", data);
-    setCards(toCards(data.logId, data.entryId, data.templates ?? []));
-    setShowTemplateCard(false);
+    
+    // SalguItem 상태 업데이트
+    const hasTemplates = data.templateCount > 0 && data.templates && data.templates.length > 0;
+    setSalguItemStates(prev => new Map(prev).set(date, hasTemplates ? "yes" : "no"));
+    
+    // 템플릿이 없는 빈 날짜인 경우 새 템플릿 편집 모드
+    if (data.templateCount === 0 || (data.templates && data.templates.length === 0)) {
+      setEditingTemplate({ date, isNew: true });
+      setCards([]); // 빈 배열로 설정
+    } else {
+      setCards(toCards(data.logId, data.entryId, data.templates ?? []));
+      setEditingTemplate(null);
+    }
   };
 
   useEffect(() => {
@@ -111,7 +152,7 @@ const LogEntryPage: React.FC = () => {
         oneReview: detail.oneReview,
         ownerId: detail.ownerId,
       });
-      setShowTemplateCard(false);
+      setEditingTemplate(null);
     })();
   }, [numericLogId]);
 
@@ -131,12 +172,40 @@ const LogEntryPage: React.FC = () => {
           endDate={logDetail.endDate}
           onItemClick={handleSalguItemClick}
           isOwner={currentUserId === logDetail.ownerId}
+          salguItemStates={salguItemStates}
         />
       )}
 
       {cards.map((c, idx) => (
         <TemplateContainer key={c.id}>
-          {editing?.templateId === c.templateId ? (
+          {c.isEditing && c.isNew ? (
+            // 새로 생성하는 템플릿
+            <TemplateCard
+              logId={c.logId}
+              entryDate={editingTemplate?.date ?? ""}
+              mode="create"
+              onSaved={async () => {
+                // 저장 후 해당 날짜 데이터 새로고침
+                if (editingTemplate?.date) {
+                  const data: EntryByDateResponse = await getLogEntryByDate(
+                    numericLogId,
+                    editingTemplate.date
+                  );
+                  setCards(toCards(data.logId, data.entryId, data.templates ?? []));
+                  
+                  // SalguItem 상태를 "yes"로 업데이트
+                  setSalguItemStates(prev => new Map(prev).set(editingTemplate.date, "yes"));
+                  
+                  setEditingTemplate(null);
+                }
+              }}
+              onCancel={() => {
+                setEditingTemplate(null);
+                setCards(prev => prev.filter(card => !card.isEditing || !card.isNew));
+              }}
+            />
+          ) : editing?.templateId === c.templateId ? (
+            // 기존 템플릿 편집
             <TemplateCard
               logId={editing.logId}
               entryDate={selectedDate ?? ""}
@@ -159,6 +228,7 @@ const LogEntryPage: React.FC = () => {
               onCancel={() => setEditing(null)}
             />
           ) : (
+            // 완성된 템플릿
             <TemplateCardDone
               logId={c.logId}
               entryId={c.entryId}
@@ -187,11 +257,6 @@ const LogEntryPage: React.FC = () => {
         </TemplateContainer>
       ))}
       <BottomContainer>
-        {showTemplateCard && typeof selectedDate === "string" && (
-          <TemplateCardWrapper>
-            <TemplateCard logId={numericLogId} entryDate={selectedDate} />
-          </TemplateCardWrapper>
-        )}
         {logDetail?.oneReview && <LogReview>{logDetail.oneReview}</LogReview>}
         {logDetail && (
           <LogVisibility>
@@ -220,15 +285,11 @@ const TemplateContainer = styled.div`
   align-items: center;
   margin-bottom: 20px;
 `;
-const TemplateCardWrapper = styled.div`
-  width: 90%;
-  max-width: 600px;
-  margin: 0 auto;
-`;
 const LogReview = styled.div`
   font-size: 16px;
   line-height: 1.5;
   color: #333;
+  margin-top: 15px;
   margin-bottom: 12px;
 `;
 

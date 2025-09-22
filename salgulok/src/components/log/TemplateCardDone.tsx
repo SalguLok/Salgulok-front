@@ -124,7 +124,7 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
         </ReviewContainer>
       </CardContainer>
 
-      <ActionMenu
+      {/* <ActionMenu
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
         onEdit={() => onEditClick?.()}
@@ -134,7 +134,7 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
         y={menuPos.y}
         maxWidth={220}
         viewportWidth={375}
-      />
+      /> */}
     </Layout>
   );
 };

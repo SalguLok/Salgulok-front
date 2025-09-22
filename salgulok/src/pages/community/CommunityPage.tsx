@@ -36,6 +36,7 @@ const CommunityPage = () => {
   const [openTopicFilter, setOpenTopicFilter] = useState(false);
   const [onlyTraveling, setOnlyTraveling] = useState(false);
 
+
   useEffect(() => {
     const regionIdFromParams = searchParams.get("region_id");
     const newRegionId = regionIdFromParams ? parseInt(regionIdFromParams, 10) : undefined;
@@ -76,7 +77,7 @@ const CommunityPage = () => {
   });
 
   // 더보기 버튼 클릭 핸들러
-  const handleMenuClick = (postId: number) => {
+  const handleMenuClick = (postId: number, event: React.MouseEvent) => {
     console.log("더보기 버튼 클릭됨, postId:", postId);
     
     const currentUserId = localStorage.getItem("userId");
@@ -105,10 +106,7 @@ const CommunityPage = () => {
       return;
     }
 
-    if (window.confirm("정말 삭제하시겠습니까?")) {
-      console.log("삭제 확인됨, 삭제 API 호출");
-      deletePostMutation.mutate(postId);
-    }
+   
   };
 
   // 필터 변경 핸들러
@@ -163,7 +161,6 @@ const CommunityPage = () => {
                 isHot: false, // 백엔드 응답에 없어 임시 처리
               }}
               onClick={() => goDetail(post.id)}
-              onMenuClick={handleMenuClick}
             />
           ))}
         </PostList>

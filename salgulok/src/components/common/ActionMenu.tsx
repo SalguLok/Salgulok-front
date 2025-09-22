@@ -54,7 +54,7 @@ const ActionMenu: React.FC<ActionMenuProps> = ({
                 style={{ left: x, top: y, maxWidth }}
                 onClick={(e) => e.stopPropagation()}
             >
-                <HandleBar aria-hidden />
+              
                 <List>
                     <Item
                         onClick={() => {
@@ -104,14 +104,6 @@ const Card = styled.div`
   min-width: 180px;
   padding: 8px 0 10px;
   overflow: hidden;
-`;
-
-const HandleBar = styled.div`
-  width: 72px;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.12);
-  margin: 8px auto 6px;
 `;
 
 const List = styled.ul`

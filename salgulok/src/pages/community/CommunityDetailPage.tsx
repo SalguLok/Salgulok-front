@@ -150,17 +150,18 @@ const CommunityDetailPage = () => {
           </Footer>
         </PostSection>
 
-        {/* 댓글 입력 바 */}
-        <CommentInputWrapper>
+       
+
+        {/* 댓글 */}
+        <CommentTitle>댓글 {comments?.length ?? 0}</CommentTitle>
+         {/* 댓글 입력 바 */}
+         <CommentInputWrapper>
           <CommentInputBar 
             onSubmit={handleCreateComment} 
             disabled={createCommentMutation.isPending}
             buttonText={createCommentMutation.isPending ? "등록 중..." : "등록"}
           />
         </CommentInputWrapper>
-
-        {/* 댓글 */}
-        <CommentTitle>댓글 {comments?.length ?? 0}</CommentTitle>
         {isCommentsLoading ? (
           <div>댓글 로딩 중...</div>
         ) : (
@@ -251,13 +252,13 @@ const Footer = styled.div`
 `;
 
 const CommentInputWrapper = styled.div`
-  margin: 24px 0 16px;
+  margin: 0px 0 16px;
 `;
 
 const CommentTitle = styled.h3`
-  font-size: 13px;
-  font-weight: 600;
-  margin: 16px 0 8px;
+  font-size: 16px;
+  font-weight: 500;
+  margin: 16px 0 20px;
   font-family: "Pretendard", sans-serif;
 `;
 

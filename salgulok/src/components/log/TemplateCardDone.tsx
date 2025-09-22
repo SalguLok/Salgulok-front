@@ -36,7 +36,7 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
   onMenuClick,
   onEditClick,
   onDeleteClick,
-    isOwner = false,
+  isOwner = false,
 }) => {
   const [deleting, setDeleting] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -51,8 +51,8 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
     onMenuClick?.();
     const rect = menuBtnRef.current?.getBoundingClientRect();
 
-    const GAP = 8; // 버튼과 메뉴 사이 간격
-    const x = rect ? rect.left : 0;                  // 버튼의 왼쪽
+    //const GAP = 8; // 버튼과 메뉴 사이 간격
+    const x = rect ? rect.left : 0; // 버튼의 왼쪽
     const y = rect ? rect.top + rect.height / 2 : 0; // 버튼의 세로 중앙
 
     setMenuPos({ x, y });
@@ -86,24 +86,24 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
             <Title title={placeName}>{placeName}</Title>
           </TitleArea>
           {isOwner && (
-              <MenuButton ref={menuBtnRef} aria-label="more" onClick={openMenu}>
-                ⋮
-              </MenuButton>
+            <MenuButton ref={menuBtnRef} aria-label="more" onClick={openMenu}>
+              ⋮
+            </MenuButton>
           )}
         </Header>
 
         {isOwner && (
-            <ActionMenu
-                open={menuOpen}
-                onClose={() => setMenuOpen(false)}
-                onEdit={() => onEditClick?.()}
-                onDelete={delTemplate}
-                variant="context"
-                x={menuPos.x}
-                y={menuPos.y}
-                maxWidth={220}
-                viewportWidth={375}
-            />
+          <ActionMenu
+            open={menuOpen}
+            onClose={() => setMenuOpen(false)}
+            onEdit={() => onEditClick?.()}
+            onDelete={delTemplate}
+            variant="context"
+            x={menuPos.x}
+            y={menuPos.y}
+            maxWidth={220}
+            viewportWidth={375}
+          />
         )}
 
         <ImageSlider images={images} />

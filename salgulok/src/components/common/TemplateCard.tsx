@@ -24,21 +24,19 @@ type TemplateCardProps = {
   initialImages?: string[];
 
   // 저장/취소 콜백
-  onSaved?: (
-    updated: {
-      text: string;
-      star: number;
-      placeId?: number;
-      placeName?: string;
-      imageUrls?: string[];
-    }
-  ) => void;
+  onSaved?: (updated: {
+    text: string;
+    star: number;
+    placeId?: number;
+    placeName?: string;
+    imageUrls?: string[];
+  }) => void;
   onCancel?: () => void;
 };
 
 const TemplateCard: React.FC<TemplateCardProps> = ({
   logId,
-  entryDate,
+  //entryDate,
   mode = "create",
   entryId,
   templateId,
@@ -332,5 +330,3 @@ const StarRow = styled.div`
   gap: 6px;
   align-items: center;
 `;
-
-

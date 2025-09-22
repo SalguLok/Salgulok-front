@@ -419,7 +419,7 @@ const LogReview = styled.div`
   font-size: 16px;
   line-height: 1.5;
   color: #333;
-  margin-top: 15px;
+  margin-top: -5px;
   margin-bottom: 12px;
 `;
 

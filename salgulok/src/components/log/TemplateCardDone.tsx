@@ -160,8 +160,8 @@ const IconWrapper = styled.div`
 const Badge = styled.span`
   z-index: 999;
   position: absolute;
-  top: 2px;
-  right: 2px;
+  top: 3.2px;
+  right: 0.5px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -169,15 +169,16 @@ const Badge = styled.span`
   height: 20px;
   border-radius: 50%;
   color: white;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 15px;
 `;
 const Title = styled.h2`
   font-size: 16px;
-  font-weight: 700;
+  font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-left: -3px;
 `;
 
 const MenuButton = styled.button`

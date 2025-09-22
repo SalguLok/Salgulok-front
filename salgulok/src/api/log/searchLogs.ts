@@ -17,13 +17,16 @@ export interface LogResponse {
 
 export interface LogListResponse {
   logs: LogResponse[];
+  totalPages: number;
+  currentPage: number;
 }
 
 // 로그 검색 및 필터링
 export const searchLogs = async (
   keyword?: string,
   sort: "latest" | "view" | "like" = "latest",
-  regionId: number = 0
+  regionId: number = 0,
+  page: number = 0
 ): Promise<LogListResponse> => {
   try {
     const response = await api.get<LogListResponse>("/logs/search", {
@@ -31,6 +34,7 @@ export const searchLogs = async (
         keyword,
         sort,
         regionId,
+        page
       },
     });
     console.log(response.data);

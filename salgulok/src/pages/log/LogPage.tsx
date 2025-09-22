@@ -9,6 +9,7 @@ import { searchLogs } from "../../api/log/searchLogs";
 import { getLogComments } from "../../api/log/logComment";
 import SearchBar from "../../components/log/SearchBar";
 import FilterBar from "../../components/log/FilterBar";
+import Pagination from "../../components/common/Pagination";
 import { regions } from "../../data/regions";
 
 function useDebounced<T>(value: T, delay = 300) {
@@ -29,9 +30,10 @@ const LogPage: React.FC = () => {
   const cacheRef = useRef<Map<string, LogItem[]>>(new Map());
   const abortRef = useRef<AbortController | null>(null);
 
-  // 필터 상태 (FilterBar에서 콜백으로 전달받음)
   const [sort, setSort] = useState<"latest" | "view" | "like">("latest");
   const [regionId, setRegionId] = useState<number | null>(null);
+  const [page, setPage] = useState(1); // UI 1-based
+  const [totalPages, setTotalPages] = useState(1);
 
   const regionOptions = regions.map((r) => ({ id: r.id, name: r.nameKo }));
 
@@ -54,22 +56,21 @@ const LogPage: React.FC = () => {
     }));
   }, []);
 
-  // 검색 제출 처리
   const handleSubmitSearch = (value: string) => {
     setShowSearch(false);
     setQuery(value.trim());
+    setPage(1); // 검색 시 페이지 초기화
   };
 
   const makeKey = useCallback(
-    (q: string, s: string, r: number | null) =>
-      `q=${q || ""}|s=${s}|r=${r ?? ""}`,
+    (q: string, s: string, r: number | null, p: number) =>
+      `q=${q || ""}|s=${s}|r=${r ?? ""}|p=${p}`,
     []
   );
 
-  // 로그 목록 가져오기 (검색/정렬/지역 포함) + 캐시/요청취소 관리
   const fetchLogs = useCallback(
-    async (opts: { q: string; s: "latest" | "view" | "like"; r: number | null }) => {
-      const key = makeKey(opts.q, opts.s, opts.r);
+    async (opts: { q: string; s: "latest" | "view" | "like"; r: number | null; p: number }) => {
+      const key = makeKey(opts.q, opts.s, opts.r, opts.p);
 
       if (cacheRef.current.has(key)) {
         setLogs(cacheRef.current.get(key)!);
@@ -80,21 +81,17 @@ const LogPage: React.FC = () => {
       abortRef.current = new AbortController();
 
       try {
-        const res: any = await searchLogs(
-          opts.q,
-          opts.s,
-          opts.r ?? 0
-        );
+        // opts.p는 1-based → API는 0-based
+        const res: any = await searchLogs(opts.q, opts.s, opts.r ?? 0, opts.p - 1);
         const data = toArray(res);
-        console.log("API 실행됨:", opts);
 
         const processed = processLogItems(data);
-        
+
         // 댓글 수 추가 조회
         const logsWithComments = await Promise.all(
           processed.map(async (log) => {
             try {
-              const commentsData = await getLogComments(log.id, { page: 0, size: 1, sort: 'createdAt' });
+              const commentsData = await getLogComments(log.id, { page: 0, size: 1, sort: "createdAt" });
               return { ...log, comments: commentsData.totalElements };
             } catch (error) {
               console.error(`로그 ${log.id} 댓글 수 조회 실패:`, error);
@@ -102,40 +99,32 @@ const LogPage: React.FC = () => {
             }
           })
         );
-        
+
         cacheRef.current.set(key, logsWithComments);
         setLogs(logsWithComments);
-      } catch (e: any) {
-        if (e?.name !== "AbortError") {
-          console.error("로그 불러오기 실패:", e);
-          setLogs([]);
-        }
+
+        setTotalPages(res.totalPages ?? 1);
+      } catch (e) {
+        console.error("로그 불러오기 실패:", e);
+        setLogs([]);
+        setTotalPages(1);
       }
     },
     [makeKey, processLogItems]
   );
 
-  // query, sort, regionId 변하면 다시 호출
   useEffect(() => {
-    fetchLogs({ q: debouncedQuery, s: sort, r: regionId });
-  }, [debouncedQuery, sort, regionId, fetchLogs]);
+    fetchLogs({ q: debouncedQuery, s: sort, r: regionId, p: page });
+  }, [debouncedQuery, sort, regionId, page, fetchLogs]);
 
-  // 검색창 외부 클릭 시 닫기
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        searchBarRef.current &&
-        !searchBarRef.current.contains(event.target as Node)
-      ) {
+      if (searchBarRef.current && !searchBarRef.current.contains(event.target as Node)) {
         setShowSearch(false);
       }
     }
-    if (showSearch) {
-      document.addEventListener("mousedown", handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
+    if (showSearch) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showSearch]);
 
   return (
@@ -144,11 +133,7 @@ const LogPage: React.FC = () => {
         title="살구로그"
         right={
           !showSearch && (
-            <IconButton
-              aria-label="검색"
-              onClick={() => setShowSearch(true)}
-              title="검색"
-            >
+            <IconButton aria-label="검색" onClick={() => setShowSearch(true)} title="검색">
               <SearchIcon />
             </IconButton>
           )
@@ -158,12 +143,7 @@ const LogPage: React.FC = () => {
       <ActionContainer>
         {showSearch ? (
           <SearchRow ref={searchBarRef}>
-            <SearchBar
-              value={query}
-              onChange={setQuery}
-              onSubmit={handleSubmitSearch}
-              placeholder="검색을 통해 로그를 찾아보세요"
-            />
+            <SearchBar value={query} onChange={setQuery} onSubmit={handleSubmitSearch} placeholder="검색을 통해 로그를 찾아보세요" />
           </SearchRow>
         ) : (
           <FilterBarContainer>
@@ -171,8 +151,8 @@ const LogPage: React.FC = () => {
               regions={regionOptions}
               defaultSort="latest"
               defaultRegionId={null}
-              onChangeSort={(key) => setSort(key)}
-              onChangeRegion={(id) => setRegionId(id)}
+              onChangeSort={setSort}
+              onChangeRegion={setRegionId}
             />
           </FilterBarContainer>
         )}
@@ -182,7 +162,14 @@ const LogPage: React.FC = () => {
         <CardContainer>
           <LogCardList items={logs} />
         </CardContainer>
+
+        <Pagination 
+          totalPages={totalPages} 
+          currentPage={page} 
+          onPageChange={setPage} 
+        />
       </ContentWrapper>
+
       <NavigationBar />
     </Container>
   );

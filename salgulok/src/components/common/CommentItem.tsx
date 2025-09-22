@@ -68,6 +68,7 @@ const Header = styled.div`
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-top: 10px;
   margin-bottom: 8px;
 `;
 

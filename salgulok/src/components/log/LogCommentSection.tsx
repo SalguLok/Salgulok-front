@@ -81,17 +81,12 @@ const LogCommentSection: React.FC<Props> = ({ logId, currentUserId }) => {
 
   return (
     <Container>
+      
+      
       <CommentsHeader>
         댓글 {totalComments}개
       </CommentsHeader>
-      
-      <LogCommentList
-        comments={comments}
-        currentUserId={currentUserId}
-        onDeleteComment={handleDeleteComment}
-        isLoading={isCommentsLoading}
-      />
-
+       
       <CommentInputWrapper>
         <CommentInputBar 
           placeholder="댓글을 입력하세요..."
@@ -99,6 +94,15 @@ const LogCommentSection: React.FC<Props> = ({ logId, currentUserId }) => {
           disabled={createCommentMutation.isPending}
         />
       </CommentInputWrapper>
+
+      <LogCommentList
+        comments={comments}
+        currentUserId={currentUserId}
+        onDeleteComment={handleDeleteComment}
+        isLoading={isCommentsLoading}
+      />
+
+     
     </Container>
   );
 };
@@ -112,13 +116,12 @@ const Container = styled.div`
 
 const CommentsHeader = styled.h2`
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 500;
   color: #222;
-  margin: 0 0 16px 0;
+  margin: 0 0 27px 0;
   font-family: "Pretendard", sans-serif;
 `;
 
 const CommentInputWrapper = styled.div`
-  margin-top: 20px;
-  padding-top: 16px;
+
 `;

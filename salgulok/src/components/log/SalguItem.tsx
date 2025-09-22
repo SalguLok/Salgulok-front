@@ -101,7 +101,7 @@ const SalguItem: FC<Props> = ({
         }
 
         // 1) 우선 외부에서 바로 값이 들어오면 그걸 사용
-        let keyOrUrl = thumbnailKeyOrUrl ?? null;
+        const keyOrUrl = thumbnailKeyOrUrl ?? null;
 
         // 2) 아니고 logId + isoDate가 있으면, 날짜 리스트에서 탐색
         if (!keyOrUrl && logId && isoDate) {

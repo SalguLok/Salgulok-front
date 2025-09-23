@@ -10,6 +10,7 @@ export interface LogResponse {
   isPublic: boolean;
   regionId: number;
   imgUrl: string | null;
+  likes: number | 0;
   oneReview: string | null;
 }
 

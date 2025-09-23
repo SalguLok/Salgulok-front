@@ -15,6 +15,7 @@ import { getMyInfo } from "../../api/user/getMyProfile";
 import Pagination from "../../components/common/Pagination";
 import profile from "../../assets/common/profile_default.svg?url";
 import { issueGetPresigned } from "../../api/image/issueGetPresigned";
+import { getLogComments } from "../../api/log/logComment";
 
 const MyPage: React.FC = () => {
   const [logs, setLogs] = useState<LogItem[]>([]);
@@ -70,12 +71,29 @@ const MyPage: React.FC = () => {
             title: log.title,
             isPublic: log.isPublic,
             date: `${log.startDate} - ${log.endDate}`,
-            likes: 0,
+            likes: log.likes,
             comments: 0,
           } as LogItem)
       );
 
-      setLogs(processedLogs);
+      // 댓글 수 추가 조회
+      const logsWithComments = await Promise.all(
+        processedLogs.map(async (log) => {
+          try {
+            const commentsData = await getLogComments(log.id, {
+              page: 0,
+              size: 1,
+              sort: "createdAt",
+            });
+            return { ...log, comments: commentsData.totalElements };
+          } catch (error) {
+            console.error(`로그 ${log.id} 댓글 수 조회 실패:`, error);
+            return { ...log, comments: 0 };
+          }
+        })
+      );
+
+      setLogs(logsWithComments);
       // 페이징 정보 업데이트
       setTotalPages(logsRes.totalPages);
       setPage(logsRes.currentPage + 1); // 0-based -> 1-based 

@@ -16,6 +16,7 @@ import MyPage from "./pages/mypage/MyPage";
 import WritePage from "./pages/community/WritePage.tsx";
 import CommunityDetailPage from "./pages/community/CommunityDetailPage.tsx";
 import LogDetailPage from "./pages/log/LogDetailPage.tsx";
+import OtherProfilePage from "./pages/mypage/OtherProfilePage.tsx"
 
 // 테스트용
 // import LogEntryPage from "./pages/log/LogEntryPage";
@@ -89,6 +90,7 @@ const router = createBrowserRouter([
   { path: "/mypage", element: <MyPage /> },
   { path: "/community/WritePage", element: <WritePage /> },
   { path: "/community/:postId", element: <CommunityDetailPage /> },
+  { path: "/user/:nickname", element: <OtherProfilePage /> }, 
 ]);
 
 export default router;

@@ -45,3 +45,20 @@ export const deleteMyLogs = async (logId: number) => {
     throw err;
   }
 };
+
+// 타인 로그 조회
+export const getOthersLogs = async (page: number = 0, username: string): Promise<LogListResponse> => {
+  try {
+    const response = await api.get<LogListResponse>(`/logs/users/${username}?page=${page}`);
+    return response.data;
+  } catch (error: any) {
+    if (error.response) {
+      console.error("서버 오류:", error.response.data);
+      alert("로그를 불러오는 중 문제가 발생했습니다.");
+    } else {
+      console.error("네트워크 오류:", error);
+      alert("네트워크 오류가 발생했습니다.");
+    }
+    throw error;
+  }
+};

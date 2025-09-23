@@ -56,7 +56,12 @@ const LogCardList: FC<Props> = ({ items, onClick, onClickMore }) => {
           </ImageContainer>
 
           <DetailContainer>
-            <WriterContainer>
+            <WriterContainer
+              onClick={(e) => {
+                e.stopPropagation();
+                navigate(`/user/${item.writer}`);
+              }}          
+            >
               <WriterWrapper>
                 {item.writerProfile ? (
                   <WriterImg objectKey={item.writerProfile} alt="" />

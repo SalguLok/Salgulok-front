@@ -1,52 +1,30 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import { Link } from "react-router-dom";
-import profile from "../../assets/common/profile_default.svg?url";
-import { getMyInfo } from "../../api/user/getMyProfile";
-import type { UserResponse } from "../../api/user/getMyProfile";
-import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 
-const ProfileInfoItem: React.FC = () => {
-  const [userInfo, setUserInfo] = useState<UserResponse | null>(null);
-  const [profileImageUrl, setProfileImageUrl] = useState<string>(profile);
+interface ProfileInfoItemProps {
+  nickname: string;
+  intro?: string;
+  profileImgUrl?: string;
+  isMine?: boolean;
+}
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const data = await getMyInfo();
-        setUserInfo(data);
-
-        if (data.profileImg) {
-          try {
-            const presignedData = await issueGetPresigned(data.profileImg);
-            if (presignedData.items.length > 0) {
-              setProfileImageUrl(presignedData.items[0].presignedUrl);
-            }
-          } catch (e) {
-            console.error("Failed to get presigned URL", e);
-          }
-        } else {
-          setProfileImageUrl(profile);
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-
-    fetchData();
-  }, []);
-
+const ProfileInfoItem: React.FC<ProfileInfoItemProps> = ({
+  nickname,
+  intro,
+  profileImgUrl,
+  isMine = true,
+}) => {
   return (
     <Item>
-        <ProfileImg src={profileImageUrl} alt="사용자 프로필" />
-
-        <TextWrapper>
-          <EditWrapper>
-            <Nickname>{userInfo?.nickname}</Nickname>
-            <EditLink to="/mypage/edit">프로필 수정 &gt;</EditLink>
-          </EditWrapper>
-          <Intro>{userInfo?.intro}</Intro>
-        </TextWrapper>
+      <ProfileImg src={profileImgUrl} alt="사용자 프로필" />
+      <TextWrapper>
+        <EditWrapper>
+          <Nickname>{nickname}</Nickname>
+          {isMine && <EditLink to="/mypage/edit">프로필 수정 &gt;</EditLink>}
+        </EditWrapper>
+        <Intro>{intro}</Intro>
+      </TextWrapper>
     </Item>
   );
 };

@@ -1,32 +1,24 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useLocation } from "react-router-dom";
+import { useLocation, useParams } from "react-router-dom";
 import ProfileInfoItem from "../../components/mypage/ProfileInfoItem";
 import NavigationBar from "../../components/common/NavigationBar";
 import LogCardList from "../../components/common/CardListItem";
 import type { LogItem } from "../../components/common/CardListItem";
 import HeaderLeft from "../../components/common/HeaderLeft";
-import { getMyLogs } from "../../api/log/getLogs";
-import Logout from "../../assets/mypage/logout.svg?react";
-import { logout } from "../../api/auth/logout";
-import { deleteMyLogs } from "../../api/log/getLogs";
-import ConfirmModal from "../../components/common/ConfirmModal";
-import { getMyInfo } from "../../api/user/getMyProfile";
+import { getOthersLogs } from "../../api/log/getLogs";
+import { getOtherProfile } from "../../api/user/getOtherProfile";
 import Pagination from "../../components/common/Pagination";
 import profile from "../../assets/common/profile_default.svg?url";
 import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 
 const MyPage: React.FC = () => {
+  const { nickname } = useParams<{ nickname: string }>();
+
   const [logs, setLogs] = useState<LogItem[]>([]);
   const [userInfo, setUserInfo] = useState<any>(null);  // api로 가져온 회원정보
   const [profileImgUrl, setProfileImgUrl] = useState<string>(profile);  // 회원프로필 img
 
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [showLogoutModal, setShowLogoutModal] = useState(false);
-
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [delLogId, setDelLogId] = useState<number | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const location = useLocation();
 
   // 페이지네이션
@@ -36,10 +28,15 @@ const MyPage: React.FC = () => {
   // 페이지 기반 로그 가져오기
   const fetchLogs = async (pageNum: number) => {
     try {
-      // pageNum: 1-based, API에는 0-based 전달
+      if (!nickname) {
+        console.error("닉네임이 없습니다.");
+        return;
+      }
+
+      // 회원정보 및 로그 들고오기
       const [logsRes, user] = await Promise.all([
-        getMyLogs(pageNum - 1),
-        getMyInfo(),
+        getOthersLogs(pageNum - 1, nickname),
+        getOtherProfile(nickname!),
       ]);
 
       setUserInfo(user);
@@ -76,11 +73,12 @@ const MyPage: React.FC = () => {
       );
 
       setLogs(processedLogs);
+
       // 페이징 정보 업데이트
       setTotalPages(logsRes.totalPages);
-      setPage(logsRes.currentPage + 1); // 0-based -> 1-based 
+      setPage(logsRes.currentPage + 1); // 0-based -> 1-based
     } catch (err) {
-      console.error("내 로그/유저 정보 불러오기 실패", err);
+      console.error("유저 정보 불러오기 실패", err);
     }
   };
 
@@ -88,55 +86,10 @@ const MyPage: React.FC = () => {
     fetchLogs(page);
   }, [location, page]);
 
-  //로그아웃 API 연결
-  const readLogout = async () => {
-    if (isLoggingOut) return;
-    setIsLoggingOut(true);
-    try {
-      await logout();
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsLoggingOut(false);
-    }
-  };
-
-  //더보기 클릭
-  const handleClickMore = (id: number) => {
-    setDelLogId(id);
-    setShowDeleteModal(true);
-  };
-
-  // 로그 삭제 API 연결
-  const delMyLog = async () => {
-    if (!delLogId || isDeleting) return;
-    setIsDeleting(true);
-    try {
-      await deleteMyLogs(Number(delLogId));
-      setLogs((prev) => prev.filter((l) => l.id !== delLogId));
-    } catch (err) {
-      console.error("삭제 실패");
-    } finally {
-      setIsDeleting(false);
-      setShowDeleteModal(false);
-      setDelLogId(null);
-    }
-  };
-
   return (
     <Container>
       <HeaderLeft
-        title="마이페이지"
-        right={
-          <IconButton
-            aria-label="로그아웃"
-            onClick={() => setShowLogoutModal(true)}
-            disabled={isLoggingOut}
-            title="로그아웃"
-          >
-            <Logout />
-          </IconButton>
-        }
+        title="사용자 프로필"
       />
 
       <ContentWrapper>
@@ -145,16 +98,14 @@ const MyPage: React.FC = () => {
             nickname={userInfo.nickname}
             intro={userInfo.intro}
             profileImgUrl={profileImgUrl}
-            isMine={true}
+            isMine={false}
           />
         )}
-
         <CardContainer>
           <LogCardList
             items={logs}
             onClick={(id) => console.log("open", id)}
             onToggleLike={(id) => console.log("like", id)}
-            onClickMore={handleClickMore}
           />
         </CardContainer>
 
@@ -167,34 +118,6 @@ const MyPage: React.FC = () => {
           />
         )}
       </ContentWrapper>
-
-      {/*로그아웃 모달*/}
-      <ConfirmModal
-        open={showLogoutModal}
-        message="정말로 로그아웃하시겠습니까?"
-        confirmText="예"
-        cancelText="아니오"
-        loading={isLoggingOut}
-        onCancel={() => setShowLogoutModal(false)}
-        onConfirm={async () => {
-          await readLogout();
-          setShowLogoutModal(false);
-        }}
-      />
-
-      {/*삭제 모달*/}
-      <ConfirmModal
-        open={showDeleteModal}
-        message="해당 로그를 정말로 삭제하시겠습니까?"
-        confirmText="삭제"
-        cancelText="취소"
-        loading={isDeleting}
-        onCancel={() => {
-          setShowDeleteModal(false);
-          setDelLogId(null);
-        }}
-        onConfirm={delMyLog}
-      />
 
       <NavigationBar />
     </Container>
@@ -221,24 +144,4 @@ const ContentWrapper = styled.div`
 const CardContainer = styled.div`
   display: flex;
   margin: 0px 20px;
-`;
-const IconButton = styled.button`
-  width: 28px;
-  height: 28px;
-  border: 0;
-  background: transparent;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  & > svg {
-    width: 20px;
-    height: 20px;
-    display: block;
-  }
 `;

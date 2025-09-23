@@ -195,7 +195,7 @@ const Layout = styled.div`
   display: flex;
   flex-direction: column;
   width: 375px;
-  padding-bottom: 30px;
+  padding-bottom: 80px;
 `;
 
 const Backdrop = styled.div`

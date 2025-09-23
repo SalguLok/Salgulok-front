@@ -7,6 +7,7 @@ import VisibilityToggle from "../../components/log/VisibilityTogle";
 import BottomButton from "../../components/common/BottomButton";
 import { useCreateLogStore } from "../../stores/CreateLogStore";
 import Header from "../../components/common/Header";
+import ConfirmModal from "../../components/common/ConfirmModal";
 import { createLog } from "../../api/log/createLog";
 import type { LogCreateRequest } from "../../api/log/createLog";
 import { uploadImagesFlow } from "../../api/image/uploadFlow";
@@ -19,6 +20,9 @@ const CreateLogInfoPage: React.FC = () => {
   const [oneReview, setOneReview] = useState("");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [imgFile, setImgFile] = useState<File | null>(null);
+
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [createdLogId, setCreatedLogId] = useState<number>();
 
   const handleAddLog = async () => {
     const step3Data = {
@@ -59,8 +63,9 @@ const CreateLogInfoPage: React.FC = () => {
     };
 
     try {
-      await createLog(finalData);
-      navigate("/log/complete");
+      const createdLog = await createLog(finalData);
+      setCreatedLogId(createdLog.logId);
+      setShowLogoutModal(true);
     } catch (err) {
       console.error(err);
     }
@@ -94,6 +99,18 @@ const CreateLogInfoPage: React.FC = () => {
       text="생성하기"
       onClick={handleAddLog}
     />
+
+    {/*로그생성 완료 모달*/}
+    <ConfirmModal
+      open={showLogoutModal}
+      message="로그 생성이 완료되었습니다."
+      confirmText="확인"
+      showCancel={false}
+      onConfirm={async () => {
+        setShowLogoutModal(false);
+        navigate("/log/complete", { state: { logId: createdLogId } });
+      }}
+      />
     </Container>
   );
 }

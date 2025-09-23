@@ -160,6 +160,7 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
       image: p.image_url || undefined,
       starCount: Number(p.starCount),
       comments: Number(p.commentCount ?? 0),
+      star: Number(p.star ?? 0),
     }));
     setPopularPlaceItems(mapped);
   };
@@ -189,7 +190,8 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
           String(item.endDate ?? "")
         ),
         likes: Number(item.likes ?? 0),
-        comments: 0, // 초기값으로 0 설정, 나중에 댓글 수 조회로 업데이트
+        comments: 0,
+        star: Number(item.star ?? 0),
       }));
 
       // 댓글 수 추가 조회
@@ -265,11 +267,21 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
 
   const salguItemsForDisplay = useMemo(() => {
     if (mode === "before") {
-      return Array.from({ length: 6 }).map((_, i) => ({
-        key: `placeholder-${i}`,
-        date: "00/00",
-        hasLog: "no" as const,
-      }));
+      const today = new Date();
+
+      return Array.from({ length: 6 }).map((_, i) => {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+
+        return {
+          key: `${mm}/${dd}`,
+          date: `${mm}/${dd}`,
+          hasLog: "no" as const,
+        };
+      });
     }
 
     return logData.map((d) => ({

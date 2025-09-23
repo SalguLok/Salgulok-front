@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import type { FC, MouseEvent } from "react";
-import Heart from "../../assets/common/heart.svg?react";
+import Star from "../../assets/common/star.svg?react";
+//import Heart from "../../assets/common/heart.svg?react";
 import Comment from "../../assets/common/comment.svg?react";
 
 export type PlaceItem = {
@@ -11,7 +12,7 @@ export type PlaceItem = {
   mapy?: string;
   starCount: number;
   comments: number;
-  star?: boolean;
+  star: number;
 };
 
 type Props = {
@@ -40,8 +41,10 @@ const PlaceCardSlider: FC<Props> = ({ items, onClick }) => {
             <Title>{item.placeName}</Title>
             <ReactionContainer>
               <ReactionWrapper>
-                <Heart />
-                <ReactionText>{item.starCount}</ReactionText>
+                <Star />
+                <ReactionText>
+                  {Number((item.star ?? 0).toFixed(1))}
+                </ReactionText>
               </ReactionWrapper>
               <ReactionWrapper>
                 <Comment />

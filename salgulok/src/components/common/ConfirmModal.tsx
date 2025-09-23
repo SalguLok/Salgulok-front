@@ -8,8 +8,9 @@ type ConfirmModalProps = {
   confirmText?: string;
   cancelText?: string;
   loading?: boolean;
+  showCancel?: boolean;
   onConfirm: () => void | Promise<void>;
-  onCancel: () => void;
+  onCancel?: () => void;
 };
 
 const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -18,6 +19,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   confirmText = "확인",
   cancelText = "취소",
   loading = false,
+  showCancel = true,
   onConfirm,
   onCancel,
 }) => {
@@ -28,9 +30,11 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         {message && <Message>{message}</Message>}
         <ButtonContainer>
-          <CancelButton type="button" onClick={onCancel} disabled={loading}>
-            {cancelText}
-          </CancelButton>
+          {showCancel && (
+            <CancelButton type="button" onClick={onCancel} disabled={loading}>
+              {cancelText}
+            </CancelButton>
+          )}
           <ConfirmButton type="button" onClick={onConfirm} disabled={loading}>
             {confirmText}
           </ConfirmButton>

@@ -56,13 +56,13 @@ const LogCardList: FC<Props> = ({ items, onClick, onClickMore }) => {
           </ImageContainer>
 
           <DetailContainer>
-            <WriterContainer
-              onClick={(e) => {
-                e.stopPropagation();
-                navigate(`/user/${item.writer}`);
-              }}          
-            >
-              <WriterWrapper>
+            <WriterContainer>
+              <WriterWrapper
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate(`/user/${item.writer}`);
+                }}        
+              >
                 {item.writerProfile ? (
                   <WriterImg objectKey={item.writerProfile} alt="" />
                 ) : (
@@ -152,6 +152,7 @@ const WriterContainer = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 4px;
+  cursor: pointer;
 `;
 const WriterWrapper = styled.div`
   display: flex;

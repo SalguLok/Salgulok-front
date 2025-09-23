@@ -1,15 +1,21 @@
 import styled from "styled-components";
-import { useNavigate, Link } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import LogoImg from "../../assets/common/main_salgu.svg"
 import BottomButton from "../../components/common/BottomButton";
 import Header from "../../components/common/Header";
 
 const CreateLogCompletePage: React.FC = () => {
 
+    const location = useLocation();
+    const logId = location.state?.logId;
     const navigate = useNavigate();
 
     const handleGoLog = () => {
-        navigate("/");  //TODO: 로그 주소로 변경
+       if (logId) {
+        navigate(`/log/${logId}`);
+      } else {
+        navigate("/");
+      }
     }
 
     return (

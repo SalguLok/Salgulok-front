@@ -145,7 +145,15 @@ const WritePage = () => {
       >
         <ChipRow>
           {REGIONS.map((r) => (
-            <Chip key={r} selected={region === r} onClick={() => setRegion(r)}>
+            <Chip 
+              key={r} 
+              selected={region === r} 
+              onClick={() => {
+                setRegion(r);
+                setOpenRegion(false); // 지역 선택 BottomSheet 닫기
+                setOpenTopic(true); // 주제 선택 BottomSheet 자동 열기
+              }}
+            >
               {r}
             </Chip>
           ))}
@@ -163,7 +171,14 @@ const WritePage = () => {
       >
         <ChipRow>
           {TOPICS.map((t) => (
-            <Chip key={t} selected={topic === t} onClick={() => setTopic(t)}>
+            <Chip 
+              key={t} 
+              selected={topic === t} 
+              onClick={() => {
+                setTopic(t);
+                setOpenTopic(false); // 주제 선택 BottomSheet 닫기
+              }}
+            >
               {t}
             </Chip>
           ))}

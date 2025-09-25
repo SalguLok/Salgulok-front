@@ -189,8 +189,8 @@ const MyPage: React.FC = () => {
         <CardContainer>
           <LogCardList
             items={logs}
-            onClick={(id) => console.log("open", id)}
-            onToggleLike={(id) => console.log("like", id)}
+            onClick={(_id) => {}}
+            onToggleLike={(_id) => {}}
             onClickMore={handleClickMore}
           />
         </CardContainer>

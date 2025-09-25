@@ -110,13 +110,14 @@ export const getPostById = async (postId: number): Promise<PostResponse> => {
 export const getCommentsByPostId = async (
   postId: number,
   page = 0,
-  size = 20
-): Promise<CommentResponse[]> => {
+  size = 20,
+  sort = 'createdAt,desc'
+): Promise<Page<CommentResponse>> => {
   const { data } = await api.get<Page<CommentResponse>>(
     `/community/posts/${postId}/comments`,
-    { params: { page, size } }
+    { params: { page, size, sort } }
   );
-  return data?.content ?? [];   // ← Page 객체에서 배열만 꺼내서 반환
+  return data;
 };
 
 // 3. 게시글 생성

@@ -34,7 +34,6 @@ const CreateLogInfoPage: React.FC = () => {
     setStep3(step3Data);
 
     if (!title) {
-      console.log("로그 제목을 필수로 입력해주세요.");
       return;
     }
 

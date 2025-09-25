@@ -51,7 +51,7 @@ const Backdrop = styled.div`
   width: ${APP_W}px;
   max-width: 100vw;          /* 좁은 화면에선 뷰포트에 맞추기 */
   background: rgba(0,0,0,0.45);
-  z-index: 999;
+  z-index: 1100;
 
   @media (max-width: ${APP_W}px) {
     left: 0; transform: none; width: 100vw;
@@ -70,7 +70,7 @@ const Sheet = styled.div`
   max-height: 85dvh;
   display: flex;
   flex-direction: column;
-  z-index: 1100;
+  z-index: 1200;
 
   @media (max-width: ${APP_W}px) {
     left: 0; transform: none; width: 100vw;

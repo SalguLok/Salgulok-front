@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
 
 interface ProfileInfoItemProps {
   nickname: string;
@@ -13,7 +13,7 @@ const ProfileInfoItem: React.FC<ProfileInfoItemProps> = ({
   nickname,
   intro,
   profileImgUrl,
-  isMine = true,
+  // isMine = true,
 }) => {
   return (
     <Item>
@@ -21,7 +21,7 @@ const ProfileInfoItem: React.FC<ProfileInfoItemProps> = ({
       <TextWrapper>
         <EditWrapper>
           <Nickname>{nickname}</Nickname>
-          {isMine && <EditLink to="/mypage/edit">프로필 수정 &gt;</EditLink>}
+          {/* {isMine && <EditLink to="/mypage/edit">프로필 수정 &gt;</EditLink>} */}
         </EditWrapper>
         <Intro>{intro}</Intro>
       </TextWrapper>
@@ -52,7 +52,7 @@ const TextWrapper = styled.div`
   display: flex;
   flex-direction: column;
   width: 100%;
-  gap: 10px;
+  gap: 3px;
 `;
 
 const EditWrapper = styled.div`
@@ -63,7 +63,7 @@ const EditWrapper = styled.div`
 `;
 
 const Nickname = styled.span`
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
   color: var(--black);
 `;
@@ -71,12 +71,12 @@ const Nickname = styled.span`
 const Intro = styled.span`
   font-size: 13px;
   font-weight: 400;
-  color: var(--black);
+  color: var(--gray-500);
 `;
 
-const EditLink = styled(Link)`
-  font-size: 11px;
-  font-weight: 400;
-  color: var(--gray-500);
-  text-decoration: none;
-`;
+// const EditLink = styled(Link)`
+//   font-size: 11px;
+//   font-weight: 400;
+//   color: var(--gray-500);
+//   text-decoration: none;
+// `;

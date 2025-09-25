@@ -14,11 +14,18 @@ import { getLogEntryByDate } from "../../api/logEntry/getLogEntryByDate";
 import { createLogEntry } from "../../api/logEntry/createEntry";
 import { getEntryDates } from "../../api/logEntry/getEntryDates";
 import LogCommentSection from "../../components/log/LogCommentSection";
+import ConfirmModal from "../../components/common/ConfirmModal";
 
 const LogEntryPage: React.FC = () => {
   const { logId } = useParams<{ logId: string }>();
   const currentUserId = parseInt(localStorage.getItem("userId") || "0");
   const numericLogId = Number(logId);
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState<string>("");
+  const [onConfirmHandler, setOnConfirmHandler] = useState<
+    () => void | Promise<void>
+  >(() => () => {});
 
   const [logDetail, setLogDetail] = useState<{
     isPublic: boolean;
@@ -115,7 +122,9 @@ const LogEntryPage: React.FC = () => {
 
   const handleSubmitTemplates = async () => {
     if (!editingTemplate?.date) {
-      alert("날짜 정보가 없어 저장할 수 없습니다.");
+      setConfirmMessage("날짜 정보가 없어 저장할 수 없습니다.");
+      setOnConfirmHandler(() => () => setConfirmOpen(false));
+      setConfirmOpen(true);
       return;
     }
 
@@ -129,9 +138,11 @@ const LogEntryPage: React.FC = () => {
       }));
 
     if (newTemplates.some((t) => !t.placeId)) {
-      alert(
+      setConfirmMessage(
         "장소가 선택되지 않은 템플릿이 있습니다. 각 템플릿을 저장해주세요."
       );
+      setOnConfirmHandler(() => () => setConfirmOpen(false));
+      setConfirmOpen(true);
       return;
     }
 
@@ -147,18 +158,26 @@ const LogEntryPage: React.FC = () => {
         templates: newTemplates,
       });
 
-      alert("등록이 완료되었습니다.");
-      setIsTemplateWritingMode(false);
-      setEditingTemplate(null);
-
-      const data = await getLogEntryByDate(numericLogId, editingTemplate.date);
-      setCards(toCards(data.logId, data.entryId, data.templates ?? []));
-      setSalguItemStates((prev) =>
-        new Map(prev).set(editingTemplate.date, "yes")
-      );
+      setConfirmMessage("등록이 완료되었습니다.");
+      setOnConfirmHandler(() => async () => {
+        setConfirmOpen(false);
+        setIsTemplateWritingMode(false);
+        setEditingTemplate(null);
+        const data = await getLogEntryByDate(
+          numericLogId,
+          editingTemplate.date
+        );
+        setCards(toCards(data.logId, data.entryId, data.templates ?? []));
+        setSalguItemStates((prev) =>
+          new Map(prev).set(editingTemplate.date, "yes")
+        );
+      });
+      setConfirmOpen(true);
     } catch (error) {
       console.error("템플릿 등록 중 에러:", error);
-      alert("템플릿 등록 중 오류가 발생했습니다.");
+      setConfirmMessage("템플릿 등록 중 오류가 발생했습니다.");
+      setOnConfirmHandler(() => () => setConfirmOpen(false));
+      setConfirmOpen(true);
     }
   };
 
@@ -233,7 +252,11 @@ const LogEntryPage: React.FC = () => {
       }
     } catch (error) {
       console.error("getLogEntryByDate 에러:", error);
-      alert("데이터를 불러오는데 실패했습니다. 네트워크 연결을 확인해주세요.");
+      setConfirmMessage(
+        "데이터를 불러오는데 실패했습니다. 네트워크 연결을 확인해주세요."
+      );
+      setOnConfirmHandler(() => () => setConfirmOpen(false));
+      setConfirmOpen(true);
     }
   };
 
@@ -395,6 +418,14 @@ const LogEntryPage: React.FC = () => {
           />
         </BottomContainer>
       )}
+      <ConfirmModal
+        open={confirmOpen}
+        message={confirmMessage}
+        confirmText="확인"
+        showCancel={false}
+        onConfirm={onConfirmHandler}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </Container>
   );
 };

@@ -5,6 +5,7 @@ import { useState, useRef } from "react";
 import ActionMenu from "../common/ActionMenu";
 import Salgu from "../../assets/log/salgu.svg?react";
 import { deleteTemplates } from "../../api/logEntry/deleteTemplate";
+import ConfirmModal from "../common/ConfirmModal";
 
 export interface TemplateCardDoneProps {
   logId: number;
@@ -47,6 +48,13 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
   menuPos;
   const menuBtnRef = useRef<HTMLButtonElement>(null);
 
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmMessage, setConfirmMessage] =
+    useState("정말로 삭제하시겠습니까?");
+  const [onConfirmHandler, setOnConfirmHandler] = useState<
+    () => void | Promise<void>
+  >(() => () => setConfirmOpen(false));
+
   const openMenu = () => {
     onMenuClick?.();
     const rect = menuBtnRef.current?.getBoundingClientRect();
@@ -74,6 +82,16 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
     }
   };
 
+  // 삭제 메뉴 클릭 시: 모달로 한 번 더 확인
+  const handleRequestDelete = () => {
+    setConfirmMessage("정말로 삭제하시겠습니까?");
+    setOnConfirmHandler(() => async () => {
+      setConfirmOpen(false);
+      await delTemplate();
+    });
+    setConfirmOpen(true);
+  };
+
   return (
     <Layout aria-label={`${title} 카드`}>
       <CardContainer>
@@ -97,7 +115,7 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
             open={menuOpen}
             onClose={() => setMenuOpen(false)}
             onEdit={() => onEditClick?.()}
-            onDelete={delTemplate}
+            onDelete={handleRequestDelete}
             variant="context"
             x={menuPos.x}
             y={menuPos.y}
@@ -123,6 +141,16 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
           <ReviewText>{review}</ReviewText>
         </ReviewContainer>
       </CardContainer>
+
+      <ConfirmModal
+        open={confirmOpen}
+        message={confirmMessage}
+        confirmText="확인"
+        cancelText="취소"
+        onConfirm={onConfirmHandler}
+        onCancel={() => setConfirmOpen(false)}
+        loading={deleting}
+      />
 
       {/* <ActionMenu
         open={menuOpen}

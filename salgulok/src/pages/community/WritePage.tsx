@@ -87,7 +87,6 @@ const WritePage = () => {
       authorId: parseInt(userId),
       regionId: region ? regionMap[region] : 0,
     };
-    console.log("[게시글 생성] payload", postData);
     createPostMutation.mutate(postData);
   };
 

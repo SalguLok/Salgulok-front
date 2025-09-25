@@ -1,13 +1,13 @@
 import styled from "styled-components";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import NavigationBar from "../../components/common/NavigationBar";
 import Header from "../../components/common/Header";
 import PostCard from "../../components/common/PostCard";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import Pagination from "../../components/common/Pagination";
-import { getPosts } from "../../api/community/community";
+import { getPosts, deletePost } from "../../api/community/community";
 import type { GetPostsParams, Topic } from "../../api/community/community";
 import DefaultProfileImage from "../../assets/common/profile_default.svg";
 import { formatKst } from "../../utils/date";
@@ -21,6 +21,7 @@ const topics: Topic[] = ['동행', '맛집', '숙소', '교통', '기타'];
 
 const CommunityPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const goDetail = (id: number) => navigate(`/community/${id}`);
   const [searchParams] = useSearchParams();
   const initialRegionId = searchParams.get("region_id");
@@ -49,7 +50,6 @@ const CommunityPage = () => {
 
     setFilters(prev => {
       if (prev.regionId !== newRegionId) {
-        console.log(`CommunityPage: Syncing regionId from URL: ${newRegionId}`);
         return { ...prev, regionId: newRegionId, page: 0 };
       }
       return prev;
@@ -63,6 +63,26 @@ const CommunityPage = () => {
   } = useQuery({
     queryKey: ["communityPosts", filters],
     queryFn: () => getPosts(filters),
+  });
+
+  // 게시글 삭제 뮤테이션
+  const deletePostMutation = useMutation({
+    mutationFn: deletePost,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["communityPosts"] });
+      setConfirmMessage("게시글이 삭제되었습니다.");
+      setIsSuccessModal(true);
+      setConfirmOpen(true);
+      setSelectedPostId(null);
+    },
+    onError: (error) => {
+      // @ts-ignore
+      const status = error?.response?.status;
+      // @ts-ignore
+      const data = error?.response?.data;
+      console.error("[게시글삭제] 실패", { postId: selectedPostId, status, data, error });
+      alert(`게시글 삭제에 실패했습니다. ${status ? `(${status})` : ""}`);
+    }
   });
 
   // 현재 필터에 해당하는 지역 및 주제 이름 찾기
@@ -126,13 +146,9 @@ const CommunityPage = () => {
       setConfirmOpen(false);
       setIsSuccessModal(false);
     } else if (selectedPostId) {
-      // TODO: 게시글 삭제 API 호출
-      console.log("게시글 삭제:", selectedPostId);
-      // 삭제 성공 시 성공 모달 표시
-      setConfirmMessage("게시글이 삭제되었습니다.");
-      setIsSuccessModal(true);
-      setConfirmOpen(true);
-      setSelectedPostId(null);
+      // 게시글 삭제 API 호출
+      deletePostMutation.mutate(selectedPostId);
+      setConfirmOpen(false);
     }
   };
 

@@ -93,11 +93,9 @@ const CommunityDetailPage = () => {
   // 4. 댓글 삭제 뮤테이션 (작성자 검증 포함)
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId: number) => {
-      console.log("[댓글삭제] mutate 호출", { postId: numericPostId, commentId });
       return deleteComment(numericPostId, commentId);
     },
-    onSuccess: (_, commentId) => {
-      console.log("[댓글삭제] 성공", { postId: numericPostId, commentId });
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["communityComments", numericPostId] });
       setConfirmMessage("댓글이 삭제되었습니다.");
       setIsSuccessModal(true);
@@ -150,9 +148,7 @@ const CommunityDetailPage = () => {
   };
 
   const handleDeleteComment = (commentId: number) => {
-    console.log("[댓글삭제] 클릭", { commentId });
     const currentUserId = localStorage.getItem("userId");
-    console.log("[댓글삭제] 현재 사용자", { currentUserId });
     
     if (!currentUserId) {
       setConfirmMessage("로그인이 필요합니다.");
@@ -162,7 +158,6 @@ const CommunityDetailPage = () => {
     }
 
     const target = comments.find((c: CommentResponse) => c.id === commentId);
-    console.log("[댓글삭제] 타겟 댓글", target);
     if (!target) {
       setConfirmMessage("댓글을 찾을 수 없습니다.");
       setIsSuccessModal(true);
@@ -171,7 +166,6 @@ const CommunityDetailPage = () => {
     }
 
     const isAuthor = target.authorId === parseInt(currentUserId);
-    console.log("[댓글삭제] 본인 여부", { targetAuthorId: target.authorId, currentUserId: parseInt(currentUserId), isAuthor });
     if (!isAuthor) {
       setConfirmMessage("본인이 작성한 글만\n삭제할 수 있습니다.");
       setIsSuccessModal(true);

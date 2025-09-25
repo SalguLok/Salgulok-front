@@ -36,7 +36,6 @@ export const getSalguListByPlace = async (placeId: string) => {
 export const getPopularPlace = async () => {
   try {
     const response = await api.get(`/places/popular`);
-    console.log("전체 인기장소", response);
     return response;
   } catch (err) {
     console.error(err);
@@ -47,7 +46,6 @@ export const getPopularPlace = async () => {
 export const getPopularPlaceByRegion = async (regionId: number) => {
   try {
     const response = await api.get(`/places/popular/${regionId}`);
-    console.log("지역별 인기장소", response);
     return response;
   } catch (err) {
     console.error(err);

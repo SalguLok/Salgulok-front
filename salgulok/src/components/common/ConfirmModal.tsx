@@ -68,7 +68,7 @@ const ModalContainer = styled.div`
 
 const Message = styled.p`
   margin: 0 0 16px;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--black);
 `;
 

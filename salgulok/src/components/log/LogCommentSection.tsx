@@ -2,9 +2,14 @@
 import React from "react";
 import styled from "styled-components";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getLogComments, createLogComment, deleteLogComment } from "../../api/log/logComment";
+import {
+  getLogComments,
+  createLogComment,
+  deleteLogComment,
+} from "../../api/log/logComment";
 import LogCommentList from "./LogCommentList";
 import CommentInputBar from "../common/CommentInputBar";
+import ConfirmModal from "../common/ConfirmModal";
 
 type Props = {
   logId: number;
@@ -17,12 +22,24 @@ const LogCommentSection: React.FC<Props> = ({ logId, currentUserId }) => {
   // 댓글 목록 조회 (모든 댓글을 한 번에 로드)
   const { data: commentsData, isLoading: isCommentsLoading } = useQuery({
     queryKey: ["logComments", logId],
-    queryFn: () => getLogComments(logId, { page: 0, size: 1000, sort: 'createdAt' }),
+    queryFn: () =>
+      getLogComments(logId, { page: 0, size: 1000, sort: "createdAt" }),
     enabled: !!logId,
   });
 
   const comments = commentsData?.content || [];
   const totalComments = commentsData?.totalElements || 0;
+
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const [confirmMessage, setConfirmMessage] = React.useState<string>("");
+  const [confirmShowCancel, setConfirmShowCancel] =
+    React.useState<boolean>(false);
+  const [confirmLabel, setConfirmLabel] = React.useState<string>("확인");
+  const [onConfirmHandler, setOnConfirmHandler] = React.useState<
+    () => void | Promise<void>
+  >(() => () => setConfirmOpen(false));
+  confirmShowCancel;
+  confirmLabel;
 
   // 댓글 생성 뮤테이션
   const createCommentMutation = useMutation({
@@ -41,7 +58,13 @@ const LogCommentSection: React.FC<Props> = ({ logId, currentUserId }) => {
       // @ts-ignore
       const data = error?.response?.data;
       console.error("[댓글생성] 상세 에러:", { logId, status, data, error });
-      alert(`댓글 생성에 실패했습니다. ${status ? `(${status})` : ""}`);
+      setConfirmMessage(
+        `댓글 생성에 실패했습니다. ${status ? `(${status})` : ""}`
+      );
+      setConfirmShowCancel(false);
+      setConfirmLabel("확인");
+      setOnConfirmHandler(() => () => setConfirmOpen(false));
+      setConfirmOpen(true);
     },
   });
 
@@ -53,42 +76,53 @@ const LogCommentSection: React.FC<Props> = ({ logId, currentUserId }) => {
     },
     onSuccess: (_, commentId) => {
       console.log("[댓글삭제] 성공", { logId, commentId });
-      alert("댓글이 삭제되었습니다.");
       queryClient.invalidateQueries({ queryKey: ["logComments", logId] });
+      setConfirmMessage("댓글이 삭제되었습니다.");
+      setOnConfirmHandler(() => () => setConfirmOpen(false));
+      setConfirmOpen(true);
     },
     onError: (error, commentId) => {
       // @ts-ignore
       const status = error?.response?.status;
       // @ts-ignore
       const data = error?.response?.data;
-      console.error("[댓글삭제] 실패", { logId, commentId, status, data, error });
-      alert(`댓글 삭제에 실패했습니다. ${status ? `(${status})` : ""}`);
-    }
+      console.error("[댓글삭제] 실패", {
+        logId,
+        commentId,
+        status,
+        data,
+        error,
+      });
+      setConfirmMessage("댓글이 삭제되었습니다.");
+      setConfirmShowCancel(false);
+      setConfirmLabel("확인");
+      setOnConfirmHandler(() => () => setConfirmOpen(false));
+      setConfirmOpen(true);
+    },
   });
 
   const handleCreateComment = (content: string) => {
     const trimmedContent = content.trim();
     if (!trimmedContent) {
-      alert("댓글 내용을 입력해주세요.");
+      setConfirmMessage("댓글 내용을 입력해주세요.");
+      setOnConfirmHandler(() => () => setConfirmOpen(false));
+      setConfirmOpen(true);
       return;
     }
     createCommentMutation.mutate({ content: trimmedContent });
   };
 
   const handleDeleteComment = (commentId: number) => {
+    // 확인은 CommentItem에서 처리 → 여기서는 바로 삭제만
     deleteCommentMutation.mutate(commentId);
   };
 
   return (
     <Container>
-      
-      
-      <CommentsHeader>
-        댓글 {totalComments}개
-      </CommentsHeader>
-       
+      <CommentsHeader>댓글 {totalComments}개</CommentsHeader>
+
       <CommentInputWrapper>
-        <CommentInputBar 
+        <CommentInputBar
           placeholder="댓글을 입력하세요..."
           onSubmit={handleCreateComment}
           disabled={createCommentMutation.isPending}
@@ -101,8 +135,14 @@ const LogCommentSection: React.FC<Props> = ({ logId, currentUserId }) => {
         onDeleteComment={handleDeleteComment}
         isLoading={isCommentsLoading}
       />
-
-     
+      <ConfirmModal
+        open={confirmOpen}
+        message={confirmMessage}
+        confirmText="확인"
+        showCancel={false}
+        onConfirm={onConfirmHandler}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </Container>
   );
 };
@@ -122,6 +162,4 @@ const CommentsHeader = styled.h2`
   font-family: "Pretendard", sans-serif;
 `;
 
-const CommentInputWrapper = styled.div`
-
-`;
+const CommentInputWrapper = styled.div``;

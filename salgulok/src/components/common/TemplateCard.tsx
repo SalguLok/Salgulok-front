@@ -7,6 +7,7 @@ import PlaceSearchField from "./PlaceSearchField";
 import type { PlaceSearchItem } from "../../types/place";
 import { uploadImagesFlow } from "../../api/image/uploadFlow";
 import ImageSlider from "./ImageSlider";
+import ConfirmModal from "./ConfirmModal";
 
 type TemplateCardProps = {
   logId: number;
@@ -50,6 +51,12 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState<string>("");
+  const [onConfirmHandler, setOnConfirmHandler] = useState<
+    () => void | Promise<void>
+  >(() => () => setConfirmOpen(false));
 
   // create 모드에서만 사용
   const [selectedPlace, setSelectedPlace] = useState<PlaceSearchItem | null>(
@@ -101,7 +108,9 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
       setImageUrls((prev) => [...prev, ...newImageUrls]);
     } catch (err) {
       console.error("Upload failed:", err);
-      alert("이미지 업로드에 실패했습니다.");
+      setConfirmMessage("이미지 업로드에 실패했습니다.");
+      setOnConfirmHandler(() => () => setConfirmOpen(false));
+      setConfirmOpen(true);
       // 실패한 미리보기 롤백
       setPreviewUrls((prev) =>
         prev.slice(0, prev.length - newPreviewUrls.length)
@@ -125,7 +134,9 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
       if (mode === "edit") {
         // 텍스트/별점만 패치 (이미지는 유지)
         if (!entryId || !templateId) {
-          alert("잘못된 편집 상태입니다.");
+          setConfirmMessage("잘못된 편집 상태입니다.");
+          setOnConfirmHandler(() => () => setConfirmOpen(false));
+          setConfirmOpen(true);
           return;
         }
         await patchTemplate(logId, entryId, templateId, {
@@ -138,14 +149,17 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
 
       // === create 모드 ===
       if (!selectedPlace) {
-        alert("장소를 선택해주세요.");
+        setConfirmMessage("장소를 선택해주세요.");
+        setOnConfirmHandler(() => () => setConfirmOpen(false));
+        setConfirmOpen(true);
         return;
       }
       if (imageUrls.length === 0 && previewUrls.length > 0) {
-        alert("이미지 업로드가 완료될 때까지 기다려주세요.");
+        setConfirmMessage("이미지 업로드가 완료될 때까지 기다려주세요.");
+        setOnConfirmHandler(() => () => setConfirmOpen(false));
+        setConfirmOpen(true);
         return;
       }
-
       // API 호출 대신, 모든 데이터를 onSaved 콜백으로 전달
       onSaved?.({
         placeId: selectedPlace.id,
@@ -163,7 +177,9 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
       setStar(0);
     } catch (err) {
       console.error(err);
-      alert("저장에 실패했습니다.");
+      setConfirmMessage("저장에 실패했습니다.");
+      setOnConfirmHandler(() => () => setConfirmOpen(false));
+      setConfirmOpen(true);
     } finally {
       setSaving(false);
     }
@@ -247,6 +263,14 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
           </span>
         ))}
       </StarRow>
+      <ConfirmModal
+        open={confirmOpen}
+        message={confirmMessage}
+        confirmText="확인"
+        showCancel={false}
+        onConfirm={onConfirmHandler}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </Card>
   );
 };

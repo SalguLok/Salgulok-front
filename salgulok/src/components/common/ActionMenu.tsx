@@ -155,8 +155,8 @@ const Card = styled.div<{ $variant: "context" | "modal" }>`
   overflow: hidden;
 
   ${(p) =>
-      p.$variant === "context" &&
-      `
+    p.$variant === "context" &&
+    `
       position: absolute;
       transform: translate(calc(-100% - -10px), 5%); 
       /* ← 버튼 왼쪽으로 8px 띄우고, y는 중앙에 맞춤 */

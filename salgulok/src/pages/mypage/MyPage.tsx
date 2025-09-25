@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import ProfileInfoItem from "../../components/mypage/ProfileInfoItem";
 import NavigationBar from "../../components/common/NavigationBar";
 import LogCardList from "../../components/common/CardListItem";
 import type { LogItem } from "../../components/common/CardListItem";
 import HeaderLeft from "../../components/common/HeaderLeft";
 import { getMyLogs } from "../../api/log/getLogs";
-import Logout from "../../assets/mypage/logout.svg?react";
+// import Logout from "../../assets/mypage/logout.svg?react";
 import { logout } from "../../api/auth/logout";
 import { deleteMyLogs } from "../../api/log/getLogs";
 import ConfirmModal from "../../components/common/ConfirmModal";
@@ -19,8 +19,8 @@ import { getLogComments } from "../../api/log/logComment";
 
 const MyPage: React.FC = () => {
   const [logs, setLogs] = useState<LogItem[]>([]);
-  const [userInfo, setUserInfo] = useState<any>(null);  // api로 가져온 회원정보
-  const [profileImgUrl, setProfileImgUrl] = useState<string>(profile);  // 회원프로필 img
+  const [userInfo, setUserInfo] = useState<any>(null); // api로 가져온 회원정보
+  const [profileImgUrl, setProfileImgUrl] = useState<string>(profile); // 회원프로필 img
 
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -29,7 +29,7 @@ const MyPage: React.FC = () => {
   const [delLogId, setDelLogId] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const location = useLocation();
-
+  const navigate = useNavigate();
   // 페이지네이션
   const [page, setPage] = useState(1); // UI 1-based
   const [totalPages, setTotalPages] = useState(1);
@@ -96,7 +96,7 @@ const MyPage: React.FC = () => {
       setLogs(logsWithComments);
       // 페이징 정보 업데이트
       setTotalPages(logsRes.totalPages);
-      setPage(logsRes.currentPage + 1); // 0-based -> 1-based 
+      setPage(logsRes.currentPage + 1); // 0-based -> 1-based
     } catch (err) {
       console.error("내 로그/유저 정보 불러오기 실패", err);
     }
@@ -145,16 +145,16 @@ const MyPage: React.FC = () => {
     <Container>
       <HeaderLeft
         title="마이페이지"
-        right={
-          <IconButton
-            aria-label="로그아웃"
-            onClick={() => setShowLogoutModal(true)}
-            disabled={isLoggingOut}
-            title="로그아웃"
-          >
-            <Logout />
-          </IconButton>
-        }
+        // right={
+        //   <IconButton
+        //     aria-label="로그아웃"
+        //     onClick={() => setShowLogoutModal(true)}
+        //     disabled={isLoggingOut}
+        //     title="로그아웃"
+        //   >
+        //     <Logout />
+        //   </IconButton>
+        // }
       />
 
       <ContentWrapper>
@@ -166,7 +166,26 @@ const MyPage: React.FC = () => {
             isMine={true}
           />
         )}
-
+        <ButtonContainer>
+          <ProfileEditButton
+            type="button"
+            onClick={() => navigate("/mypage/edit")}
+            aria-label="프로필 수정"
+            title="프로필 수정"
+          >
+            <Text>프로필 수정</Text>
+          </ProfileEditButton>
+          <LogoutButton
+            type="button"
+            onClick={() => setShowLogoutModal(true)}
+            disabled={isLoggingOut}
+            aria-label="로그아웃"
+            title="로그아웃"
+          >
+            <Text>로그아웃</Text>
+          </LogoutButton>
+        </ButtonContainer>
+        <HLine />
         <CardContainer>
           <LogCardList
             items={logs}
@@ -236,27 +255,61 @@ const ContentWrapper = styled.div`
   width: 100%;
 `;
 
+const HLine = styled.div`
+  width: 375px;
+  border: 1px solid #f1f1f1;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 2px 0px 7px 0px;
+`;
+
 const CardContainer = styled.div`
   display: flex;
   margin: 0px 20px;
 `;
-const IconButton = styled.button`
-  width: 28px;
+// const IconButton = styled.button`
+//   width: 28px;
+//   height: 28px;
+//   border: 0;
+//   background: transparent;
+//   display: grid;
+//   place-items: center;
+//   cursor: pointer;
+
+//   &:disabled {
+//     opacity: 0.6;
+//     cursor: not-allowed;
+//   }
+
+//   & > svg {
+//     width: 20px;
+//     height: 20px;
+//     display: block;
+//   }
+// `;
+
+const ButtonContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+`;
+
+const ProfileEditButton = styled.button`
+  width: 215px;
   height: 28px;
-  border: 0;
-  background: transparent;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
+  border-radius: 8px;
+  background-color: #fbe1d2ff;
+  border: none;
+`;
+const LogoutButton = styled.button`
+  width: 110px;
+  height: 28px;
+  border-radius: 8px;
+  background-color: #ffece0ff;
+  border: none;
+`;
 
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  & > svg {
-    width: 20px;
-    height: 20px;
-    display: block;
-  }
+const Text = styled.text`
+  font-size: 12px;
+  font-weight: 500;
 `;

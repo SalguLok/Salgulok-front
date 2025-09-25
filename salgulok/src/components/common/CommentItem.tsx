@@ -4,6 +4,7 @@ import styled from "styled-components";
 import PresignedImage from "./PresignedImage";
 import DefaultProfileImage from "../../assets/common/profile_default.svg?react";
 import { formatKst } from "../../utils/date";
+import ConfirmModal from "./ConfirmModal";
 
 // 범용 댓글 타입 정의
 export interface BaseComment {
@@ -21,37 +22,53 @@ type Props = {
   canDelete?: boolean; // 삭제 가능 여부 (본인 댓글인지)
 };
 
-const CommentItem: React.FC<Props> = ({ comment, onDelete, canDelete = false }) => {
-  const handleDelete = () => {
-    if (window.confirm("정말 삭제하시겠습니까?")) {
-      onDelete?.(comment.id);
-    }
-  };
+const CommentItem: React.FC<Props> = ({
+  comment,
+  onDelete,
+  canDelete = false,
+}) => {
+  const [confirmOpen, setConfirmOpen] = React.useState(false);
+  const handleDelete = () => setConfirmOpen(true);
 
   return (
     <Container>
       <Header>
         <ProfileImage>
           {comment.authorProfileImg ? (
-            <PresignedImage objectKey={comment.authorProfileImg} alt={comment.username} />
+            <PresignedImage
+              objectKey={comment.authorProfileImg}
+              alt={comment.username}
+            />
           ) : (
             <DefaultProfileImage aria-hidden="true" />
           )}
         </ProfileImage>
-        
+
         <CommentInfo>
           <AuthorName>{comment.username}</AuthorName>
           <CommentDate>{formatKst(comment.createdAt)}</CommentDate>
         </CommentInfo>
-        
+
         {canDelete && (
           <MenuButton onClick={handleDelete} aria-label="댓글 삭제">
             ⋮
           </MenuButton>
         )}
       </Header>
-      
+
       <CommentContent>{comment.content}</CommentContent>
+      <ConfirmModal
+        open={confirmOpen}
+        message="정말로 삭제하시겠습니까?"
+        confirmText="삭제"
+        cancelText="취소"
+        showCancel
+        onConfirm={() => {
+          setConfirmOpen(false);
+          onDelete?.(comment.id);
+        }}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </Container>
   );
 };
@@ -78,8 +95,9 @@ const ProfileImage = styled.div`
   border-radius: 50%;
   overflow: hidden;
   flex-shrink: 0;
-  
-  img, svg {
+
+  img,
+  svg {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -117,7 +135,7 @@ const MenuButton = styled.button`
   align-items: center;
   justify-content: center;
   margin-left: auto; /* 오른쪽 끝으로 밀기 */
-  
+
   &:hover {
     background-color: #f5f5f5;
     color: #666;

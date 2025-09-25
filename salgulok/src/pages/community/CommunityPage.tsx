@@ -173,7 +173,7 @@ const CommunityPage = () => {
             <BannerSub>여행 예정 350명, 여행 중 137명</BannerSub>
           </BannerText>
           <BannerImage
-            src={filters.regionId === undefined ? "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800" : regions.find(r => r.id === filters.regionId)?.imageUrl || "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800"}
+            src={filters.regionId === undefined ? "https://images.squarespace-cdn.com/content/v1/586ebc34d482e9c69268b69a/1624386887478-9Z3XA27D8WFVDWKW00QS/20201230173806551_JRT8E1VC.png" : regions.find(r => r.id === filters.regionId)?.imageUrl || "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800"}
             alt={currentRegion}
           />
         </Banner>
@@ -309,7 +309,7 @@ const Layout = styled.div`
 const Banner = styled.div`
   position: relative;
   margin: 12px 0 16px 0;
-  height: 180px;
+  height: 200px;
   background: #eee;
   overflow: hidden;
   z-index: 100;
@@ -368,10 +368,6 @@ const BannerGradient = styled.div`
     rgba(255, 255, 255, 1) 0%,
     rgba(255, 255, 255, 0.98) 15%,
     rgba(255, 255, 255, 0.95) 30%,
-    rgba(255, 255, 255, 0.9) 45%,
-    rgba(255, 255, 255, 0.8) 60%,
-    rgba(255, 255, 255, 0.6) 75%,
-    rgba(255, 255, 255, 0.3) 90%,
     transparent 100%
   );
   z-index: 2;

@@ -17,7 +17,6 @@ const CreateLogInfoPage: React.FC = () => {
   const { setStep3, regionId, startDate, endDate } = useCreateLogStore();
 
   const [title, setTitle] = useState("");
-  const [oneReview, setOneReview] = useState("");
   const [visibility, setVisibility] = useState<"public" | "private">("public");
   const [imgFile, setImgFile] = useState<File | null>(null);
 
@@ -29,7 +28,6 @@ const CreateLogInfoPage: React.FC = () => {
       title,
       isPublic: visibility === "public",
       imgFile: imgFile ?? undefined,
-      oneReview,
     };
     setStep3(step3Data);
 
@@ -59,7 +57,6 @@ const CreateLogInfoPage: React.FC = () => {
       title,
       isPublic: visibility === "public",
       imgUrl: representativeImgKey,
-      oneReview,
     };
 
     try {
@@ -83,13 +80,6 @@ const CreateLogInfoPage: React.FC = () => {
         variant="sm"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-      />
-      <FormField
-        label="로그 한 줄 소개"
-        placeholder="로그 한 줄 소개를 작성해주세요."
-        variant="sm"
-        value={oneReview}
-        onChange={(e) => setOneReview(e.target.value)}
       />
       <VisibilityToggle onChange={setVisibility} />
       <ImageUpload label="대표사진" onUpload={(file) => setImgFile(file)}/>

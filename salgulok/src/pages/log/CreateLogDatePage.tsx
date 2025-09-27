@@ -6,6 +6,7 @@ import Calendar from "../../components/log/Calendar";
 import BottomButton from "../../components/common/BottomButton";
 import { useCreateLogStore } from "../../stores/CreateLogStore";
 import Header from "../../components/common/Header";
+import ConfirmModal from "../../components/common/ConfirmModal";
 import { checkLogDate } from "../../api/log/checkLogDate";
 
 const CreateDatePage: React.FC = () => {
@@ -14,6 +15,8 @@ const CreateDatePage: React.FC = () => {
 
   const [start, setStart] = useState<Dayjs | null>(null);
   const [end, setEnd] = useState<Dayjs | null>(null);
+
+  const [showDateExistModal, setShowDateExistModal] = useState(false);
 
   const handleDateChange = (s: Dayjs | null, e: Dayjs | null) => {
     setStart(s);
@@ -33,7 +36,7 @@ const CreateDatePage: React.FC = () => {
       });
 
       if (data.alreadyExist) {
-        alert("선택하신 여행 날짜와 겹치는 일정이 있습니다. 다른 날짜를 선택해주세요.");
+        setShowDateExistModal(true);
         return;
       }
 
@@ -51,6 +54,18 @@ const CreateDatePage: React.FC = () => {
         <BottomButton
           text="날짜 선택"
           onClick={handleNextPage}
+        />
+
+      {/*여행날짜 이미 존재 모달*/}
+      <ConfirmModal
+        open={showDateExistModal}
+        message="선택하신 여행 날짜와 겹치는 일정이 있습니다."
+        confirmText="확인"
+        showCancel={false}
+        onConfirm={async () => {
+          setShowDateExistModal(false);
+          handleDateChange(null, null);
+        }}
         />
     </Container>
   );

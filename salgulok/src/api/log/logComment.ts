@@ -65,12 +65,10 @@ export const createLogComment = async (
   commentData: LogCommentCreateRequest
 ): Promise<LogCommentCreateResponse> => {
   try {
-    console.log("[API] 댓글 생성 요청:", { logId, commentData });
     const { data } = await api.post<LogCommentCreateResponse>(
       `/logs/${logId}/comments`,
       commentData
     );
-    console.log("[API] 댓글 생성 응답:", data);
     return data;
   } catch (error: any) {
     console.error("[API] 댓글 생성 에러:", error);

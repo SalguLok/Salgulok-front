@@ -124,7 +124,6 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
           hasLog: d?.hasTemplate ? "yes" : "no",
         }))
       );
-      console.log("logData", logData);
     } catch (e) {
       console.error(e);
       setLogData([]);
@@ -372,7 +371,6 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
       <LocationSlider
         items={regions}
         onClick={(regionId) => {
-          console.log(`HomePage: Selected regionId: ${regionId}`);
           navigate(`/community?region_id=${regionId}`);
         }}
       />
@@ -382,8 +380,8 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
       <CardContainer>
         <LogCardListSlide
           items={popularLogs}
-          onClick={(id) => console.log("open", id)}
-          onToggleLike={(id) => console.log("like", id)}
+          onClick={(_id) => {}}
+          onToggleLike={(_id) => {}}
         />
       </CardContainer>
       <TitleContainer>

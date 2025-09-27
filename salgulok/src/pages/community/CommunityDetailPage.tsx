@@ -1,9 +1,12 @@
 // pages/community/CommunityDetailPage.tsx
 import { useParams, useNavigate } from "react-router-dom";
 import styled from "styled-components";
+import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import Header from "../../components/common/Header";
 import CommentInputBar from "../../components/common/CommentInputBar"; // 댓글 입력창 컴포넌트
+import ConfirmModal from "../../components/common/ConfirmModal";
+import Pagination from "../../components/common/Pagination";
 import { getPostById, deletePost, createComment, deleteComment, getCommentsByPostId } from "../../api/community/community";
 import type { CommentResponse } from "../../api/community/community";
 import DefaultProfileImage from "../../assets/common/my_gray.svg";
@@ -18,8 +21,23 @@ const CommunityDetailPage = () => {
   const queryClient = useQueryClient();
   const numericPostId = Number(postId);
   
-  // 현재 사용자 ID (실제로는 인증 상태에서 가져와야 함)
-  const currentUserId = parseInt(localStorage.getItem("userId") || "0");
+  // 댓글 삭제 권한 확인 함수
+  const canDeleteComment = (comment: CommentResponse) => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return false;
+    return parseInt(userId) === comment.authorId;
+  };
+
+  // ConfirmModal 상태
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmMessage, setConfirmMessage] = useState("");
+  const [selectedCommentId, setSelectedCommentId] = useState<number | null>(null);
+  const [isPostDelete, setIsPostDelete] = useState(false);
+  const [isSuccessModal, setIsSuccessModal] = useState(false);
+
+  // 댓글 페이지네이션 상태
+  const [commentPage, setCommentPage] = useState(0);
+  const [commentSize] = useState(10);
 
   // 1. 게시글 상세 정보 조회
   const { data: post, isLoading, error } = useQuery({
@@ -28,12 +46,21 @@ const CommunityDetailPage = () => {
     enabled: !!numericPostId, // postId가 유효할 때만 쿼리 실행
   });
 
-  // 1.1. 댓글 목록 조회
-  const { data: comments = [], isLoading: isCommentsLoading } = useQuery({
-    queryKey: ["communityComments", numericPostId],
-    queryFn: () => getCommentsByPostId(numericPostId),
+  // 1.1. 댓글 목록 조회 (최신순 정렬, 페이지네이션)
+  const { data: commentsData, isLoading: isCommentsLoading } = useQuery({
+    queryKey: ["communityComments", numericPostId, commentPage],
+    queryFn: () => getCommentsByPostId(numericPostId, commentPage, commentSize, 'createdAt,desc'),
     enabled: !!numericPostId,
   });
+
+  // 댓글 데이터 추출
+  const comments = commentsData?.content || [];
+  const totalCommentPages = commentsData?.totalPages || 0;
+
+  // 댓글 페이지 변경 핸들러
+  const handleCommentPageChange = (page: number) => {
+    setCommentPage(page - 1); // 1-based를 0-based로 변환
+  };
 
   // 2. 게시글 삭제 뮤테이션
   const deletePostMutation = useMutation({
@@ -55,6 +82,7 @@ const CommunityDetailPage = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["communityComments", numericPostId] });
+      setCommentPage(0); // 댓글 생성 후 첫 페이지로 이동
     },
     onError: (error) => {
       console.error("댓글 생성 실패:", error);
@@ -65,13 +93,13 @@ const CommunityDetailPage = () => {
   // 4. 댓글 삭제 뮤테이션 (작성자 검증 포함)
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId: number) => {
-      console.log("[댓글삭제] mutate 호출", { postId: numericPostId, commentId });
       return deleteComment(numericPostId, commentId);
     },
-    onSuccess: (_, commentId) => {
-      console.log("[댓글삭제] 성공", { postId: numericPostId, commentId });
-      alert("댓글이 삭제되었습니다.");
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["communityComments", numericPostId] });
+      setConfirmMessage("댓글이 삭제되었습니다.");
+      setIsSuccessModal(true);
+      setConfirmOpen(true);
     },
     onError: (error, commentId) => {
       // @ts-ignore
@@ -84,9 +112,35 @@ const CommunityDetailPage = () => {
   });
 
   const handleDeletePost = () => {
-    if (window.confirm("정말 삭제하시겠습니까?")) {
-      deletePostMutation.mutate(numericPostId);
+    // 게시글 작성자 확인
+    if (!post) {
+      setConfirmMessage("게시글을 찾을 수 없습니다.");
+      setIsSuccessModal(true);
+      setConfirmOpen(true);
+      return;
     }
+
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      setConfirmMessage("로그인이 필요합니다.");
+      setIsSuccessModal(true);
+      setConfirmOpen(true);
+      return;
+    }
+
+    if (parseInt(userId) !== post.authorId) {
+      setConfirmMessage("본인이 작성한 글만\n삭제할 수 있습니다.");
+      setIsSuccessModal(true);
+      setConfirmOpen(true);
+      return;
+    }
+
+    // 작성자 확인 통과 시 삭제 확인 모달 표시
+    setIsPostDelete(true);
+    setSelectedCommentId(null);
+    setIsSuccessModal(false);
+    setConfirmMessage("게시글을 삭제하시겠습니까?");
+    setConfirmOpen(true);
   };
 
   const handleCreateComment = (content: string) => {
@@ -94,30 +148,54 @@ const CommunityDetailPage = () => {
   };
 
   const handleDeleteComment = (commentId: number) => {
-    console.log("[댓글삭제] 클릭", { commentId });
     const currentUserId = localStorage.getItem("userId");
-    console.log("[댓글삭제] 현재 사용자", { currentUserId });
+    
     if (!currentUserId) {
-      alert("로그인이 필요합니다.");
+      setConfirmMessage("로그인이 필요합니다.");
+      setIsSuccessModal(true);
+      setConfirmOpen(true);
       return;
     }
 
-    const target = comments.find((c) => c.id === commentId);
-    console.log("[댓글삭제] 타겟 댓글", target);
+    const target = comments.find((c: CommentResponse) => c.id === commentId);
     if (!target) {
-      alert("댓글을 찾을 수 없습니다.");
+      setConfirmMessage("댓글을 찾을 수 없습니다.");
+      setIsSuccessModal(true);
+      setConfirmOpen(true);
       return;
     }
 
     const isAuthor = target.authorId === parseInt(currentUserId);
-    console.log("[댓글삭제] 본인 여부", { targetAuthorId: target.authorId, currentUserId: parseInt(currentUserId), isAuthor });
     if (!isAuthor) {
-      alert("본인이 작성한 댓글만 삭제할 수 있습니다.");
+      setConfirmMessage("본인이 작성한 글만\n삭제할 수 있습니다.");
+      setIsSuccessModal(true);
+      setConfirmOpen(true);
       return;
     }
 
-    if (window.confirm("댓글을 삭제하시겠습니까?")) {
-      deleteCommentMutation.mutate(commentId);
+    // 작성자 확인 통과 시 삭제 확인 모달 표시
+    setSelectedCommentId(commentId);
+    setIsPostDelete(false);
+    setIsSuccessModal(false);
+    setConfirmMessage("댓글을 삭제하시겠습니까?");
+    setConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = () => {
+    if (isSuccessModal) {
+      // 성공 모달 닫기
+      setConfirmOpen(false);
+      setIsSuccessModal(false);
+    } else if (isPostDelete) {
+      // 게시글 삭제
+      deletePostMutation.mutate(numericPostId);
+      setConfirmOpen(false);
+      setIsPostDelete(false);
+    } else if (selectedCommentId) {
+      // 댓글 삭제
+      deleteCommentMutation.mutate(selectedCommentId);
+      setConfirmOpen(false);
+      setSelectedCommentId(null);
     }
   };
 
@@ -170,12 +248,34 @@ const CommunityDetailPage = () => {
               key={c.id}
               comment={c}
               onDelete={handleDeleteComment}
-              canDelete={currentUserId === c.authorId}
+              canDelete={canDeleteComment(c)}
             />
           ))
         )}
+        
+        {/* 댓글 Pagination */}
+        {totalCommentPages > 1 && (
+          <div style={{ marginTop: '40px', marginBottom: '50px' }}>
+          <Pagination
+            totalPages={totalCommentPages}
+            currentPage={commentPage + 1} // 0-based를 1-based로 변환
+            onPageChange={handleCommentPageChange}
+          />
+          </div>
+        )}
       </Wrap>
       <NavigationBar />
+
+      {/* 댓글 삭제 확인 모달 */}
+      <ConfirmModal
+        open={confirmOpen}
+        message={confirmMessage}
+        confirmText="확인"
+        cancelText={isSuccessModal ? undefined : "취소"}
+        showCancel={!isSuccessModal}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setConfirmOpen(false)}
+      />
     </Layout>
   );
 };

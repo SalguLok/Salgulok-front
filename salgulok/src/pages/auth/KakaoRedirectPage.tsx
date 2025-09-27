@@ -13,7 +13,7 @@ function KakaoRedirectPage() {
 
     sendKakaoCode(code)
       .then((res) => {
-        console.log("로그인 성공", res); // TODO: 배포시에는 콘솔로그 제거
+        // 로그인 성공
 
         if (res.newUser) {
           navigate("/signup"); // 추가 회원정보 입력 페이지

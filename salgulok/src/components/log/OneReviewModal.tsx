@@ -37,7 +37,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
     try {
       setSubmitting(true);
       await saveEntrySummary(logId, entryId, value); 
-      console.log("요약 저장 성공:", value);
+      // 요약 저장 성공
       setValue("");
       onCancel(); // 닫기
     } catch (error) {

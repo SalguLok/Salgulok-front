@@ -44,11 +44,9 @@ const LogCommentSection: React.FC<Props> = ({ logId, currentUserId }) => {
   // 댓글 생성 뮤테이션
   const createCommentMutation = useMutation({
     mutationFn: ({ content }: { content: string }) => {
-      console.log("[댓글생성] API 호출", { logId, content });
       return createLogComment(logId, { content });
     },
-    onSuccess: (data) => {
-      console.log("[댓글생성] 성공", data);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["logComments", logId] });
     },
     onError: (error) => {
@@ -71,11 +69,9 @@ const LogCommentSection: React.FC<Props> = ({ logId, currentUserId }) => {
   // 댓글 삭제 뮤테이션
   const deleteCommentMutation = useMutation({
     mutationFn: (commentId: number) => {
-      console.log("[댓글삭제] mutate 호출", { logId, commentId });
       return deleteLogComment(logId, commentId);
     },
-    onSuccess: (_, commentId) => {
-      console.log("[댓글삭제] 성공", { logId, commentId });
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["logComments", logId] });
       setConfirmMessage("댓글이 삭제되었습니다.");
       setOnConfirmHandler(() => () => setConfirmOpen(false));

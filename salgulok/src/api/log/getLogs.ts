@@ -18,12 +18,14 @@ export interface LogListResponse {
   logs: LogResponse[];
   totalPages: number;
   currentPage: number;
+  length: number;
 }
 
 // 내 로그 조회
 export const getMyLogs = async (page: number = 0): Promise<LogListResponse> => {
   try {
     const response = await api.get<LogListResponse>(`/logs/my?page=${page}`);
+    console.log(response);
     return response.data;
   } catch (error: any) {
     if (error.response) {

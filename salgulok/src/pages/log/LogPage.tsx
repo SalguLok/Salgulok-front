@@ -9,7 +9,7 @@ import { searchLogs } from "../../api/log/searchLogs";
 import { getLogComments } from "../../api/log/logComment";
 import SearchBar from "../../components/log/SearchBar";
 import FilterBar from "../../components/log/FilterBar";
-import Pagination from "../../components/common/Pagination";
+import Paging from "../../components/log/Paging";
 import { regions } from "../../data/regions";
 
 function useDebounced<T>(value: T, delay = 300) {
@@ -34,6 +34,7 @@ const LogPage: React.FC = () => {
   const [regionId, setRegionId] = useState<number | null>(null);
   const [page, setPage] = useState(1); // UI 1-based
   const [totalPages, setTotalPages] = useState(1);
+  const [length, setLength] = useState(0);
 
   const regionOptions = regions.map((r) => ({ id: r.id, name: r.nameKo }));
 
@@ -101,9 +102,10 @@ const LogPage: React.FC = () => {
         );
 
         cacheRef.current.set(key, logsWithComments);
-        setLogs(logsWithComments);
 
+        setLogs(logsWithComments);
         setTotalPages(res.totalPages ?? 1);
+        setLength(res.length);
       } catch (e) {
         console.error("로그 불러오기 실패:", e);
         setLogs([]);
@@ -162,13 +164,31 @@ const LogPage: React.FC = () => {
         <CardContainer>
           <LogCardList items={logs} />
         </CardContainer>
-
-        <Pagination 
-          totalPages={totalPages} 
-          currentPage={page} 
-          onPageChange={setPage} 
-        />
       </ContentWrapper>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <>
+          {logs.length >= 4 ? (
+            <Paging
+              totalPages={totalPages}
+              currentPage={page}
+              onPageChange={(p) => setPage(p)}
+              listLength={length}
+            />
+          ) : (
+            // 리스트 적을 때 하단에 고정
+            <FixedPagingWrapper>
+              <Paging
+                totalPages={totalPages}
+                currentPage={page}
+                onPageChange={(p) => setPage(p)}
+                listLength={length}
+              />
+            </FixedPagingWrapper>
+          )}
+        </>
+      )}
 
       <NavigationBar />
     </Container>
@@ -198,6 +218,15 @@ const ContentWrapper = styled.div`
   gap: 16px;
   align-items: center;
   width: 100%;
+`;
+
+const FixedPagingWrapper = styled.div`
+  position: fixed;
+  bottom: 67px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 `;
 
 const CardContainer = styled.div`

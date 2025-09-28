@@ -1,5 +1,9 @@
-import { useState, useEffect, FC } from "react";
+import { useState, useEffect, FC, useRef } from "react";
 import { issueGetPresigned } from "../../api/image/issueGetPresigned";
+
+// In-memory cache for presigned URLs
+const presignedUrlCache = new Map<string, { url: string; expiry: number }>();
+const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
 const PresignedImage: FC<{
   objectKey?: string | null;
@@ -7,23 +11,57 @@ const PresignedImage: FC<{
   [key: string]: any;
 }> = ({ objectKey, src, ...props }) => {
   const [finalUrl, setFinalUrl] = useState(src || "");
+  const imgRef = useRef<HTMLImageElement>(null);
+  const [isIntersecting, setIsIntersecting] = useState(false);
 
   useEffect(() => {
-    // If a direct src is provided, use it.
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsIntersecting(true);
+          if(imgRef.current) {
+            observer.unobserve(imgRef.current);
+          }
+        }
+      },
+      { rootMargin: "0px 0px 200px 0px" } // Pre-load images 200px before they enter the viewport
+    );
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+
+    return () => {
+      if (imgRef.current) {
+        observer.unobserve(imgRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isIntersecting) return;
+
     if (src) {
       setFinalUrl(src);
       return;
     }
 
-    // If no src, but an objectKey is provided, fetch the presigned URL.
     if (objectKey) {
+      const cached = presignedUrlCache.get(objectKey);
+      if (cached && cached.expiry > Date.now()) {
+        setFinalUrl(cached.url);
+        return;
+      }
+
       let isMounted = true;
       const fetchUrl = async () => {
         try {
           const res = await issueGetPresigned(objectKey);
           if (isMounted) {
             if (res.items && res.items.length > 0) {
-              setFinalUrl(res.items[0].presignedUrl);
+              const newUrl = res.items[0].presignedUrl;
+              setFinalUrl(newUrl);
+              presignedUrlCache.set(objectKey, { url: newUrl, expiry: Date.now() + CACHE_DURATION });
             } else {
               setFinalUrl("");
             }
@@ -43,14 +81,15 @@ const PresignedImage: FC<{
       };
     }
     
-    // If neither src nor objectKey is provided, clear the URL.
     setFinalUrl("");
 
-  }, [objectKey, src]);
+  }, [objectKey, src, isIntersecting]);
 
-  if (!finalUrl) return <div {...props} style={{ ...props.style, backgroundColor: '#f0f0f0' }} />; // Placeholder for missing image
+  if (!finalUrl) {
+    return <div ref={imgRef as any} {...props} style={{ ...props.style, backgroundColor: '#f0f0f0' }} />; // Placeholder
+  }
 
-  return <img src={finalUrl} {...props} />;
+  return <img ref={imgRef} src={finalUrl} {...props} />;
 };
 
 export default PresignedImage;

@@ -6,26 +6,18 @@ import LogDetailHeader from "../../components/log/LogDetailIHeader";
 import TemplateCard from "../../components/common/TemplateCard";
 import TemplateCardDone from "../../components/log/TemplateCardDone";
 import LogEntryList from "../../components/log/LogEntryList";
-import TemplateActionButtons from "../../components/log/TemplateActionButtons";
+import TemplateAddButton from "../../components/log/TemplateAddButton";
 
 import { useEffect, useState } from "react";
 import { getLogDetail } from "../../api/log/getLogDetail";
 import { getLogEntryByDate } from "../../api/logEntry/getLogEntryByDate";
 import { createLogEntry } from "../../api/logEntry/createEntry";
 import { getEntryDates } from "../../api/logEntry/getEntryDates";
-import { updateUploadStatus } from "../../api/log/updateUploadStatus";
+
 import LogCommentSection from "../../components/log/LogCommentSection";
 import ConfirmModal from "../../components/common/ConfirmModal";
 
-const RegisterButton = styled.button`
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--main-pri);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-`;
+
 
 const LogEntryPage: React.FC = () => {
   const { logId } = useParams<{ logId: string }>();
@@ -218,44 +210,7 @@ const LogEntryPage: React.FC = () => {
     }
   };
 
-  const handleUpload = () => {
-    if (!numericLogId) return;
 
-    const performUpload = async () => {
-      closeModal();
-      try {
-        await updateUploadStatus(numericLogId, true);
-        setLogDetail((prev) => (prev ? { ...prev, isUpload: true } : null));
-        setModal({
-          open: true,
-          message: "게시되었습니다.",
-          showCancel: false,
-          confirmText: "확인",
-          cancelText: "취소",
-          onConfirm: closeModal,
-        });
-      } catch (error) {
-        console.error("업로드 상태 변경 실패:", error);
-        setModal({
-          open: true,
-          message: error instanceof Error ? error.message : "게시 중 오류가 발생했습니다.",
-          showCancel: false,
-          confirmText: "확인",
-          cancelText: "취소",
-          onConfirm: closeModal,
-        });
-      }
-    };
-
-    setModal({
-      open: true,
-      message: "살구록을 게시하시겠습니까?",
-      showCancel: true,
-      confirmText: "게시",
-      cancelText: "취소",
-      onConfirm: performUpload,
-    });
-  };
 
   type TemplateImage = { imageUrl: string };
   type TemplateSummary = {
@@ -371,11 +326,6 @@ const LogEntryPage: React.FC = () => {
                   <Header
         title="살구로그"
         showBackButton
-        rightElement={
-          isOwner && !logDetail?.isUpload ? (
-            <RegisterButton onClick={handleUpload}>등록</RegisterButton>
-          ) : null
-        }
       />
       <div style={{ marginTop: "15px" }}>
         <LogDetailHeader logId={numericLogId} />
@@ -483,13 +433,9 @@ const LogEntryPage: React.FC = () => {
       ))}
 
       {isTemplateWritingMode && (
-        <ActionButtonsContainer>
-          <TemplateActionButtons
-            onAdd={handleAddTemplate}
-            onSubmit={handleSubmitTemplates}
-            disabled={cards.some((c) => c.isEditing)}
+          <TemplateAddButton
+              onAdd={handleAddTemplate}
           />
-        </ActionButtonsContainer>
       )}
 
       {!isTemplateWritingMode && (
@@ -544,12 +490,6 @@ const LogVisibility = styled.div`
   border-radius: 4px;
   display: inline-block;
   margin-bottom: 20px;
-`;
-const ActionButtonsContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  padding: 20px;
-  margin: 0 20px;
 `;
 
 const BottomContainer = styled.div`

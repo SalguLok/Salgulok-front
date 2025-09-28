@@ -14,6 +14,7 @@ import { getLogEntryByDate } from "../../api/logEntry/getLogEntryByDate";
 // import { createLogEntry } from "../../api/logEntry/createEntry";
 // import { updateLogEntry } from "../../api/logEntry/updateEntry";
 import { getEntryDates } from "../../api/logEntry/getEntryDates";
+import { increaseViewCount } from "../../api/log/increaseViewCount";
 
 import LogCommentSection from "../../components/log/LogCommentSection";
 import ConfirmModal from "../../components/common/ConfirmModal";
@@ -261,6 +262,13 @@ const LogEntryPage: React.FC = () => {
       } catch (error) {
         console.error("댓글 수 조회 실패:", error);
         setCommentCount(0);
+      }
+
+      // 4. 조회수 증가
+      try {
+        await increaseViewCount(numericLogId);
+      } catch (error) {
+        console.error("조회수 증가 실패:", error);
       }
     })();
   }, [numericLogId]);

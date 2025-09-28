@@ -3,7 +3,7 @@
     <rect x="0.5" y="0.5" width="334" height="47" rx="12"
           fill="#FFFFFF"
           stroke="#B6B6B6"
-          stroke-width="1"
+          stroke-width="2"
           stroke-dasharray="2 4" />
     <!-- 가운데 + 아이콘 -->
     <path d="M167.5 16 V32 M159.5 24 H175.5"

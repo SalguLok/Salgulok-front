@@ -34,11 +34,11 @@ const Container = styled.div`
   display: flex;
   justify-content: center;
   width: 100%;
-  margin: 16px 0;
+  margin: 4px 0 16px 0;
 `;
 
 const AddButton = styled.button`
-  width: 335px;
+  width: 348px; 
   height: 48px;
   border: none;
   background: transparent;
@@ -62,5 +62,6 @@ const AddButton = styled.button`
     height: 100%;
     object-fit: cover;
     border-radius: 10px;
+      overflow: visible;
   }
 `;

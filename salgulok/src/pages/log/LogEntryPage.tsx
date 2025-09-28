@@ -18,6 +18,8 @@ import { getEntryDates } from "../../api/logEntry/getEntryDates";
 import LogCommentSection from "../../components/log/LogCommentSection";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import OneReviewModal from "../../components/log/OneReviewModal";
+import { getLogComments } from "../../api/log/logComment";
+import LikeCommentCounts from "../../components/log/LikeCommentCounts";
 
 
 const LogEntryPage: React.FC = () => {
@@ -34,6 +36,7 @@ const LogEntryPage: React.FC = () => {
     onConfirm: () => {},
   });
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [commentCount, setCommentCount] = useState(0);
 
   const closeModal = () => setModal((prev) => ({ ...prev, open: false }));
 
@@ -112,13 +115,14 @@ const LogEntryPage: React.FC = () => {
 
   // TemplateActionButtons 핸들러들
   const handleAddTemplate = () => {
-    if (editingTemplate?.date) {
+    const dateForNewCard = editingTemplate?.date || selectedDate;
+    if (dateForNewCard) {
       const newEditingCard: CardData = {
         id: -Date.now(), // 고유한 임시 ID
         placeId: 0,
         placeName: "",
         logId: numericLogId,
-        entryId: 0,
+        entryId: cards.length > 0 ? cards[0].entryId : 0, // 기존 entryId 사용
         templateId: -Date.now(),
         title: "새 템플릿",
         images: [],
@@ -128,6 +132,8 @@ const LogEntryPage: React.FC = () => {
         isNew: true,
       };
       setCards((prev) => [...prev, newEditingCard]);
+    } else {
+      alert("템플릿을 추가할 날짜를 선택해주세요.");
     }
   };
 
@@ -247,6 +253,15 @@ const LogEntryPage: React.FC = () => {
         newStates.set(item.entryDate, "yes");
       });
       setSalguItemStates(newStates);
+
+      // 3. 댓글 수 가져오기
+      try {
+        const commentsData = await getLogComments(numericLogId, { page: 0, size: 1 });
+        setCommentCount(commentsData.totalElements);
+      } catch (error) {
+        console.error("댓글 수 조회 실패:", error);
+        setCommentCount(0);
+      }
     })();
   }, [numericLogId]);
 
@@ -283,11 +298,12 @@ const LogEntryPage: React.FC = () => {
           {c.isEditing && c.isNew ? (
             <TemplateCard
               logId={c.logId}
-              entryDate={editingTemplate?.date ?? ""}
+              entryDate={editingTemplate?.date || selectedDate || ""}
               mode="create"
               onSaved={() => {
-                if (editingTemplate?.date) {
-                  handleSalguItemClick(editingTemplate.date);
+                const dateToRefresh = editingTemplate?.date || selectedDate;
+                if (dateToRefresh) {
+                  handleSalguItemClick(dateToRefresh);
                 }
               }}
               onCancel={() => {
@@ -350,30 +366,37 @@ const LogEntryPage: React.FC = () => {
         </TemplateContainer>
       ))}
 
-      {isTemplateWritingMode && (
-          <TemplateAddButton
-              onAdd={handleAddTemplate}
-          />
-      )}
+      {isTemplateWritingMode && <TemplateAddButton onAdd={handleAddTemplate} />}
 
       {!isTemplateWritingMode && (
-        <BottomContainer>
-          {logDetail?.oneReview && (
-            <OneReviewText>{logDetail.oneReview}</OneReviewText>
+        <>
+          {isOwner && logDetail && !logDetail.isUpload && (
+            <TemplateAddButton onAdd={handleAddTemplate} />
           )}
+          <BottomContainer>
+            {logDetail?.oneReview && (
+              <OneReviewText>{logDetail.oneReview}</OneReviewText>
+            )}
 
-          {logDetail && isOwner && (
-            <LogVisibility>
-              {logDetail.isPublic ? "공개" : "비공개"}
-            </LogVisibility>
-          )}
-          {logDetail?.isUpload && (
-            <LogCommentSection
-              logId={numericLogId}
-              currentUserId={currentUserId}
-            />
-          )}
-        </BottomContainer>
+            {logDetail && isOwner && (
+                          <LogVisibility>
+                            {logDetail.isPublic ? "공개" : "비공개"}
+                          </LogVisibility>
+                        )}
+              
+                        {logDetail?.isUpload && (
+                          <CountsWrapper>
+                            <LikeCommentCounts logId={numericLogId} commentCount={commentCount} />
+                          </CountsWrapper>
+                        )}
+              
+                        {logDetail?.isUpload && (
+                          <LogCommentSection
+                            logId={numericLogId}
+                            currentUserId={currentUserId}
+                          />            )}
+          </BottomContainer>
+        </>
       )}
       <ConfirmModal
         {...modal}
@@ -400,7 +423,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-bottom: 67px;
+  padding-bottom: 130px; /* 네비게이션 바와 추가 버튼을 위한 공간 확보 */
 `;
 
 const TemplateContainer = styled.div`
@@ -420,6 +443,10 @@ const LogVisibility = styled.div`
   background-color: #f5f5f5;
   border-radius: 4px;
   display: inline-block;
+  margin-bottom: 20px;
+`;
+
+const CountsWrapper = styled.div`
   margin-bottom: 20px;
 `;
 

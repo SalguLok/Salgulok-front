@@ -406,7 +406,7 @@ const LogEntryPage: React.FC = () => {
 
       {!isTemplateWritingMode && (
         <BottomContainer>
-          {logDetail?.oneReview && <LogReview>{logDetail.oneReview}</LogReview>}
+
           {logDetail && isOwner && (
             <LogVisibility>
               {logDetail.isPublic ? "공개" : "비공개"}
@@ -471,10 +471,4 @@ const BottomContainer = styled.div`
   margin: 0 20px;
 `;
 
-const LogReview = styled.div`
-  font-size: 16px;
-  line-height: 1.5;
-  color: #333;
-  margin-top: -5px;
-  margin-bottom: 12px;
-`;
+

@@ -271,30 +271,9 @@ const LogEntryPage: React.FC = () => {
               logId={c.logId}
               entryDate={editingTemplate?.date ?? ""}
               mode="create"
-              onSaved={(savedData) => {
+              onSaved={() => {
                 if (editingTemplate?.date) {
-                  setCards((prev) =>
-                    prev.map((card) =>
-                      card.id === c.id
-                        ? {
-                            ...card,
-                            id: Date.now(), // 임시 ID 업데이트
-                            templateId: Date.now(), // 임시 templateId
-                            isEditing: false,
-                            isNew: false,
-                            review: savedData.text,
-                            rating: savedData.star,
-                            placeId: savedData.placeId ?? 0,
-                            placeName: savedData.placeName ?? "저장된 장소",
-                            title: savedData.placeName ?? "저장된 장소",
-                            images: savedData.imageUrls ?? [],
-                          }
-                        : card
-                    )
-                  );
-                  setSalguItemStates((prev) =>
-                    new Map(prev).set(editingTemplate.date, "yes")
-                  );
+                  handleSalguItemClick(editingTemplate.date);
                 }
               }}
               onCancel={() => {

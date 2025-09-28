@@ -1,40 +1,56 @@
-import { useState, useEffect  } from "react";
-import type { FC } from "react";
+import { useState, useEffect, FC } from "react";
 import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 
 const PresignedImage: FC<{
   objectKey?: string | null;
   src?: string;
   [key: string]: any;
-}> = ({ objectKey, ...props }) => {
-  const [url, setUrl] = useState("");
+}> = ({ objectKey, src, ...props }) => {
+  const [finalUrl, setFinalUrl] = useState(src || "");
 
   useEffect(() => {
-    if (!objectKey) {
-      setUrl("");
+    // If a direct src is provided, use it.
+    if (src) {
+      setFinalUrl(src);
       return;
     }
 
-    const fetchUrl = async () => {
-      try {
-        const res = await issueGetPresigned(objectKey);
-        if (res.items && res.items.length > 0) {
-          setUrl(res.items[0].presignedUrl);
-        } else {
-          setUrl("");
+    // If no src, but an objectKey is provided, fetch the presigned URL.
+    if (objectKey) {
+      let isMounted = true;
+      const fetchUrl = async () => {
+        try {
+          const res = await issueGetPresigned(objectKey);
+          if (isMounted) {
+            if (res.items && res.items.length > 0) {
+              setFinalUrl(res.items[0].presignedUrl);
+            } else {
+              setFinalUrl("");
+            }
+          }
+        } catch (e) {
+          console.error("Failed to get presigned URL", e);
+          if (isMounted) {
+            setFinalUrl("");
+          }
         }
-      } catch (e) {
-        console.error("Failed to get presigned URL", e);
-        setUrl("");
-      }
-    };
+      };
 
-    fetchUrl();
-  }, [objectKey]);
+      fetchUrl();
 
-  // if (!url) return <div {...props} />;
+      return () => {
+        isMounted = false;
+      };
+    }
+    
+    // If neither src nor objectKey is provided, clear the URL.
+    setFinalUrl("");
 
-  return <img src={url} {...props} />;
+  }, [objectKey, src]);
+
+  if (!finalUrl) return <div {...props} style={{ ...props.style, backgroundColor: '#f0f0f0' }} />; // Placeholder for missing image
+
+  return <img src={finalUrl} {...props} />;
 };
 
 export default PresignedImage;

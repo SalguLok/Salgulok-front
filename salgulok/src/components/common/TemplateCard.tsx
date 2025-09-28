@@ -289,6 +289,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
           <ImageSlider urls={previewUrls} onAddClick={() => {}} />
         ) : (
           <ImageSlider
+            mode="edit"
             urls={previewUrls}
             onAddClick={() => fileInputRef.current?.click()}
           />

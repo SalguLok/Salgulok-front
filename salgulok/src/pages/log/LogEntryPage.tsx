@@ -11,7 +11,8 @@ import TemplateAddButton from "../../components/log/TemplateAddButton";
 import { useEffect, useState } from "react";
 import { getLogDetail } from "../../api/log/getLogDetail";
 import { getLogEntryByDate } from "../../api/logEntry/getLogEntryByDate";
-import { createLogEntry } from "../../api/logEntry/createEntry";
+// import { createLogEntry } from "../../api/logEntry/createEntry";
+// import { updateLogEntry } from "../../api/logEntry/updateEntry";
 import { getEntryDates } from "../../api/logEntry/getEntryDates";
 
 import LogCommentSection from "../../components/log/LogCommentSection";
@@ -129,96 +130,17 @@ const LogEntryPage: React.FC = () => {
     }
   };
 
-  const handleSubmitTemplates = async () => {
-    if (!editingTemplate?.date) {
-      setModal({
-        open: true,
-        message: "날짜 정보가 없어 저장할 수 없습니다.",
-        showCancel: false,
-        onConfirm: closeModal,
-        confirmText: "확인",
-        cancelText: "취소",
-      });
-      return;
-    }
-
-    const newTemplates = cards
-      .filter((card) => card.isNew)
-      .map((card) => ({
-        placeId: card.placeId,
-        text: card.review,
-        star: card.rating,
-        imageUrls: card.images,
-      }));
-
-    if (newTemplates.some((t) => !t.placeId)) {
-      setModal({
-        open: true,
-        message: "장소가 선택되지 않은 템플릿이 있습니다. 각 템플릿을 저장해주세요.",
-        showCancel: false,
-        onConfirm: closeModal,
-        confirmText: "확인",
-        cancelText: "취소",
-      });
-      return;
-    }
-
-    if (newTemplates.length === 0) {
-      setIsTemplateWritingMode(false);
-      setEditingTemplate(null);
-      return;
-    }
-
-    try {
-      await createLogEntry(numericLogId, {
-        entryDate: editingTemplate.date,
-        templates: newTemplates,
-      });
-
-      const onConfirm = async () => {
-        closeModal();
-        setIsTemplateWritingMode(false);
-        setEditingTemplate(null);
-        const data = await getLogEntryByDate(
-          numericLogId,
-          editingTemplate.date
-        );
-        setCards(toCards(data.logId, data.entryId, data.templates ?? []));
-        setSalguItemStates((prev) =>
-          new Map(prev).set(editingTemplate.date, "yes")
-        );
-      };
-
-      setModal({
-        open: true,
-        message: "등록이 완료되었습니다.",
-        showCancel: false,
-        onConfirm: onConfirm,
-        confirmText: "확인",
-        cancelText: "취소",
-      });
-    } catch (error) {
-      console.error("템플릿 등록 중 에러:", error);
-      setModal({
-        open: true,
-        message: "템플릿 등록 중 오류가 발생했습니다.",
-        showCancel: false,
-        onConfirm: closeModal,
-        confirmText: "확인",
-        cancelText: "취소",
-      });
-    }
-  };
-
-
-
-  type TemplateImage = { imageUrl: string };
   type TemplateSummary = {
     templateId: number;
     placeId: number;
     text: string;
     star: number;
-    images?: TemplateImage[];
+    images?: Array<{ 
+      imageId: number; 
+      imageUrl: string;
+      presignedUrl: string;
+      objectKey: string;
+    }>;
     placeName?: string;
   };
   type EntryByDateResponse = {
@@ -242,7 +164,7 @@ const LogEntryPage: React.FC = () => {
       entryId: entryId ?? 0,
       templateId: t.templateId,
       title: t.placeName ?? `템플릿 ${i + 1}`,
-      images: t.images?.map((x) => x.imageUrl) ?? [],
+      images: t.images?.map((x) => x.objectKey) ?? [],
       rating: t.star ?? 0,
       review: t.text ?? "",
     }));
@@ -323,7 +245,7 @@ const LogEntryPage: React.FC = () => {
 
   return (
     <Container>
-                  <Header
+      <Header
         title="살구로그"
         showBackButton
       />
@@ -356,7 +278,10 @@ const LogEntryPage: React.FC = () => {
                       card.id === c.id
                         ? {
                             ...card,
+                            id: Date.now(), // 임시 ID 업데이트
+                            templateId: Date.now(), // 임시 templateId
                             isEditing: false,
+                            isNew: false,
                             review: savedData.text,
                             rating: savedData.star,
                             placeId: savedData.placeId ?? 0,

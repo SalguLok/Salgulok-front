@@ -2,11 +2,14 @@
 import React, { useRef, useState, useEffect } from "react";
 import styled from "styled-components";
 import { patchTemplate } from "../../api/logEntry/patchTemplate";
+import { createLogEntryWithResponse, addTemplateToEntry } from "../../api/logEntry/createEntry";
+import { getLogEntryByDate } from "../../api/logEntry/getLogEntryByDate";
 import { Star as StarIcon } from "lucide-react";
 import PlaceSearchField from "./PlaceSearchField";
 import type { PlaceSearchItem } from "../../types/place";
 import { uploadImagesFlow } from "../../api/image/uploadFlow";
 import ImageSlider from "./ImageSlider";
+// import PresignedImage from "./PresignedImage";
 import ConfirmModal from "./ConfirmModal";
 
 type TemplateCardProps = {
@@ -31,13 +34,15 @@ type TemplateCardProps = {
     placeId?: number;
     placeName?: string;
     imageUrls?: string[];
+    templateId?: number;
+    entryId?: number;
   }) => void;
   onCancel?: () => void;
 };
 
 const TemplateCard: React.FC<TemplateCardProps> = ({
   logId,
-  //entryDate,
+  entryDate,
   mode = "create",
   entryId,
   templateId,
@@ -50,6 +55,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
   // 미리보기(로컬 blob URL) / 서버 업로드 완료된 이미지 URL
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imageIds, setImageIds] = useState<number[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -106,6 +112,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
         (item) => item.presignedUrl.split("?")[0]
       );
       setImageUrls((prev) => [...prev, ...newImageUrls]);
+      setImageIds((prev) => [...prev, ...result.imageIds]);
     } catch (err) {
       console.error("Upload failed:", err);
       setConfirmMessage("이미지 업로드에 실패했습니다.");
@@ -160,24 +167,83 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
         setConfirmOpen(true);
         return;
       }
-      // API 호출 대신, 모든 데이터를 onSaved 콜백으로 전달
+
+      // 현재 날짜에 LogEntry가 있는지 확인
+      let existingEntryId: number | null = null;
+      try {
+        const entryData = await getLogEntryByDate(logId, entryDate);
+        existingEntryId = entryData.entryId;
+      } catch (error) {
+        // LogEntry가 없는 경우 (404 등) - 새로 생성
+        existingEntryId = null;
+      }
+
+      const templateData = {
+        placeId: selectedPlace.id,
+        text,
+        star,
+        imageIds: imageIds.length > 0 ? imageIds : undefined,
+      };
+
+      let result;
+      if (existingEntryId) {
+        // 기존 LogEntry에 새 템플릿 추가
+        result = await addTemplateToEntry(logId, existingEntryId, templateData);
+      } else {
+        // 새 LogEntry 생성
+        const createResult = await createLogEntryWithResponse(logId, {
+          entryDate,
+          templates: [templateData],
+        });
+        result = createResult.templates[0];
+      }
+
+      // 성공 시 onSaved 콜백 호출
       onSaved?.({
         placeId: selectedPlace.id,
         placeName: selectedPlace.name,
         text,
         star,
         imageUrls,
+        templateId: result.templateId,
+        entryId: existingEntryId || result.templateId, // 임시로 templateId 사용
       });
 
       // 초기화
       setPreviewUrls([]);
       setImageUrls([]);
+      setImageIds([]);
       setSelectedPlace(null);
       setText("");
       setStar(0);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      setConfirmMessage("저장에 실패했습니다.");
+      
+      // 에러 타입별 처리
+      if (err.response) {
+        const status = err.response.status;
+        const message = err.response.data?.message || "저장에 실패했습니다.";
+        
+        switch (status) {
+          case 409:
+            setConfirmMessage("이미 해당 날짜에 로그가 존재합니다.");
+            break;
+          case 404:
+            setConfirmMessage("로그를 찾을 수 없습니다.");
+            break;
+          case 403:
+            setConfirmMessage("권한이 없습니다.");
+            break;
+          case 400:
+            setConfirmMessage("잘못된 요청입니다.");
+            break;
+          default:
+            setConfirmMessage(message);
+        }
+      } else {
+        setConfirmMessage("네트워크 오류가 발생했습니다.");
+      }
+      
       setOnConfirmHandler(() => () => setConfirmOpen(false));
       setConfirmOpen(true);
     } finally {

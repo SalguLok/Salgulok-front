@@ -1,19 +1,23 @@
 import styled from "styled-components";
-import cameraIcon from "../../assets/common/camera.svg";
+import PresignedImage from "./PresignedImage";
 
 type Props = {
-  urls: string[];
-  onAddClick: () => void;
+  imageKeys?: string[];
 };
 
-const ImageSlider = ({ urls, onAddClick }: Props) => {
+const ImageSlider = ({ imageKeys }: Props) => {
+  if (!imageKeys || imageKeys.length === 0) {
+    return null;
+  }
+
   return (
     <SliderContainer>
-      <IconBox onClick={onAddClick}>
-        <img src={cameraIcon} alt="Add photo" />
-      </IconBox>
-      {urls.map((url, index) => (
-        <Thumb key={index} src={url} alt={`Photo preview ${index + 1}`} />
+      {imageKeys.map((key) => (
+        <StyledPresignedImage
+          key={key}
+          objectKey={key}
+          alt="Template image"
+        />
       ))}
     </SliderContainer>
   );
@@ -25,7 +29,7 @@ const SliderContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 4px 0;
+  padding: 12px 0;
   overflow-x: auto;
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
@@ -34,22 +38,7 @@ const SliderContainer = styled.div`
   }
 `;
 
-const IconBox = styled.div`
-  flex-shrink: 0;
-  width: 88px;
-  height: 88px;
-  border: 1px solid var(--gray-300);
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  img {
-    width: 22px;
-    height: 22px;
-  }
-`;
-
-const Thumb = styled.img`
+const StyledPresignedImage = styled(PresignedImage)`
   flex-shrink: 0;
   width: 88px;
   height: 88px;

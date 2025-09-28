@@ -17,7 +17,7 @@ import { getEntryDates } from "../../api/logEntry/getEntryDates";
 
 import LogCommentSection from "../../components/log/LogCommentSection";
 import ConfirmModal from "../../components/common/ConfirmModal";
-
+import OneReviewModal from "../../components/log/OneReviewModal";
 
 
 const LogEntryPage: React.FC = () => {
@@ -33,6 +33,7 @@ const LogEntryPage: React.FC = () => {
     showCancel: false,
     onConfirm: () => {},
   });
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
 
   const closeModal = () => setModal((prev) => ({ ...prev, open: false }));
 
@@ -216,19 +217,27 @@ const LogEntryPage: React.FC = () => {
     }
   };
 
+  const fetchLogDetail = async () => {
+    const detail = await getLogDetail(numericLogId);
+    setLogDetail({
+      startDate: detail.startDate,
+      endDate: detail.endDate,
+      isPublic: detail.isPublic,
+      oneReview: detail.oneReview,
+      ownerId: detail.ownerId,
+      isUpload: detail.isUpload,
+    });
+  };
+
+  const handleUpload = () => {
+    setIsReviewModalOpen(true);
+  };
+
   useEffect(() => {
     if (!numericLogId) return;
     (async () => {
       // 1. 로그 기본 정보 가져오기
-      const detail = await getLogDetail(numericLogId);
-      setLogDetail({
-        startDate: detail.startDate,
-        endDate: detail.endDate,
-        isPublic: detail.isPublic,
-        oneReview: detail.oneReview,
-        ownerId: detail.ownerId,
-        isUpload: detail.isUpload,
-      });
+      await fetchLogDetail();
       setEditingTemplate(null);
 
       // 2. 어떤 날짜에 기록이 있는지 미리 가져와서 상태 설정
@@ -248,6 +257,11 @@ const LogEntryPage: React.FC = () => {
       <Header
         title="살구로그"
         showBackButton
+        rightElement={
+          isOwner && logDetail && !logDetail.isUpload ? (
+            <UploadButton onClick={handleUpload}>등록</UploadButton>
+          ) : null
+        }
       />
       <div style={{ marginTop: "15px" }}>
         <LogDetailHeader logId={numericLogId} />
@@ -344,6 +358,9 @@ const LogEntryPage: React.FC = () => {
 
       {!isTemplateWritingMode && (
         <BottomContainer>
+          {logDetail?.oneReview && (
+            <OneReviewText>{logDetail.oneReview}</OneReviewText>
+          )}
 
           {logDetail && isOwner && (
             <LogVisibility>
@@ -363,8 +380,18 @@ const LogEntryPage: React.FC = () => {
         onConfirm={modal.onConfirm}
         onCancel={closeModal}
       />
+      <OneReviewModal
+        open={isReviewModalOpen}
+        logId={numericLogId}
+        onCancel={() => setIsReviewModalOpen(false)}
+        onSuccess={() => {
+          setIsReviewModalOpen(false);
+          fetchLogDetail(); // 재조회하여 등록 버튼 숨기기
+        }}
+      />
     </Container>
   );
+
 };
 
 export default LogEntryPage;
@@ -401,5 +428,23 @@ const BottomContainer = styled.div`
   flex-direction: column;
   margin: 0 20px;
 `;
+
+const OneReviewText = styled.p`
+  font-size: 15px;
+  color: var(--gray-600);
+  text-align: left;
+  margin: 10px 0 20px 0;
+`;
+
+const UploadButton = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--main-pri);
+`;
+
 
 

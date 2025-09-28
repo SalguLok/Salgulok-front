@@ -407,7 +407,7 @@ const LogEntryPage: React.FC = () => {
       {!isTemplateWritingMode && (
         <BottomContainer>
           {logDetail?.oneReview && <LogReview>{logDetail.oneReview}</LogReview>}
-          {logDetail && (
+          {logDetail && isOwner && (
             <LogVisibility>
               {logDetail.isPublic ? "공개" : "비공개"}
             </LogVisibility>

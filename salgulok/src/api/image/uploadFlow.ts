@@ -8,6 +8,7 @@ import type {
     ImageConfirmRequest,
     ImageConfirmResponse,
 } from "./types";
+import { compressImage } from "../../utils/imageCompression";
 
 /** 파일 업로드 입력 타입 (Web) */
 export interface LocalFile {
@@ -25,24 +26,31 @@ export async function uploadImagesFlow(
     files: LocalFile[],
     options?: { templateId?: number | null }
 ): Promise<UploadFlowResult> {
+    // 0) 이미지 압축
+    const compressedFiles = await Promise.all(
+        files.map(async ({ file }) => ({
+            file: await compressImage(file),
+        }))
+    );
+
     // 1) Presigned 발급 (File에서 메타 추출)
     const presigned = await issuePresigned({
         templateId: options?.templateId ?? null,
-        files: files.map(({ file }) => ({
+        files: compressedFiles.map(({ file }) => ({
             fileName: file.name,
             contentType: file.type,
             size: file.size,
         })),
     } as PresignedUrlRequest);
 
-    if (presigned.items.length !== files.length) {
+    if (presigned.items.length !== compressedFiles.length) {
         throw new Error("발급된 presigned 개수가 요청 파일 수와 다릅니다.");
     }
 
-    // 2) S3 PUT (File 그대로 전송)
-    for (let i = 0; i < files.length; i++) {
+    // 2) S3 PUT (압축된 File 전송)
+    for (let i = 0; i < compressedFiles.length; i++) {
         const item = presigned.items[i];
-        const f = files[i].file;
+        const f = compressedFiles[i].file;
         await putToS3(item.presignedUrl, f, f.type);
     }
 
@@ -52,9 +60,9 @@ export async function uploadImagesFlow(
         //templateId: options?.templateId ?? null,
         items: presigned.items.map((it, idx) => ({
             objectKey: it.objectKey,
-            fileName: files[idx].file.name,
-            contentType: files[idx].file.type,
-            size: files[idx].file.size,
+            fileName: compressedFiles[idx].file.name,
+            contentType: compressedFiles[idx].file.type,
+            size: compressedFiles[idx].file.size,
         })),
     };
     const confirmed: ImageConfirmResponse = await confirmUpload(confirmBody);

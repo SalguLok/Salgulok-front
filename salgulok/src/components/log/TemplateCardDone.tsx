@@ -1,7 +1,7 @@
 import ImageSlider from "./ImageSlider";
 import styled, { css } from "styled-components";
 import { Star } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, memo } from "react";
 import ActionMenu from "../common/ActionMenu";
 import Salgu from "../../assets/log/salgu.svg?react";
 import { deleteTemplates } from "../../api/logEntry/deleteTemplate";
@@ -167,7 +167,7 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
   );
 };
 
-export default TemplateCardDone;
+export default memo(TemplateCardDone);
 
 const Layout = styled.div`
   display: flex;

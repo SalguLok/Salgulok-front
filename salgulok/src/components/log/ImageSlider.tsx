@@ -1,5 +1,6 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { memo, useMemo, useRef, useState } from "react";
 import styled from "styled-components";
+import LazyImage from "../common/LazyImage";
 
 type ImgLike = string | { url: string };
 
@@ -62,7 +63,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images }) => {
             role="group"
             aria-label={`${i + 1} / ${safeImages.length}`}
           >
-            <SlideImage src={src} alt={` 이미지 ${i + 1}`} />
+            <LazyImage src={src} alt={` 이미지 ${i + 1}`} />
           </Slide>
         ))}
       </Track>
@@ -81,7 +82,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images }) => {
   );
 };
 
-export default ImageSlider;
+export default memo(ImageSlider);
 
 const Slider = styled.div`
   position: relative;
@@ -104,14 +105,6 @@ const Slide = styled.div`
   width: 100%;
   height: auto;
   aspect-ratio: 4 / 3;
-`;
-
-const SlideImage = styled.img`
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  background-color: var(--gray-300);
 `;
 
 const NavButton = styled.button<{ $right?: boolean }>`

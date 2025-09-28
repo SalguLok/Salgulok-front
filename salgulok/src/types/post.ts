@@ -3,7 +3,7 @@ export type Post = {
   user: string;
   date: string;
   location: string;
-  avatar: string;
+  avatar?: string;
   content: string;
   comments: number;
   isHot?: boolean;
@@ -15,6 +15,6 @@ export type Comment = {
   postId: number;
   user: string;
   date: string;
-  avatar: string;
+  avatar?: string;
   content: string;
 };

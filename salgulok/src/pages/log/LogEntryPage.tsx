@@ -8,7 +8,7 @@ import TemplateCardDone from "../../components/log/TemplateCardDone";
 import LogEntryList from "../../components/log/LogEntryList";
 import TemplateAddButton from "../../components/log/TemplateAddButton";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getLogDetail } from "../../api/log/getLogDetail";
 import { getLogEntryByDate } from "../../api/logEntry/getLogEntryByDate";
 // import { createLogEntry } from "../../api/logEntry/createEntry";
@@ -177,7 +177,7 @@ const LogEntryPage: React.FC = () => {
       review: t.text ?? "",
     }));
 
-  const handleSalguItemClick = async (date: string) => {
+  const handleSalguItemClick = useCallback(async (date: string) => {
     if (!numericLogId) return;
     setSelectedDate(date);
 
@@ -222,9 +222,9 @@ const LogEntryPage: React.FC = () => {
         cancelText: "취소",
       });
     }
-  };
+  }, [numericLogId, isOwner]);
 
-  const fetchLogDetail = async () => {
+  const fetchLogDetail = useCallback(async () => {
     const detail = await getLogDetail(numericLogId);
     setLogDetail({
       startDate: detail.startDate,
@@ -234,7 +234,7 @@ const LogEntryPage: React.FC = () => {
       ownerId: detail.ownerId,
       isUpload: detail.isUpload,
     });
-  };
+  }, [numericLogId]);
 
   const handleUpload = () => {
     setIsReviewModalOpen(true);
@@ -242,7 +242,7 @@ const LogEntryPage: React.FC = () => {
 
   useEffect(() => {
     if (!numericLogId) return;
-    (async () => {
+    const initLogPage = async () => {
       // 1. 로그 기본 정보 가져오기
       await fetchLogDetail();
       setEditingTemplate(null);
@@ -254,6 +254,12 @@ const LogEntryPage: React.FC = () => {
         newStates.set(item.entryDate, "yes");
       });
       setSalguItemStates(newStates);
+
+      // 첫 번째 기록이 있는 날짜의 템플릿을 자동으로 불러오기
+      if (entryDatesResponse.items.length > 0) {
+        const firstDateWithEntry = entryDatesResponse.items[0].entryDate;
+        await handleSalguItemClick(firstDateWithEntry);
+      }
 
       // 3. 댓글 수 가져오기
       try {
@@ -270,8 +276,9 @@ const LogEntryPage: React.FC = () => {
       } catch (error) {
         console.error("조회수 증가 실패:", error);
       }
-    })();
-  }, [numericLogId]);
+    };
+    initLogPage();
+  }, [numericLogId, fetchLogDetail, handleSalguItemClick]);
 
   if (!numericLogId) return null;
 

@@ -9,4 +9,17 @@ export default defineConfig({
     proxy: {
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom'],
+          query: ['@tanstack/react-query'],
+          ui: ['styled-components'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 1000, // 1MB로 증가
+  },
 });

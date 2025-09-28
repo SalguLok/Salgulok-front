@@ -9,7 +9,6 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 import Pagination from "../../components/common/Pagination";
 import { getPosts, deletePost } from "../../api/community/community";
 import type { GetPostsParams, Topic } from "../../api/community/community";
-import DefaultProfileImage from "../../assets/common/profile_default.svg";
 import { formatKst } from "../../utils/date";
 
 //region 선택
@@ -36,6 +35,15 @@ const CommunityPage = () => {
   const [openRegionFilter, setOpenRegionFilter] = useState(false);
   const [openTopicFilter, setOpenTopicFilter] = useState(false);
   const [onlyTraveling, setOnlyTraveling] = useState(false);
+
+  // 체크박스 상태 변경 시 filters 업데이트
+  useEffect(() => {
+    setFilters(prev => ({
+      ...prev,
+      status: onlyTraveling ? 'staying' : undefined,
+      page: 0 // 필터 변경 시 첫 페이지로 이동
+    }));
+  }, [onlyTraveling]);
 
   // ConfirmModal 상태
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -202,7 +210,7 @@ const CommunityPage = () => {
                 location: post.region,
                 topic: post.topic,
                 content: post.content,
-                avatar: post.authorProfileImg || DefaultProfileImage, // 작성자 프로필 이미지
+                avatar: post.authorProfileImg || undefined, // 작성자 프로필 이미지 (objectKey)
                 comments: 0, // 백엔드 응답에 없어 임시 처리
                 isHot: false, // 백엔드 응답에 없어 임시 처리
               }}

@@ -10,11 +10,9 @@ interface ImageSliderProps {
 const ImageSlider: React.FC<ImageSliderProps> = ({ images }) => {
   const safeImages = useMemo<string[]>(
     () =>
-      images?.length
-        ? images
-            .map((it) => (typeof it === "string" ? it : it.url))
-            .filter(Boolean)
-        : ["https://via.placeholder.com/600x400?text=No+Image"],
+      images
+        ?.map((it) => (typeof it === "string" ? it : it.url))
+        .filter(Boolean) ?? [],
     [images]
   );
 
@@ -44,6 +42,10 @@ const ImageSlider: React.FC<ImageSliderProps> = ({ images }) => {
   };
 
   const showNav = safeImages.length > 1;
+
+  if (safeImages.length === 0) {
+    return null;
+  }
 
   return (
     <Slider
@@ -99,8 +101,9 @@ const Track = styled.div<{ $index: number }>`
 
 const Slide = styled.div`
   position: relative;
-  width: 181px;
-  height: 139px;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
 `;
 
 const SlideImage = styled.img`

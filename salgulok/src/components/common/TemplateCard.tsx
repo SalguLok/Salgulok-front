@@ -30,7 +30,8 @@ type TemplateCardProps = {
     star: number;
     placeId?: number;
     placeName?: string;
-    imageUrls?: string[];
+    imageIds?: number[];
+    images?: { objectKey: string }[];
   }) => void;
   onCancel?: () => void;
 };
@@ -47,9 +48,10 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
   onSaved,
   onCancel,
 }) => {
-  // 미리보기(로컬 blob URL) / 서버 업로드 완료된 이미지 URL
+  // 미리보기(로컬 blob URL) / 서버 업로드 완료된 이미지 ID
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imageIds, setImageIds] = useState<number[]>([]);
+  const [imageObjectKeys, setImageObjectKeys] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
 
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -76,7 +78,8 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
       setStar(initialStar ?? 0);
       // 기존 이미지는 읽기전용 미리보기로만 보여줌(교체 X)
       setPreviewUrls(initialImages ?? []);
-      setImageUrls([]); // 교체 업로드 없음
+      setImageIds([]); // 교체 업로드 없음
+      setImageObjectKeys([]);
     }
   }, [mode, initialText, initialStar, initialImages]);
 
@@ -101,11 +104,11 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
     try {
       const filesToUpload = currentFiles.map((file) => ({ file }));
       const result = await uploadImagesFlow(filesToUpload);
-
-      const newImageUrls = result.items.map(
-        (item) => item.presignedUrl.split("?")[0]
-      );
-      setImageUrls((prev) => [...prev, ...newImageUrls]);
+      setImageIds((prev) => [...prev, ...result.imageIds]);
+      setImageObjectKeys((prev) => [
+        ...prev,
+        ...result.items.map((it) => it.objectKey),
+      ]);
     } catch (err) {
       console.error("Upload failed:", err);
       setConfirmMessage("이미지 업로드에 실패했습니다.");
@@ -154,7 +157,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
         setConfirmOpen(true);
         return;
       }
-      if (imageUrls.length === 0 && previewUrls.length > 0) {
+      if (imageIds.length === 0 && previewUrls.length > 0) {
         setConfirmMessage("이미지 업로드가 완료될 때까지 기다려주세요.");
         setOnConfirmHandler(() => () => setConfirmOpen(false));
         setConfirmOpen(true);
@@ -166,12 +169,14 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
         placeName: selectedPlace.name,
         text,
         star,
-        imageUrls,
+        imageIds,
+        images: imageObjectKeys.map((k) => ({ objectKey: k })),
       });
 
       // 초기화
       setPreviewUrls([]);
-      setImageUrls([]);
+      setImageIds([]);
+      setImageObjectKeys([]);
       setSelectedPlace(null);
       setText("");
       setStar(0);

@@ -6,12 +6,14 @@ import LogDetailHeader from "../../components/log/LogDetailIHeader";
 import TemplateCard from "../../components/common/TemplateCard";
 import TemplateCardDone from "../../components/log/TemplateCardDone";
 import LogEntryList from "../../components/log/LogEntryList";
-import TemplateActionButtons from "../../components/log/TemplateActionButtons";
+import TemplateAddButton from "../../components/log/TemplateAddButton";
 
 import { useEffect, useState } from "react";
 import { getLogDetail } from "../../api/log/getLogDetail";
 import { getLogEntryByDate } from "../../api/logEntry/getLogEntryByDate";
 import { createLogEntry } from "../../api/logEntry/createEntry";
+import { updateLogEntry } from "../../api/logEntry/updateEntry";
+import { setLogUploadStatus } from "../../api/log/uploadToggle";
 import { getEntryDates } from "../../api/logEntry/getEntryDates";
 import LogCommentSection from "../../components/log/LogCommentSection";
 import ConfirmModal from "../../components/common/ConfirmModal";
@@ -49,6 +51,9 @@ const LogEntryPage: React.FC = () => {
 
   // 템플릿 작성 모드 상태
   const [isTemplateWritingMode, setIsTemplateWritingMode] = useState(false);
+  
+  // 살구록 업로드 상태
+  const [isUpload, setIsUpload] = useState(false);
 
   type EditState = {
     logId: number;
@@ -120,66 +125,18 @@ const LogEntryPage: React.FC = () => {
     }
   };
 
-  const handleSubmitTemplates = async () => {
-    if (!editingTemplate?.date) {
-      setConfirmMessage("날짜 정보가 없어 저장할 수 없습니다.");
-      setOnConfirmHandler(() => () => setConfirmOpen(false));
-      setConfirmOpen(true);
-      return;
-    }
-
-    const newTemplates = cards
-      .filter((card) => card.isNew)
-      .map((card) => ({
-        placeId: card.placeId,
-        text: card.review,
-        star: card.rating,
-        imageUrls: card.images,
-      }));
-
-    if (newTemplates.some((t) => !t.placeId)) {
-      setConfirmMessage(
-        "장소가 선택되지 않은 템플릿이 있습니다. 각 템플릿을 저장해주세요."
-      );
-      setOnConfirmHandler(() => () => setConfirmOpen(false));
-      setConfirmOpen(true);
-      return;
-    }
-
-    if (newTemplates.length === 0) {
-      setIsTemplateWritingMode(false);
-      setEditingTemplate(null);
-      return;
-    }
-
+  const handleRegisterClick = async () => {
     try {
-      await createLogEntry(numericLogId, {
-        entryDate: editingTemplate.date,
-        templates: newTemplates,
-      });
-
-      setConfirmMessage("등록이 완료되었습니다.");
-      setOnConfirmHandler(() => async () => {
-        setConfirmOpen(false);
-        setIsTemplateWritingMode(false);
-        setEditingTemplate(null);
-        const data = await getLogEntryByDate(
-          numericLogId,
-          editingTemplate.date
-        );
-        setCards(toCards(data.logId, data.entryId, data.templates ?? []));
-        setSalguItemStates((prev) =>
-          new Map(prev).set(editingTemplate.date, "yes")
-        );
-      });
-      setConfirmOpen(true);
-    } catch (error) {
-      console.error("템플릿 등록 중 에러:", error);
-      setConfirmMessage("템플릿 등록 중 오류가 발생했습니다.");
+      await setLogUploadStatus(numericLogId, { isUpload: true });
+      setIsUpload(true);
+    } catch (e) {
+      console.error(e);
+      setConfirmMessage("등록 토글 중 오류가 발생했습니다.");
       setOnConfirmHandler(() => () => setConfirmOpen(false));
       setConfirmOpen(true);
     }
   };
+
 
   type TemplateImage = { imageUrl: string };
   type TemplateSummary = {
@@ -272,6 +229,7 @@ const LogEntryPage: React.FC = () => {
         oneReview: detail.oneReview,
         ownerId: detail.ownerId,
       });
+      setIsUpload(detail.isUpload ?? false);
       setEditingTemplate(null);
 
       // 2. 어떤 날짜에 기록이 있는지 미리 가져와서 상태 설정
@@ -288,7 +246,18 @@ const LogEntryPage: React.FC = () => {
 
   return (
     <Container>
-      <Header title="살구로그" showBackButton />
+      <Header
+        title="살구로그"
+        showBackButton
+        rightButton={
+          isOwner && !isUpload
+            ? {
+                text: "등록",
+                onClick: handleRegisterClick,
+              }
+            : undefined
+        }
+      />
       <div style={{ marginTop: "15px" }}>
         <LogDetailHeader logId={numericLogId} />
       </div>
@@ -311,27 +280,82 @@ const LogEntryPage: React.FC = () => {
               logId={c.logId}
               entryDate={editingTemplate?.date ?? ""}
               mode="create"
-              onSaved={(savedData) => {
+              onSaved={async (savedData) => {
                 if (editingTemplate?.date) {
-                  setCards((prev) =>
-                    prev.map((card) =>
-                      card.id === c.id
-                        ? {
-                            ...card,
-                            isEditing: false,
-                            review: savedData.text,
-                            rating: savedData.star,
+                  try {
+                    // 1) 해당 날짜의 하루로그 존재 여부 확인
+                    const data = await getLogEntryByDate(
+                      numericLogId,
+                      editingTemplate.date
+                    );
+
+                    // 2) 분기: 없으면 생성(POST), 있으면 수정(PUT)
+                    if (!data.entryId) {
+                      const createData = {
+                        entryDate: editingTemplate.date,
+                        templates: [
+                          {
                             placeId: savedData.placeId ?? 0,
-                            placeName: savedData.placeName ?? "저장된 장소",
-                            title: savedData.placeName ?? "저장된 장소",
-                            images: savedData.imageUrls ?? [],
-                          }
-                        : card
-                    )
-                  );
-                  setSalguItemStates((prev) =>
-                    new Map(prev).set(editingTemplate.date, "yes")
-                  );
+                            text: savedData.text,
+                            star: savedData.star,
+                            // 권장: imageIds, 호환: images
+                            imageIds: savedData.imageIds ?? [],
+                          },
+                        ],
+                      };
+                      console.log("POST 요청 데이터:", createData);
+                      console.log("savedData:", savedData);
+                      await createLogEntry(numericLogId, createData);
+                    } else {
+                      // 기존 하루로그가 있으면 PUT으로 수정
+                      await updateLogEntry(numericLogId, data.entryId, {
+                        templates: [
+                          {
+                            templateId: data.templates?.[0]?.templateId ?? 0, // 기존 템플릿 ID 사용
+                            text: savedData.text,
+                            star: savedData.star,
+                            imageIds: savedData.imageIds ?? [],
+                          },
+                        ],
+                      });
+                    }
+
+                    // 3) 최신 데이터 재조회
+                    const refreshed = await getLogEntryByDate(
+                      numericLogId,
+                      editingTemplate.date
+                    );
+
+                    // 카드 상태 업데이트 (TemplateCardDone으로 변경)
+                    setCards((prev) =>
+                      prev.map((card) =>
+                        card.id === c.id
+                          ? {
+                              ...card,
+                              isEditing: false,
+                              isNew: false,
+                              review: savedData.text,
+                              rating: savedData.star,
+                              placeId: savedData.placeId ?? 0,
+                              placeName: savedData.placeName ?? "저장된 장소",
+                              title: savedData.placeName ?? "저장된 장소",
+                              images: refreshed.templates?.[0]?.images?.map((x) => x.imageUrl) ?? [],
+                              entryId: refreshed.entryId ?? 0,
+                              templateId: refreshed.templates?.[0]?.templateId ?? 0,
+                            }
+                          : card
+                      )
+                    );
+
+                    setSalguItemStates((prev) =>
+                      new Map(prev).set(editingTemplate.date, "yes")
+                    );
+                  } catch (error) {
+                    console.error("하루로그 생성 중 에러:", error);
+                    setConfirmMessage("하루로그 생성 중 오류가 발생했습니다.");
+                    setOnConfirmHandler(() => () => setConfirmOpen(false));
+                    setConfirmOpen(true);
+                  }
                 }
               }}
               onCancel={() => {
@@ -391,31 +415,37 @@ const LogEntryPage: React.FC = () => {
               }
             />
           )}
+
+
+
+
+
+
+
+
         </TemplateContainer>
       ))}
 
       {isTemplateWritingMode && (
-        <ActionButtonsContainer>
-          <TemplateActionButtons
-            onAdd={handleAddTemplate}
-            onSubmit={handleSubmitTemplates}
-            disabled={cards.some((c) => c.isEditing)}
-          />
-        </ActionButtonsContainer>
+        <TemplateAddButton
+          onAdd={handleAddTemplate}
+          disabled={false}
+        />
       )}
 
       {!isTemplateWritingMode && (
         <BottomContainer>
-          {logDetail?.oneReview && <LogReview>{logDetail.oneReview}</LogReview>}
-          {logDetail && (
+          {logDetail && isOwner && (
             <LogVisibility>
               {logDetail.isPublic ? "공개" : "비공개"}
             </LogVisibility>
           )}
-          <LogCommentSection
-            logId={numericLogId}
-            currentUserId={currentUserId}
-          />
+          {isUpload && (
+            <LogCommentSection
+              logId={numericLogId}
+              currentUserId={currentUserId}
+            />
+          )}
         </BottomContainer>
       )}
       <ConfirmModal
@@ -458,12 +488,6 @@ const LogVisibility = styled.div`
   display: inline-block;
   margin-bottom: 20px;
 `;
-const ActionButtonsContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  padding: 20px;
-  margin: 0 20px;
-`;
 
 const BottomContainer = styled.div`
   display: flex;
@@ -471,10 +495,3 @@ const BottomContainer = styled.div`
   margin: 0 20px;
 `;
 
-const LogReview = styled.div`
-  font-size: 16px;
-  line-height: 1.5;
-  color: #333;
-  margin-top: -5px;
-  margin-bottom: 12px;
-`;

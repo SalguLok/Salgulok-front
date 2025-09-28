@@ -6,9 +6,14 @@ import BackButton from "../../assets/common/back_button.svg";
 interface HeaderProps {
   title: string;
   showBackButton?: boolean; // 뒤로가기 버튼
+  rightButton?: {
+    text: string;
+    onClick: () => void;
+    disabled?: boolean;
+  };
 }
 
-const Header: React.FC<HeaderProps> = ({ title, showBackButton = false }) => {
+const Header: React.FC<HeaderProps> = ({ title, showBackButton = false, rightButton }) => {
   const navigate = useNavigate();
 
   return (
@@ -23,7 +28,16 @@ const Header: React.FC<HeaderProps> = ({ title, showBackButton = false }) => {
         )}
 
         <Title>{title}</Title>
-        <Spacer />
+        {rightButton ? (
+          <RightButton
+            onClick={rightButton.onClick}
+            disabled={rightButton.disabled}
+          >
+            {rightButton.text}
+          </RightButton>
+        ) : (
+          <Spacer />
+        )}
       </HeaderWrapper>
 
       <HeaderSpacer />
@@ -67,11 +81,26 @@ const Title = styled.h1`
   font-size: 16px;
   padding: 0;
   margin: 0;
-  font-weight: 600px;
+  font-weight: 600;
 `;
 
 const Spacer = styled.div`
   width: 9px;
+`;
+
+const RightButton = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--main-pri);
+  font-weight: 600;
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 `;
 
 const HeaderSpacer = styled.div`

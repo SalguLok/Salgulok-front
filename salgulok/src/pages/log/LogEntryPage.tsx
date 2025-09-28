@@ -13,19 +13,35 @@ import { getLogDetail } from "../../api/log/getLogDetail";
 import { getLogEntryByDate } from "../../api/logEntry/getLogEntryByDate";
 import { createLogEntry } from "../../api/logEntry/createEntry";
 import { getEntryDates } from "../../api/logEntry/getEntryDates";
+import { updateUploadStatus } from "../../api/log/updateUploadStatus";
 import LogCommentSection from "../../components/log/LogCommentSection";
 import ConfirmModal from "../../components/common/ConfirmModal";
+
+const RegisterButton = styled.button`
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--main-pri);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+`;
 
 const LogEntryPage: React.FC = () => {
   const { logId } = useParams<{ logId: string }>();
   const currentUserId = parseInt(localStorage.getItem("userId") || "0");
   const numericLogId = Number(logId);
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [confirmMessage, setConfirmMessage] = useState<string>("");
-  const [onConfirmHandler, setOnConfirmHandler] = useState<
-    () => void | Promise<void>
-  >(() => () => {});
+  const [modal, setModal] = useState({
+    open: false,
+    message: "",
+    confirmText: "확인",
+    cancelText: "취소",
+    showCancel: false,
+    onConfirm: () => {},
+  });
+
+  const closeModal = () => setModal((prev) => ({ ...prev, open: false }));
 
   const [logDetail, setLogDetail] = useState<{
     isPublic: boolean;
@@ -33,6 +49,7 @@ const LogEntryPage: React.FC = () => {
     startDate: string;
     endDate: string;
     ownerId: number;
+    isUpload?: boolean;
   } | null>(null);
 
   const isOwner = logDetail ? currentUserId === logDetail.ownerId : false;
@@ -122,9 +139,14 @@ const LogEntryPage: React.FC = () => {
 
   const handleSubmitTemplates = async () => {
     if (!editingTemplate?.date) {
-      setConfirmMessage("날짜 정보가 없어 저장할 수 없습니다.");
-      setOnConfirmHandler(() => () => setConfirmOpen(false));
-      setConfirmOpen(true);
+      setModal({
+        open: true,
+        message: "날짜 정보가 없어 저장할 수 없습니다.",
+        showCancel: false,
+        onConfirm: closeModal,
+        confirmText: "확인",
+        cancelText: "취소",
+      });
       return;
     }
 
@@ -138,11 +160,14 @@ const LogEntryPage: React.FC = () => {
       }));
 
     if (newTemplates.some((t) => !t.placeId)) {
-      setConfirmMessage(
-        "장소가 선택되지 않은 템플릿이 있습니다. 각 템플릿을 저장해주세요."
-      );
-      setOnConfirmHandler(() => () => setConfirmOpen(false));
-      setConfirmOpen(true);
+      setModal({
+        open: true,
+        message: "장소가 선택되지 않은 템플릿이 있습니다. 각 템플릿을 저장해주세요.",
+        showCancel: false,
+        onConfirm: closeModal,
+        confirmText: "확인",
+        cancelText: "취소",
+      });
       return;
     }
 
@@ -158,9 +183,8 @@ const LogEntryPage: React.FC = () => {
         templates: newTemplates,
       });
 
-      setConfirmMessage("등록이 완료되었습니다.");
-      setOnConfirmHandler(() => async () => {
-        setConfirmOpen(false);
+      const onConfirm = async () => {
+        closeModal();
         setIsTemplateWritingMode(false);
         setEditingTemplate(null);
         const data = await getLogEntryByDate(
@@ -171,14 +195,66 @@ const LogEntryPage: React.FC = () => {
         setSalguItemStates((prev) =>
           new Map(prev).set(editingTemplate.date, "yes")
         );
+      };
+
+      setModal({
+        open: true,
+        message: "등록이 완료되었습니다.",
+        showCancel: false,
+        onConfirm: onConfirm,
+        confirmText: "확인",
+        cancelText: "취소",
       });
-      setConfirmOpen(true);
     } catch (error) {
       console.error("템플릿 등록 중 에러:", error);
-      setConfirmMessage("템플릿 등록 중 오류가 발생했습니다.");
-      setOnConfirmHandler(() => () => setConfirmOpen(false));
-      setConfirmOpen(true);
+      setModal({
+        open: true,
+        message: "템플릿 등록 중 오류가 발생했습니다.",
+        showCancel: false,
+        onConfirm: closeModal,
+        confirmText: "확인",
+        cancelText: "취소",
+      });
     }
+  };
+
+  const handleUpload = () => {
+    if (!numericLogId) return;
+
+    const performUpload = async () => {
+      closeModal();
+      try {
+        await updateUploadStatus(numericLogId, true);
+        setLogDetail((prev) => (prev ? { ...prev, isUpload: true } : null));
+        setModal({
+          open: true,
+          message: "게시되었습니다.",
+          showCancel: false,
+          confirmText: "확인",
+          cancelText: "취소",
+          onConfirm: closeModal,
+        });
+      } catch (error) {
+        console.error("업로드 상태 변경 실패:", error);
+        setModal({
+          open: true,
+          message: error instanceof Error ? error.message : "게시 중 오류가 발생했습니다.",
+          showCancel: false,
+          confirmText: "확인",
+          cancelText: "취소",
+          onConfirm: closeModal,
+        });
+      }
+    };
+
+    setModal({
+      open: true,
+      message: "살구록을 게시하시겠습니까?",
+      showCancel: true,
+      confirmText: "게시",
+      cancelText: "취소",
+      onConfirm: performUpload,
+    });
   };
 
   type TemplateImage = { imageUrl: string };
@@ -252,11 +328,14 @@ const LogEntryPage: React.FC = () => {
       }
     } catch (error) {
       console.error("getLogEntryByDate 에러:", error);
-      setConfirmMessage(
-        "데이터를 불러오는데 실패했습니다. 네트워크 연결을 확인해주세요."
-      );
-      setOnConfirmHandler(() => () => setConfirmOpen(false));
-      setConfirmOpen(true);
+      setModal({
+        open: true,
+        message: "데이터를 불러오는데 실패했습니다. 네트워크 연결을 확인해주세요.",
+        showCancel: false,
+        onConfirm: closeModal,
+        confirmText: "확인",
+        cancelText: "취소",
+      });
     }
   };
 
@@ -271,6 +350,7 @@ const LogEntryPage: React.FC = () => {
         isPublic: detail.isPublic,
         oneReview: detail.oneReview,
         ownerId: detail.ownerId,
+        isUpload: detail.isUpload,
       });
       setEditingTemplate(null);
 
@@ -288,7 +368,15 @@ const LogEntryPage: React.FC = () => {
 
   return (
     <Container>
-      <Header title="살구로그" showBackButton />
+                  <Header
+        title="살구로그"
+        showBackButton
+        rightElement={
+          isOwner && !logDetail?.isUpload ? (
+            <RegisterButton onClick={handleUpload}>등록</RegisterButton>
+          ) : null
+        }
+      />
       <div style={{ marginTop: "15px" }}>
         <LogDetailHeader logId={numericLogId} />
       </div>
@@ -412,19 +500,18 @@ const LogEntryPage: React.FC = () => {
               {logDetail.isPublic ? "공개" : "비공개"}
             </LogVisibility>
           )}
-          <LogCommentSection
-            logId={numericLogId}
-            currentUserId={currentUserId}
-          />
+          {logDetail?.isUpload && (
+            <LogCommentSection
+              logId={numericLogId}
+              currentUserId={currentUserId}
+            />
+          )}
         </BottomContainer>
       )}
       <ConfirmModal
-        open={confirmOpen}
-        message={confirmMessage}
-        confirmText="확인"
-        showCancel={false}
-        onConfirm={onConfirmHandler}
-        onCancel={() => setConfirmOpen(false)}
+        {...modal}
+        onConfirm={modal.onConfirm}
+        onCancel={closeModal}
       />
     </Container>
   );

@@ -1,5 +1,6 @@
-import { useState, useEffect, FC, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { issueGetPresigned } from "../../api/image/issueGetPresigned";
+import type { FC } from "react";
 
 // In-memory cache for presigned URLs
 const presignedUrlCache = new Map<string, { url: string; expiry: number }>();
@@ -19,7 +20,7 @@ const PresignedImage: FC<{
       ([entry]) => {
         if (entry.isIntersecting) {
           setIsIntersecting(true);
-          if(imgRef.current) {
+          if (imgRef.current) {
             observer.unobserve(imgRef.current);
           }
         }
@@ -61,7 +62,10 @@ const PresignedImage: FC<{
             if (res.items && res.items.length > 0) {
               const newUrl = res.items[0].presignedUrl;
               setFinalUrl(newUrl);
-              presignedUrlCache.set(objectKey, { url: newUrl, expiry: Date.now() + CACHE_DURATION });
+              presignedUrlCache.set(objectKey, {
+                url: newUrl,
+                expiry: Date.now() + CACHE_DURATION,
+              });
             } else {
               setFinalUrl("");
             }
@@ -80,13 +84,18 @@ const PresignedImage: FC<{
         isMounted = false;
       };
     }
-    
-    setFinalUrl("");
 
+    setFinalUrl("");
   }, [objectKey, src, isIntersecting]);
 
   if (!finalUrl) {
-    return <div ref={imgRef as any} {...props} style={{ ...props.style, backgroundColor: '#f0f0f0' }} />; // Placeholder
+    return (
+      <div
+        ref={imgRef as any}
+        {...props}
+        style={{ ...props.style, backgroundColor: "#f0f0f0" }}
+      />
+    ); // Placeholder
   }
 
   return <img ref={imgRef} src={finalUrl} {...props} />;

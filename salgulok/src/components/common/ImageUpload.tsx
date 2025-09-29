@@ -1,5 +1,6 @@
 import React, { useRef, useState } from "react";
 import styled from "styled-components";
+import imageCompression from "browser-image-compression";
 import CameraIcon from "../../assets/common/camera.svg";
 
 interface ImageUploadProps {
@@ -16,13 +17,28 @@ const ImageUpload: React.FC<ImageUploadProps> = ({ label, onUpload }) => {
     inputRef.current?.click();
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => setPreview(reader.result as string);
-      reader.readAsDataURL(file);
-      onUpload?.(file);
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      };
+      try {
+        const compressedFile = await imageCompression(file, options);
+        const reader = new FileReader();
+        reader.onloadend = () => setPreview(reader.result as string);
+        reader.readAsDataURL(compressedFile);
+        onUpload?.(compressedFile);
+      } catch (error) {
+        console.error("Image compression failed:", error);
+        // Fallback to original file if compression fails
+        const reader = new FileReader();
+        reader.onloadend = () => setPreview(reader.result as string);
+        reader.readAsDataURL(file);
+        onUpload?.(file);
+      }
     }
   };
 

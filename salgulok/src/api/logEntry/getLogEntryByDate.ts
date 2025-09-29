@@ -14,7 +14,12 @@ export interface LogEntryByDate {
     placeName: string;
     text: string;
     star: number;
-    images?: Array<{ imageId: number; imageUrl: string }>;
+    images?: Array<{ 
+      imageId: number; 
+      imageUrl: string;
+      presignedUrl: string;
+      objectKey: string;
+    }>;
     imageUrls?: string[];
   }>;
 }

@@ -6,26 +6,40 @@ import LogDetailHeader from "../../components/log/LogDetailIHeader";
 import TemplateCard from "../../components/common/TemplateCard";
 import TemplateCardDone from "../../components/log/TemplateCardDone";
 import LogEntryList from "../../components/log/LogEntryList";
-import TemplateActionButtons from "../../components/log/TemplateActionButtons";
+import TemplateAddButton from "../../components/log/TemplateAddButton";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { getLogDetail } from "../../api/log/getLogDetail";
 import { getLogEntryByDate } from "../../api/logEntry/getLogEntryByDate";
-import { createLogEntry } from "../../api/logEntry/createEntry";
+// import { createLogEntry } from "../../api/logEntry/createEntry";
+// import { updateLogEntry } from "../../api/logEntry/updateEntry";
 import { getEntryDates } from "../../api/logEntry/getEntryDates";
+import { increaseViewCount } from "../../api/log/increaseViewCount";
+
 import LogCommentSection from "../../components/log/LogCommentSection";
 import ConfirmModal from "../../components/common/ConfirmModal";
+import OneReviewModal from "../../components/log/OneReviewModal";
+import { getLogComments } from "../../api/log/logComment";
+import LikeCommentCounts from "../../components/log/LikeCommentCounts";
+
 
 const LogEntryPage: React.FC = () => {
   const { logId } = useParams<{ logId: string }>();
   const currentUserId = parseInt(localStorage.getItem("userId") || "0");
   const numericLogId = Number(logId);
 
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const [confirmMessage, setConfirmMessage] = useState<string>("");
-  const [onConfirmHandler, setOnConfirmHandler] = useState<
-    () => void | Promise<void>
-  >(() => () => {});
+  const [modal, setModal] = useState({
+    open: false,
+    message: "",
+    confirmText: "확인",
+    cancelText: "취소",
+    showCancel: false,
+    onConfirm: () => {},
+  });
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [commentCount, setCommentCount] = useState(0);
+
+  const closeModal = () => setModal((prev) => ({ ...prev, open: false }));
 
   const [logDetail, setLogDetail] = useState<{
     isPublic: boolean;
@@ -33,6 +47,7 @@ const LogEntryPage: React.FC = () => {
     startDate: string;
     endDate: string;
     ownerId: number;
+    isUpload?: boolean;
   } | null>(null);
 
   const isOwner = logDetail ? currentUserId === logDetail.ownerId : false;
@@ -101,13 +116,14 @@ const LogEntryPage: React.FC = () => {
 
   // TemplateActionButtons 핸들러들
   const handleAddTemplate = () => {
-    if (editingTemplate?.date) {
+    const dateForNewCard = editingTemplate?.date || selectedDate;
+    if (dateForNewCard) {
       const newEditingCard: CardData = {
         id: -Date.now(), // 고유한 임시 ID
         placeId: 0,
         placeName: "",
         logId: numericLogId,
-        entryId: 0,
+        entryId: cards.length > 0 ? cards[0].entryId : 0, // 기존 entryId 사용
         templateId: -Date.now(),
         title: "새 템플릿",
         images: [],
@@ -117,77 +133,22 @@ const LogEntryPage: React.FC = () => {
         isNew: true,
       };
       setCards((prev) => [...prev, newEditingCard]);
+    } else {
+      alert("템플릿을 추가할 날짜를 선택해주세요.");
     }
   };
 
-  const handleSubmitTemplates = async () => {
-    if (!editingTemplate?.date) {
-      setConfirmMessage("날짜 정보가 없어 저장할 수 없습니다.");
-      setOnConfirmHandler(() => () => setConfirmOpen(false));
-      setConfirmOpen(true);
-      return;
-    }
-
-    const newTemplates = cards
-      .filter((card) => card.isNew)
-      .map((card) => ({
-        placeId: card.placeId,
-        text: card.review,
-        star: card.rating,
-        imageUrls: card.images,
-      }));
-
-    if (newTemplates.some((t) => !t.placeId)) {
-      setConfirmMessage(
-        "장소가 선택되지 않은 템플릿이 있습니다. 각 템플릿을 저장해주세요."
-      );
-      setOnConfirmHandler(() => () => setConfirmOpen(false));
-      setConfirmOpen(true);
-      return;
-    }
-
-    if (newTemplates.length === 0) {
-      setIsTemplateWritingMode(false);
-      setEditingTemplate(null);
-      return;
-    }
-
-    try {
-      await createLogEntry(numericLogId, {
-        entryDate: editingTemplate.date,
-        templates: newTemplates,
-      });
-
-      setConfirmMessage("등록이 완료되었습니다.");
-      setOnConfirmHandler(() => async () => {
-        setConfirmOpen(false);
-        setIsTemplateWritingMode(false);
-        setEditingTemplate(null);
-        const data = await getLogEntryByDate(
-          numericLogId,
-          editingTemplate.date
-        );
-        setCards(toCards(data.logId, data.entryId, data.templates ?? []));
-        setSalguItemStates((prev) =>
-          new Map(prev).set(editingTemplate.date, "yes")
-        );
-      });
-      setConfirmOpen(true);
-    } catch (error) {
-      console.error("템플릿 등록 중 에러:", error);
-      setConfirmMessage("템플릿 등록 중 오류가 발생했습니다.");
-      setOnConfirmHandler(() => () => setConfirmOpen(false));
-      setConfirmOpen(true);
-    }
-  };
-
-  type TemplateImage = { imageUrl: string };
   type TemplateSummary = {
     templateId: number;
     placeId: number;
     text: string;
     star: number;
-    images?: TemplateImage[];
+    images?: Array<{ 
+      imageId: number; 
+      imageUrl: string;
+      presignedUrl: string;
+      objectKey: string;
+    }>;
     placeName?: string;
   };
   type EntryByDateResponse = {
@@ -211,12 +172,12 @@ const LogEntryPage: React.FC = () => {
       entryId: entryId ?? 0,
       templateId: t.templateId,
       title: t.placeName ?? `템플릿 ${i + 1}`,
-      images: t.images?.map((x) => x.imageUrl) ?? [],
+      images: t.images?.map((x) => x.objectKey) ?? [],
       rating: t.star ?? 0,
       review: t.text ?? "",
     }));
 
-  const handleSalguItemClick = async (date: string) => {
+  const handleSalguItemClick = useCallback(async (date: string) => {
     if (!numericLogId) return;
     setSelectedDate(date);
 
@@ -252,26 +213,38 @@ const LogEntryPage: React.FC = () => {
       }
     } catch (error) {
       console.error("getLogEntryByDate 에러:", error);
-      setConfirmMessage(
-        "데이터를 불러오는데 실패했습니다. 네트워크 연결을 확인해주세요."
-      );
-      setOnConfirmHandler(() => () => setConfirmOpen(false));
-      setConfirmOpen(true);
+      setModal({
+        open: true,
+        message: "데이터를 불러오는데 실패했습니다. 네트워크 연결을 확인해주세요.",
+        showCancel: false,
+        onConfirm: closeModal,
+        confirmText: "확인",
+        cancelText: "취소",
+      });
     }
+  }, [numericLogId, isOwner]);
+
+  const fetchLogDetail = useCallback(async () => {
+    const detail = await getLogDetail(numericLogId);
+    setLogDetail({
+      startDate: detail.startDate,
+      endDate: detail.endDate,
+      isPublic: detail.isPublic,
+      oneReview: detail.oneReview,
+      ownerId: detail.ownerId,
+      isUpload: detail.isUpload,
+    });
+  }, [numericLogId]);
+
+  const handleUpload = () => {
+    setIsReviewModalOpen(true);
   };
 
   useEffect(() => {
     if (!numericLogId) return;
-    (async () => {
+    const initLogPage = async () => {
       // 1. 로그 기본 정보 가져오기
-      const detail = await getLogDetail(numericLogId);
-      setLogDetail({
-        startDate: detail.startDate,
-        endDate: detail.endDate,
-        isPublic: detail.isPublic,
-        oneReview: detail.oneReview,
-        ownerId: detail.ownerId,
-      });
+      await fetchLogDetail();
       setEditingTemplate(null);
 
       // 2. 어떤 날짜에 기록이 있는지 미리 가져와서 상태 설정
@@ -281,14 +254,45 @@ const LogEntryPage: React.FC = () => {
         newStates.set(item.entryDate, "yes");
       });
       setSalguItemStates(newStates);
-    })();
-  }, [numericLogId]);
+
+      // 첫 번째 기록이 있는 날짜의 템플릿을 자동으로 불러오기
+      if (entryDatesResponse.items.length > 0) {
+        const firstDateWithEntry = entryDatesResponse.items[0].entryDate;
+        await handleSalguItemClick(firstDateWithEntry);
+      }
+
+      // 3. 댓글 수 가져오기
+      try {
+        const commentsData = await getLogComments(numericLogId, { page: 0, size: 1 });
+        setCommentCount(commentsData.totalElements);
+      } catch (error) {
+        console.error("댓글 수 조회 실패:", error);
+        setCommentCount(0);
+      }
+
+      // 4. 조회수 증가
+      try {
+        await increaseViewCount(numericLogId);
+      } catch (error) {
+        console.error("조회수 증가 실패:", error);
+      }
+    };
+    initLogPage();
+  }, [numericLogId, fetchLogDetail, handleSalguItemClick]);
 
   if (!numericLogId) return null;
 
   return (
     <Container>
-      <Header title="살구로그" showBackButton />
+      <Header
+        title="살구로그"
+        showBackButton
+        rightElement={
+          isOwner && logDetail && !logDetail.isUpload ? (
+            <UploadButton onClick={handleUpload}>등록</UploadButton>
+          ) : null
+        }
+      />
       <div style={{ marginTop: "15px" }}>
         <LogDetailHeader logId={numericLogId} />
       </div>
@@ -309,29 +313,12 @@ const LogEntryPage: React.FC = () => {
           {c.isEditing && c.isNew ? (
             <TemplateCard
               logId={c.logId}
-              entryDate={editingTemplate?.date ?? ""}
+              entryDate={editingTemplate?.date || selectedDate || ""}
               mode="create"
-              onSaved={(savedData) => {
-                if (editingTemplate?.date) {
-                  setCards((prev) =>
-                    prev.map((card) =>
-                      card.id === c.id
-                        ? {
-                            ...card,
-                            isEditing: false,
-                            review: savedData.text,
-                            rating: savedData.star,
-                            placeId: savedData.placeId ?? 0,
-                            placeName: savedData.placeName ?? "저장된 장소",
-                            title: savedData.placeName ?? "저장된 장소",
-                            images: savedData.imageUrls ?? [],
-                          }
-                        : card
-                    )
-                  );
-                  setSalguItemStates((prev) =>
-                    new Map(prev).set(editingTemplate.date, "yes")
-                  );
+              onSaved={() => {
+                const dateToRefresh = editingTemplate?.date || selectedDate;
+                if (dateToRefresh) {
+                  handleSalguItemClick(dateToRefresh);
                 }
               }}
               onCancel={() => {
@@ -394,40 +381,55 @@ const LogEntryPage: React.FC = () => {
         </TemplateContainer>
       ))}
 
-      {isTemplateWritingMode && (
-        <ActionButtonsContainer>
-          <TemplateActionButtons
-            onAdd={handleAddTemplate}
-            onSubmit={handleSubmitTemplates}
-            disabled={cards.some((c) => c.isEditing)}
-          />
-        </ActionButtonsContainer>
-      )}
+      {isTemplateWritingMode && <TemplateAddButton onAdd={handleAddTemplate} />}
 
       {!isTemplateWritingMode && (
-        <BottomContainer>
-          {logDetail?.oneReview && <LogReview>{logDetail.oneReview}</LogReview>}
-          {logDetail && (
-            <LogVisibility>
-              {logDetail.isPublic ? "공개" : "비공개"}
-            </LogVisibility>
+        <>
+          {isOwner && logDetail && !logDetail.isUpload && (
+            <TemplateAddButton onAdd={handleAddTemplate} />
           )}
-          <LogCommentSection
-            logId={numericLogId}
-            currentUserId={currentUserId}
-          />
-        </BottomContainer>
+          <BottomContainer>
+            {logDetail?.oneReview && (
+              <OneReviewText>{logDetail.oneReview}</OneReviewText>
+            )}
+
+            {logDetail && isOwner && (
+                          <LogVisibility>
+                            {logDetail.isPublic ? "공개" : "비공개"}
+                          </LogVisibility>
+                        )}
+              
+                        {logDetail?.isUpload && (
+                          <CountsWrapper>
+                            <LikeCommentCounts logId={numericLogId} commentCount={commentCount} />
+                          </CountsWrapper>
+                        )}
+              
+                        {logDetail?.isUpload && (
+                          <LogCommentSection
+                            logId={numericLogId}
+                            currentUserId={currentUserId}
+                          />            )}
+          </BottomContainer>
+        </>
       )}
       <ConfirmModal
-        open={confirmOpen}
-        message={confirmMessage}
-        confirmText="확인"
-        showCancel={false}
-        onConfirm={onConfirmHandler}
-        onCancel={() => setConfirmOpen(false)}
+        {...modal}
+        onConfirm={modal.onConfirm}
+        onCancel={closeModal}
+      />
+      <OneReviewModal
+        open={isReviewModalOpen}
+        logId={numericLogId}
+        onCancel={() => setIsReviewModalOpen(false)}
+        onSuccess={() => {
+          setIsReviewModalOpen(false);
+          fetchLogDetail(); // 재조회하여 등록 버튼 숨기기
+        }}
       />
     </Container>
   );
+
 };
 
 export default LogEntryPage;
@@ -436,7 +438,7 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding-bottom: 67px;
+  padding-bottom: 130px; /* 네비게이션 바와 추가 버튼을 위한 공간 확보 */
 `;
 
 const TemplateContainer = styled.div`
@@ -458,11 +460,9 @@ const LogVisibility = styled.div`
   display: inline-block;
   margin-bottom: 20px;
 `;
-const ActionButtonsContainer = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  padding: 20px;
-  margin: 0 20px;
+
+const CountsWrapper = styled.div`
+  margin-bottom: 20px;
 `;
 
 const BottomContainer = styled.div`
@@ -471,10 +471,22 @@ const BottomContainer = styled.div`
   margin: 0 20px;
 `;
 
-const LogReview = styled.div`
-  font-size: 16px;
-  line-height: 1.5;
-  color: #333;
-  margin-top: -5px;
-  margin-bottom: 12px;
+const OneReviewText = styled.p`
+  font-size: 15px;
+  color: var(--gray-600);
+  text-align: left;
+  margin: 10px 0 20px 0;
 `;
+
+const UploadButton = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--main-pri);
+`;
+
+
+

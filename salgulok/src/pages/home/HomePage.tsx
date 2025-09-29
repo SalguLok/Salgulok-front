@@ -20,6 +20,7 @@ import { getLogFillStates, getPopularLogs } from "../../api/log/log";
 import { getLogComments } from "../../api/log/logComment";
 import { getUserTraveling } from "../../api/user/getUserTraveling";
 import { getMyInfo } from "../../api/user/getMyProfile";
+import ConfirmModal from "../../components/common/ConfirmModal";
 
 type Stage = { date: string; completed?: boolean };
 
@@ -51,6 +52,7 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
   const [regionNameKo, setRegionNameKo] = useState<string>("");
   const [popularLogs, setPopularLogs] = useState<LogItem[]>([]);
   const [name, setName] = useState("");
+  const [showTravelModal, setShowTravelModal] = useState(false);
   isTraveling;
   //traveling id 바뀔때마다 nameKo 바꾸기
   useEffect(() => {
@@ -73,6 +75,10 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
   }, [defaultMode]);
 
   const handleModeChange = (next: "before" | "during") => {
+    if (next === "during" && !isTraveling) {
+      setShowTravelModal(true);
+      return;
+    }
     setMode(next);
     onModeChange?.(next);
   };
@@ -230,6 +236,7 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
       image: p.image_url || undefined,
       starCount: Number(p.starCount),
       comments: Number(p.commentCount ?? 0),
+      star: Number(p.star ?? p.avgStar ?? p.averageStar ?? p.rating ?? 0),
     }));
     setRegionPopularPlaceItems(mapped);
   };
@@ -406,6 +413,15 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
       {mode === "before" && <LogWriteButton />}
 
       <NavigationBar />
+
+      <ConfirmModal
+        open={showTravelModal}
+        message="현재 체류중인 지역이 없어요!"
+        confirmText="확인"
+        showCancel={false}
+        onConfirm={() => setShowTravelModal(false)}
+        onCancel={() => setShowTravelModal(false)}
+      />
     </Layout>
   );
 };

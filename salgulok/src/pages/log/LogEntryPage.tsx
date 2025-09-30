@@ -401,7 +401,11 @@ const LogEntryPage: React.FC = () => {
               
                         {logDetail?.isUpload && (
                           <CountsWrapper>
-                            <LikeCommentCounts logId={numericLogId} commentCount={commentCount} />
+                            <LikeCommentCounts
+                              logId={numericLogId}
+                              commentCount={commentCount}
+                              disableLike={isOwner}
+                            />
                           </CountsWrapper>
                         )}
               

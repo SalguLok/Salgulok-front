@@ -14,6 +14,7 @@ interface Props {
     size?: number; // 아이콘 크기
     gap?: number;  // 아이템 간격
     className?: string;
+    disableLike?: boolean; // 본인 글이면 좋아요 비활성화
 }
 
 const Wrap = styled.div<{ gap: number }>`
@@ -57,6 +58,7 @@ const LikeCommentCounts: FC<Props> = ({
                                           size = 16,
                                           gap = 12,
                                           className,
+                                          disableLike = false,
                                       }) => {
     const [likeCount, setLikeCount] = useState<number | null>(null);
     const [isLiked, setIsLiked] = useState(false);
@@ -83,6 +85,7 @@ const LikeCommentCounts: FC<Props> = ({
     }, [logId]);
 
     const handleLikeClick = async () => {
+        if (disableLike) return; // 비활성화 시 아무 반응 없음
         if (likeCount === null) return;
 
         const newIsLiked = !isLiked;
@@ -109,10 +112,12 @@ const LikeCommentCounts: FC<Props> = ({
         }
     };
 
+    const effectiveIsLiked = disableLike ? false : isLiked;
+
     return (
         <Wrap gap={gap} className={className}>
-            <Item onClick={handleLikeClick} aria-label={isLiked ? "좋아요 취소" : "좋아요"} disabled={isLoading}>
-                {isLiked ? (
+            <Item onClick={handleLikeClick} aria-label={effectiveIsLiked ? "좋아요 취소" : "좋아요"} disabled={isLoading || disableLike}>
+                {effectiveIsLiked ? (
                     <Heart width={size} height={size} />
                 ) : (
                     <HeartOutline width={size} height={size} />

@@ -413,6 +413,8 @@ const LogEntryPage: React.FC = () => {
                           <LogCommentSection
                             logId={numericLogId}
                             currentUserId={currentUserId}
+                            onCommentAdded={() => setCommentCount((c) => c + 1)}
+                            onCommentDeleted={() => setCommentCount((c) => Math.max(0, c - 1))}
                           />            )}
           </BottomContainer>
         </>

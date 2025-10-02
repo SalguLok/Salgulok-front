@@ -67,18 +67,16 @@ const IconBox = styled.div`
 
 const Thumb = styled.img`
   flex-shrink: 0;
-  width: 88px;
   height: 88px;
-  border-radius: 10px;
-  object-fit: cover;
+  border-radius: 0;
+  object-fit: contain;
   border: 1px solid var(--gray-300);
 `;
 
 const StyledPresignedImage = styled(PresignedImage)`
   flex-shrink: 0;
-  width: 88px;
   height: 88px;
-  border-radius: 10px;
-  object-fit: cover;
+  border-radius: 0;
+  object-fit: contain;
   border: 1px solid var(--gray-300);
 `;

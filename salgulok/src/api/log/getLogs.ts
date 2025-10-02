@@ -12,6 +12,7 @@ export interface LogResponse {
   imgUrl: string | null;
   likes: number | 0;
   oneReview: string | null;
+  isLiked?: boolean;
 }
 
 export interface LogListResponse {

@@ -15,6 +15,8 @@ interface Props {
     gap?: number;  // 아이템 간격
     className?: string;
     disableLike?: boolean; // 본인 글이면 좋아요 비활성화
+    initialLikeCount?: number; // 초기 좋아요 수 (있으면 추가 요청 스킵)
+    initialIsLiked?: boolean;  // 초기 좋아요 여부 (있으면 추가 요청 스킵)
 }
 
 const Wrap = styled.div<{ gap: number }>`
@@ -59,13 +61,32 @@ const LikeCommentCounts: FC<Props> = ({
                                           gap = 12,
                                           className,
                                           disableLike = false,
+                                          initialLikeCount,
+                                          initialIsLiked,
                                       }) => {
-    const [likeCount, setLikeCount] = useState<number | null>(null);
-    const [isLiked, setIsLiked] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
+    const [likeCount, setLikeCount] = useState<number | null>(
+        typeof initialLikeCount === 'number' ? initialLikeCount : null
+    );
+    const [isLiked, setIsLiked] = useState(
+        typeof initialIsLiked === 'boolean' ? initialIsLiked : false
+    );
+    const [isLoading, setIsLoading] = useState(
+        !(typeof initialLikeCount === 'number' && typeof initialIsLiked === 'boolean')
+    );
+
+    // 초기값이 바뀌면 즉시 동기화
+    useEffect(() => {
+        if (typeof initialLikeCount === 'number') setLikeCount(initialLikeCount);
+        if (typeof initialIsLiked === 'boolean') setIsLiked(initialIsLiked);
+    }, [initialLikeCount, initialIsLiked]);
 
     useEffect(() => {
         const fetchInitialData = async () => {
+            // 초기값이 모두 주어진 경우 즉시 종료
+            if (typeof initialLikeCount === 'number' && typeof initialIsLiked === 'boolean') {
+                setIsLoading(false);
+                return;
+            }
             setIsLoading(true);
             try {
                 const [likes, liked] = await Promise.all([
@@ -82,7 +103,7 @@ const LikeCommentCounts: FC<Props> = ({
         };
 
         fetchInitialData();
-    }, [logId]);
+    }, [logId, initialLikeCount, initialIsLiked]);
 
     const handleLikeClick = async () => {
         if (disableLike) return; // 비활성화 시 아무 반응 없음

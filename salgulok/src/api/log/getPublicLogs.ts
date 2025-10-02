@@ -12,6 +12,7 @@ export interface LogResponse {
     imgUrl: string;
     oneReview: string;
     likes: number;         // 좋아요 수
+    isLiked?: boolean;     // 지역별 API는 항상 false로 내려올 수 있음
 }
 
 export const getPublicLogs = async (): Promise<LogResponse[]> => {

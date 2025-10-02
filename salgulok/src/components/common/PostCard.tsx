@@ -11,6 +11,7 @@ type Props = {
   post: Post;
   onClick?: (id: number) => void;
   onMenuClick?: (id: number) => void;
+  canDelete?: boolean; // 삭제 가능 여부 (본인 글인지)
 };
 
 const Card = styled.div<{ clickable?: boolean }>`
@@ -122,7 +123,7 @@ const CommentCount = styled.span`
   color: var(--black);
 `;
 
-export default function PostCard({ post, onClick, onMenuClick }: Props) {
+export default function PostCard({ post, onClick, onMenuClick, canDelete = false }: Props) {
   const handleClick = () => onClick?.(post.id);
   const handleMenuClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -147,7 +148,9 @@ export default function PostCard({ post, onClick, onMenuClick }: Props) {
           <User>{post.user}</User>
           <Meta>{post.date}</Meta>
         </Info>
-        <Menu onClick={handleMenuClick}>⋮</Menu>
+        {canDelete && (
+          <Menu onClick={handleMenuClick}>⋮</Menu>
+        )}
       </Header>
 
       <Content>{post.content}</Content>

@@ -97,6 +97,13 @@ const CommunityPage = () => {
   const currentRegion = filters.regionId === undefined ? "전체" : regions.find(r => r.id === filters.regionId)?.nameKo ?? "전체";
   const currentTopic = filters.topic ?? "전체 주제";
 
+  // 게시글 삭제 권한 확인 함수
+  const canDeletePost = (post: any) => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return false;
+    return parseInt(userId) === post.authorId;
+  };
+
 
   // 필터 변경 핸들러
   const handleRegionChange = (newRegionId?: number) => {
@@ -216,6 +223,7 @@ const CommunityPage = () => {
               }}
               onClick={() => goDetail(post.id)}
               onMenuClick={handlePostMenuClick}
+              canDelete={canDeletePost(post)}
             />
           ))}
         </PostList>
@@ -393,17 +401,17 @@ const WriteButton = styled.button`
   bottom: calc(${NAV_H}px + env(safe-area-inset-bottom) + 16px);
 
   /* 데스크톱에서도 '폰 프레임' 안쪽 오른쪽에 붙이기 */
-  left: calc(50% + ${APP_W}px / 2 - 16px - 76px); /* 프레임 오른쪽 - 여백 - 버튼폭 */
+  left: calc(50% + ${APP_W}px / 2 - 40px - 76px); /* 프레임 오른쪽 - 여백 - 버튼폭 */
   right: auto;
 
   @media (max-width: ${APP_W + 40}px) {
     left: auto; right: 16px;                   /* 작은 화면에선 일반 방식 */
   }
 
-  width: 76px;
+  width: auto;
   height: 36px;
-  padding: 0;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 0 15px; /* 좌우 패딩 추가 */
+  display: flex; align-items: center; justify-content: center; gap: 4px;
   border: none; border-radius: 20px;
   background: var(--main-pri); color: #fff;
   font-size: 13px; font-weight: 500; font-family: 'pretendard', sans-serif;
@@ -411,8 +419,8 @@ const WriteButton = styled.button`
 `;
 
 const Plus = styled.span`
-  font-size: 11px;
-  line-height: 1;
+  font-size: 20px;
+  font-weight: 400;
   font-family: 'pretendard', sans-serif;
 `;
 

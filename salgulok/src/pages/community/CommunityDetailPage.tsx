@@ -28,6 +28,14 @@ const CommunityDetailPage = () => {
     return parseInt(userId) === comment.authorId;
   };
 
+  // 게시글 삭제 권한 확인 함수
+  const canDeletePost = () => {
+    if (!post) return false;
+    const userId = localStorage.getItem("userId");
+    if (!userId) return false;
+    return parseInt(userId) === post.authorId;
+  };
+
   // ConfirmModal 상태
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmMessage, setConfirmMessage] = useState("");
@@ -220,7 +228,9 @@ const CommunityDetailPage = () => {
                 {formatKst(post.createdAt)} · {post.region}
               </Meta>
             </div>
-            <Menu onClick={handleDeletePost}>⋮</Menu> {/* 메뉴 버튼에 삭제 기능 연결 */}
+            {canDeletePost() && (
+              <Menu onClick={handleDeletePost}>⋮</Menu>
+            )}
           </HeaderPost>
           <Body>{post.content}</Body>
           <Footer>
@@ -297,26 +307,25 @@ const Layout = styled.div`
   min-height: 100vh;
   margin: 0 auto;
   max-width: 375px;
-  padding-bottom: 120px;
+  padding-bottom: 55px;
 `;
 
 const Wrap = styled.div`
   max-width: 375px;
   margin: 0 auto;
-  padding: 16px 20px 100px;
+  padding: 16px 20px 0px;
 `;
 
 const PostSection = styled.div`
   border-bottom: 1px solid var(--gray-100);
   padding-top: 16px;
   padding-bottom: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 0px;
 `;
 
 const HeaderPost = styled.div`
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
 `;
 
 const Avatar = styled.img`

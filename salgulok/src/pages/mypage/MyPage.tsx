@@ -7,12 +7,11 @@ import LogCardList from "../../components/common/CardListItem";
 import type { LogItem } from "../../components/common/CardListItem";
 import HeaderLeft from "../../components/common/HeaderLeft";
 import { getMyLogs } from "../../api/log/getLogs";
-// import Logout from "../../assets/mypage/logout.svg?react";
 import { logout } from "../../api/auth/logout";
 import { deleteMyLogs } from "../../api/log/getLogs";
 import ConfirmModal from "../../components/common/ConfirmModal";
 import { getMyInfo } from "../../api/user/getMyProfile";
-import Pagination from "../../components/common/Pagination";
+import Paging from "../../components/log/Paging";
 import profile from "../../assets/common/profile_default.svg?url";
 import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 import { getLogComments } from "../../api/log/logComment";
@@ -33,6 +32,7 @@ const MyPage: React.FC = () => {
   // 페이지네이션
   const [page, setPage] = useState(1); // UI 1-based
   const [totalPages, setTotalPages] = useState(1);
+  const [length, setLength] = useState(1);
 
   // 페이지 기반 로그 가져오기
   const fetchLogs = async (pageNum: number) => {
@@ -97,6 +97,7 @@ const MyPage: React.FC = () => {
       // 페이징 정보 업데이트
       setTotalPages(logsRes.totalPages);
       setPage(logsRes.currentPage + 1); // 0-based -> 1-based
+      setLength(logsRes.length);
     } catch (err) {
       console.error("내 로그/유저 정보 불러오기 실패", err);
     }
@@ -145,16 +146,6 @@ const MyPage: React.FC = () => {
     <Container>
       <HeaderLeft
         title="마이페이지"
-        // right={
-        //   <IconButton
-        //     aria-label="로그아웃"
-        //     onClick={() => setShowLogoutModal(true)}
-        //     disabled={isLoggingOut}
-        //     title="로그아웃"
-        //   >
-        //     <Logout />
-        //   </IconButton>
-        // }
       />
 
       <ContentWrapper>
@@ -194,16 +185,31 @@ const MyPage: React.FC = () => {
             onClickMore={handleClickMore}
           />
         </CardContainer>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <Pagination
-            totalPages={totalPages}
-            currentPage={page}
-            onPageChange={(p) => setPage(p)}
-          />
-        )}
       </ContentWrapper>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <>
+          {logs.length >= 4 ? (
+            <Paging
+              totalPages={totalPages}
+              currentPage={page}
+              onPageChange={(p) => setPage(p)}
+              listLength={length}
+            />
+          ) : (
+            // 리스트 적을 때 하단에 고정
+            <FixedPagingWrapper>
+              <Paging
+                totalPages={totalPages}
+                currentPage={page}
+                onPageChange={(p) => setPage(p)}
+                listLength={length}
+              />
+            </FixedPagingWrapper>
+          )}
+        </>
+      )}
 
       {/*로그아웃 모달*/}
       <ConfirmModal
@@ -255,6 +261,15 @@ const ContentWrapper = styled.div`
   width: 100%;
 `;
 
+const FixedPagingWrapper = styled.div`
+  position: fixed;
+  bottom: 67px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+`;
+
 const HLine = styled.div`
   width: 375px;
   border: 1px solid #f1f1f1;
@@ -267,26 +282,6 @@ const CardContainer = styled.div`
   display: flex;
   margin: 0px 20px;
 `;
-// const IconButton = styled.button`
-//   width: 28px;
-//   height: 28px;
-//   border: 0;
-//   background: transparent;
-//   display: grid;
-//   place-items: center;
-//   cursor: pointer;
-
-//   &:disabled {
-//     opacity: 0.6;
-//     cursor: not-allowed;
-//   }
-
-//   & > svg {
-//     width: 20px;
-//     height: 20px;
-//     display: block;
-//   }
-// `;
 
 const ButtonContainer = styled.div`
   display: flex;

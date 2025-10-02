@@ -8,7 +8,7 @@ import type { LogItem } from "../../components/common/CardListItem";
 import HeaderLeft from "../../components/common/HeaderLeft";
 import { getOthersLogs } from "../../api/log/getLogs";
 import { getOtherProfile } from "../../api/user/getOtherProfile";
-import Pagination from "../../components/common/Pagination";
+import Paging from "../../components/log/Paging";
 import profile from "../../assets/common/profile_default.svg?url";
 import { issueGetPresigned } from "../../api/image/issueGetPresigned";
 import { getLogComments } from "../../api/log/logComment";
@@ -25,6 +25,7 @@ const MyPage: React.FC = () => {
   // 페이지네이션
   const [page, setPage] = useState(1); // UI 1-based
   const [totalPages, setTotalPages] = useState(1);
+  const [length, setLength] = useState(1);
 
   // 페이지 기반 로그 가져오기
   const fetchLogs = async (pageNum: number) => {
@@ -95,6 +96,7 @@ const MyPage: React.FC = () => {
       // 페이징 정보 업데이트
       setTotalPages(logsRes.totalPages);
       setPage(logsRes.currentPage + 1); // 0-based -> 1-based
+      setLength(logsRes.length);
     } catch (err) {
       console.error("유저 정보 불러오기 실패", err);
     }
@@ -126,16 +128,31 @@ const MyPage: React.FC = () => {
             onToggleLike={(_id) => {}}
           />
         </CardContainer>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <Pagination
-            totalPages={totalPages}
-            currentPage={page}
-            onPageChange={(p) => setPage(p)}
-          />
-        )}
       </ContentWrapper>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <>
+          {logs.length >= 4 ? (
+            <Paging
+              totalPages={totalPages}
+              currentPage={page}
+              onPageChange={(p) => setPage(p)}
+              listLength={length}
+            />
+          ) : (
+            // 리스트 적을 때 하단에 고정
+            <FixedPagingWrapper>
+              <Paging
+                totalPages={totalPages}
+                currentPage={page}
+                onPageChange={(p) => setPage(p)}
+                listLength={length}
+              />
+            </FixedPagingWrapper>
+          )}
+        </>
+      )}
 
       <NavigationBar />
     </Container>
@@ -157,6 +174,15 @@ const ContentWrapper = styled.div`
   gap: 16px;
   align-items: center;
   width: 100%;
+`;
+
+const FixedPagingWrapper = styled.div`
+  position: fixed;
+  bottom: 67px;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 `;
 
 const CardContainer = styled.div`

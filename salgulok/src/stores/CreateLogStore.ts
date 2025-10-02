@@ -7,7 +7,6 @@ interface LogState {
   title: string;
   isPublic: boolean;
   imgFile?: File;
-  oneReview?: string;
 
   setStep1: (regionId: number) => void;
   setStep2: (startDate: string, endDate: string) => void;
@@ -36,7 +35,6 @@ export const useCreateLogStore = create<LogState>((set) => ({
       title: data.title,
       isPublic: data.isPublic,
       imgFile: data.imgFile,
-      oneReview: data.oneReview,
     }),
   reset: () =>
     set({
@@ -46,6 +44,5 @@ export const useCreateLogStore = create<LogState>((set) => ({
       title: "",
       isPublic: true,
       imgFile: undefined,
-      oneReview: undefined,
     }),
 }));

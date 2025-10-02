@@ -246,7 +246,7 @@ const MenuButton = styled.button`
 const Stars = styled.div`
   display: flex;
   gap: 4px;
-  margin-top: 4px;
+  margin-top: 10px;
 `;
 
 const StarIcon = styled(Star)<{ $active?: boolean }>`

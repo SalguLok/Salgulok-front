@@ -118,7 +118,7 @@ const MapPage = () => {
     if (!iso) return "";
     // iso: "2025-09-25"
     const [y, m, d] = iso.split("-");
-    return `${y.slice(2)}${m}${d}`;
+    return ` ${y}-${m}-${d} `;
   };
 
   const mapLogsResponse = (res: any) => {

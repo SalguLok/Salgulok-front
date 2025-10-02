@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Header from "../../components/common/Header";
+import NavigationBar from "../../components/common/NavigationBar";
 import BottomSheet from "../../components/common/BottomSheet";
 import { Chip, ChipRow } from "../../components/common/Chip";
 import { useState } from "react";
@@ -32,8 +33,7 @@ const WritePage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const [openRegion, setOpenRegion] = useState(false);
-  const [openTopic, setOpenTopic] = useState(false);
+  const [openSelection, setOpenSelection] = useState(false);
 
   const [region, setRegion] = useState<string | null>(null);
   const regionMap: Record<string, number> = {
@@ -97,9 +97,9 @@ const WritePage = () => {
         <SelectRow>
           <SelectBtn
             type="button"
-            onClick={() => setOpenRegion(true)}
+            onClick={() => setOpenSelection(true)}
             aria-haspopup="dialog"
-            aria-expanded={openRegion}
+            aria-expanded={openSelection}
           >
             {regionLabel}
             <Icon>
@@ -109,9 +109,9 @@ const WritePage = () => {
 
           <SelectBtn
             type="button"
-            onClick={() => setOpenTopic(true)}
+            onClick={() => setOpenSelection(true)}
             aria-haspopup="dialog"
-            aria-expanded={openTopic}
+            aria-expanded={openSelection}
           >
             {topicLabel}
             <Icon>
@@ -133,56 +133,44 @@ const WritePage = () => {
         {createPostMutation.isPending ? "등록 중..." : "등록"}
       </WriteButton>
 
-      {/* 지역 선택 바텀시트 */}
+      {/* 지역 및 주제 선택 바텀시트 */}
       <BottomSheet
-        open={openRegion}
-        title="지역선택"
-        onClose={() => setOpenRegion(false)}
+        open={openSelection}
+        onClose={() => setOpenSelection(false)}
         primaryLabel="선택"
-        onPrimary={() => setOpenRegion(false)}
-        primaryDisabled={!region}
+        onPrimary={() => setOpenSelection(false)}
+        primaryDisabled={!region || !topic}
       >
+        <SectionTitle>지역</SectionTitle>
         <ChipRow>
           {REGIONS.map((r) => (
             <Chip 
               key={r} 
               selected={region === r} 
-              onClick={() => {
-                setRegion(r);
-                setOpenRegion(false); // 지역 선택 BottomSheet 닫기
-                setOpenTopic(true); // 주제 선택 BottomSheet 자동 열기
-              }}
+              onClick={() => setRegion(r)}
             >
               {r}
             </Chip>
           ))}
         </ChipRow>
-      </BottomSheet>
-
-      {/* 주제 선택 바텀시트 */}
-      <BottomSheet
-        open={openTopic}
-        title="주제"
-        onClose={() => setOpenTopic(false)}
-        primaryLabel="선택"
-        onPrimary={() => setOpenTopic(false)}
-        primaryDisabled={!topic}
-      >
+        
+        <Divider />
+        
+        <SectionTitle>주제</SectionTitle>
         <ChipRow>
           {TOPICS.map((t) => (
             <Chip 
               key={t} 
               selected={topic === t} 
-              onClick={() => {
-                setTopic(t);
-                setOpenTopic(false); // 주제 선택 BottomSheet 닫기
-              }}
+              onClick={() => setTopic(t)}
             >
               {t}
             </Chip>
           ))}
         </ChipRow>
       </BottomSheet>
+      
+      <NavigationBar />
     </>
   );
 };
@@ -194,7 +182,7 @@ const APP_W = 375; // 폰 프레임 너비(px)
 const Layout = styled.div`
   min-height: 100vh;
   background: var(--white);
-  padding: 0 20px;
+  padding: 0 20px 120px 20px; /* 하단에 NavigationBar 공간 확보 */
   align-items: center;
   position: relative;
 
@@ -249,6 +237,7 @@ const InputContent = styled.textarea`
   }
 `;
 
+const NAV_H = 76;         // 네비게이션 높이
 const BTN_W = 90; // 버튼 너비
 const GUTTER = 15; // 프레임 오른쪽 여백
 
@@ -256,8 +245,8 @@ const WriteButton = styled.button`
   position: fixed;
   z-index: 1000;
 
-  /* 하단 여백 + iOS 안전영역 */
-  bottom: calc(16px + env(safe-area-inset-bottom));
+  /* 네비게이션 바 위에 위치 */
+  bottom: calc(${NAV_H}px + env(safe-area-inset-bottom) + 16px);
 
   /* 프레임 오른쪽 안쪽에 붙이기:
      50% (중앙) + 프레임의 절반 - 여백 - 버튼폭 */
@@ -284,4 +273,20 @@ const WriteButton = styled.button`
   font-weight: 400;
   font-family: "pretendard", sans-serif;
   cursor: pointer;
+`;
+
+const SectionTitle = styled.h4`
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--black);
+  margin: 16px 0 8px 0;
+  font-family: "pretendard", sans-serif;
+`;
+
+const Divider = styled.div`
+  width: calc(100% + 42px); /* 좌우 padding 21px씩 상쇄 */
+  height: 7px;
+  background-color: var(--gray-100);
+  margin: 16px -21px; /* 좌우 마진으로 padding 상쇄 */
+  border-radius: 0;
 `;

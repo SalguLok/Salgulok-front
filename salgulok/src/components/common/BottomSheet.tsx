@@ -95,12 +95,12 @@ const Footer = styled.div`
 `;
 const Primary = styled.button`
   width: 100%; 
-  height: 48px; 
+  height: 40px; 
   border: 0; 
   border-radius: 10px;
   background: var(--main-pri); 
   color: #fff; 
-  font-size: 16px; 
+  font-size: 14px; 
   font-weight: 500;
   font-family: 'Pretendard', sans-serif;
   &:disabled { opacity: .4; }

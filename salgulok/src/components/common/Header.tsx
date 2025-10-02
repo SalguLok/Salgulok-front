@@ -6,9 +6,14 @@ import BackButton from "../../assets/common/back_button.svg";
 interface HeaderProps {
   title: string;
   showBackButton?: boolean; // 뒤로가기 버튼
+  rightElement?: React.ReactNode;
 }
 
-const Header: React.FC<HeaderProps> = ({ title, showBackButton = false }) => {
+const Header: React.FC<HeaderProps> = ({
+  title,
+  showBackButton = false,
+  rightElement,
+}) => {
   const navigate = useNavigate();
 
   return (
@@ -23,7 +28,7 @@ const Header: React.FC<HeaderProps> = ({ title, showBackButton = false }) => {
         )}
 
         <Title>{title}</Title>
-        <Spacer />
+        {rightElement || <Spacer />}
       </HeaderWrapper>
 
       <HeaderSpacer />

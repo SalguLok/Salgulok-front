@@ -4,7 +4,6 @@ import NavigationBar from "../../components/common/NavigationBar";
 import LogCardList from "../../components/common/CardListItem";
 import type { LogItem } from "../../components/common/CardListItem";
 import HeaderLeft from "../../components/common/HeaderLeft";
-import SearchIcon from "../../assets/common/search.svg?react";
 import { searchLogs } from "../../api/log/searchLogs";
 import { getLogComments } from "../../api/log/logComment";
 import SearchBar from "../../components/log/SearchBar";
@@ -23,8 +22,6 @@ function useDebounced<T>(value: T, delay = 300) {
 
 const LogPage: React.FC = () => {
   const [logs, setLogs] = useState<LogItem[]>([]);
-  const [showSearch, setShowSearch] = useState(false);
-  const searchBarRef = useRef<HTMLDivElement>(null);
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounced(query, 350);
   const cacheRef = useRef<Map<string, LogItem[]>>(new Map());
@@ -58,7 +55,6 @@ const LogPage: React.FC = () => {
   }, []);
 
   const handleSubmitSearch = (value: string) => {
-    setShowSearch(false);
     setQuery(value.trim());
     setPage(1); // 검색 시 페이지 초기화
   };
@@ -70,7 +66,12 @@ const LogPage: React.FC = () => {
   );
 
   const fetchLogs = useCallback(
-    async (opts: { q: string; s: "latest" | "view" | "like"; r: number | null; p: number }) => {
+    async (opts: {
+      q: string;
+      s: "latest" | "view" | "like";
+      r: number | null;
+      p: number;
+    }) => {
       const key = makeKey(opts.q, opts.s, opts.r, opts.p);
 
       if (cacheRef.current.has(key)) {
@@ -83,7 +84,12 @@ const LogPage: React.FC = () => {
 
       try {
         // opts.p는 1-based → API는 0-based
-        const res: any = await searchLogs(opts.q, opts.s, opts.r ?? 0, opts.p - 1);
+        const res: any = await searchLogs(
+          opts.q,
+          opts.s,
+          opts.r ?? 0,
+          opts.p - 1
+        );
         const data = toArray(res);
 
         const processed = processLogItems(data);
@@ -92,7 +98,11 @@ const LogPage: React.FC = () => {
         const logsWithComments = await Promise.all(
           processed.map(async (log) => {
             try {
-              const commentsData = await getLogComments(log.id, { page: 0, size: 1, sort: "createdAt" });
+              const commentsData = await getLogComments(log.id, {
+                page: 0,
+                size: 1,
+                sort: "createdAt",
+              });
               return { ...log, comments: commentsData.totalElements };
             } catch (error) {
               console.error(`로그 ${log.id} 댓글 수 조회 실패:`, error);
@@ -119,45 +129,29 @@ const LogPage: React.FC = () => {
     fetchLogs({ q: debouncedQuery, s: sort, r: regionId, p: page });
   }, [debouncedQuery, sort, regionId, page, fetchLogs]);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (searchBarRef.current && !searchBarRef.current.contains(event.target as Node)) {
-        setShowSearch(false);
-      }
-    }
-    if (showSearch) document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [showSearch]);
-
   return (
     <Container>
-      <HeaderLeft
-        title="살구로그"
-        right={
-          !showSearch && (
-            <IconButton aria-label="검색" onClick={() => setShowSearch(true)} title="검색">
-              <SearchIcon />
-            </IconButton>
-          )
-        }
-      />
+      <HeaderLeft title="살구로그" />
+
+      <SearchRow>
+        <SearchBar
+          value={query}
+          onChange={setQuery}
+          onSubmit={handleSubmitSearch}
+          placeholder="검색을 통해 로그를 찾아보세요"
+        />
+      </SearchRow>
 
       <ActionContainer>
-        {showSearch ? (
-          <SearchRow ref={searchBarRef}>
-            <SearchBar value={query} onChange={setQuery} onSubmit={handleSubmitSearch} placeholder="검색을 통해 로그를 찾아보세요" />
-          </SearchRow>
-        ) : (
-          <FilterBarContainer>
-            <FilterBar
-              regions={regionOptions}
-              defaultSort="latest"
-              defaultRegionId={null}
-              onChangeSort={setSort}
-              onChangeRegion={setRegionId}
-            />
-          </FilterBarContainer>
-        )}
+        <FilterBarContainer>
+          <FilterBar
+            regions={regionOptions}
+            defaultSort="latest"
+            defaultRegionId={null}
+            onChangeSort={setSort}
+            onChangeRegion={setRegionId}
+          />
+        </FilterBarContainer>
       </ActionContainer>
 
       <ContentWrapper>
@@ -234,40 +228,17 @@ const CardContainer = styled.div`
   margin: 0 20px;
 `;
 
-const IconButton = styled.button`
-  width: 28px;
-  height: 28px;
-  border: 0;
-  background: transparent;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  position: relative;
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  & > svg {
-    width: 20px;
-    height: 20px;
-    display: block;
-    top: -5px;
-    position: relative;
-  }
-`;
-
 const SearchRow = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100%;
+  height: 36px;
   padding: 0 16px;
   box-sizing: border-box;
   overflow: visible;
   z-index: 1;
+  margin-top: 10px;
 `;
 
 const FilterBarContainer = styled.div`

@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import styled from "styled-components";
 import TextInput from "../common/TextInput";
-import { saveEntrySummary } from "../../api/logEntry/saveEntrySummary";
+import { updateReview } from "../../api/log/updateReview";
+import { updateUploadStatus } from "../../api/log/updateUploadStatus";
 
 type ConfirmModalProps = {
   open: boolean;
   logId: number;
-  entryId: number;
   message?: string;
   placeholder?: string;
   confirmText?: string;
@@ -14,19 +14,20 @@ type ConfirmModalProps = {
   loading?: boolean;
   defaultValue?: string;
   onCancel: () => void;
+  onSuccess: () => void;
 };
 
 const ConfirmModal: React.FC<ConfirmModalProps> = ({
   open,
   logId,
-  entryId,
   message,
-  placeholder = "하루의 마무리 멘트를 작성해주세요.",
+  placeholder = "로그의 한 줄평을 작성해주세요.",
   confirmText = "등록하기",
   cancelText = "건너뛰기",
   loading = false,
   defaultValue = "",
   onCancel,
+  onSuccess,
 }) => {
   const [value, setValue] = useState(defaultValue);
   const [submitting, setSubmitting] = useState(false);
@@ -36,12 +37,16 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
   const handleConfirm = async () => {
     try {
       setSubmitting(true);
-      await saveEntrySummary(logId, entryId, value); 
-      // 요약 저장 성공
+      // 1. 한줄평 업데이트
+      await updateReview(logId, { oneReview: value });
+      // 2. 업로드 상태 변경
+      await updateUploadStatus(logId, { isUpload: true });
+      
       setValue("");
-      onCancel(); // 닫기
+      onSuccess(); // 성공 콜백 호출
     } catch (error) {
-      console.error("요약 저장 실패:", error);
+      console.error("로그 등록 실패:", error);
+      // 여기에 사용자에게 에러를 알려주는 로직을 추가할 수 있습니다.
     } finally {
       setSubmitting(false);
     }

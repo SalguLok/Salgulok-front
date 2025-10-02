@@ -9,7 +9,6 @@ import ConfirmModal from "../../components/common/ConfirmModal";
 import Pagination from "../../components/common/Pagination";
 import { getPosts, deletePost } from "../../api/community/community";
 import type { GetPostsParams, Topic } from "../../api/community/community";
-import DefaultProfileImage from "../../assets/common/profile_default.svg";
 import { formatKst } from "../../utils/date";
 
 //region 선택
@@ -36,6 +35,15 @@ const CommunityPage = () => {
   const [openRegionFilter, setOpenRegionFilter] = useState(false);
   const [openTopicFilter, setOpenTopicFilter] = useState(false);
   const [onlyTraveling, setOnlyTraveling] = useState(false);
+
+  // 체크박스 상태 변경 시 filters 업데이트
+  useEffect(() => {
+    setFilters(prev => ({
+      ...prev,
+      status: onlyTraveling ? 'staying' : undefined,
+      page: 0 // 필터 변경 시 첫 페이지로 이동
+    }));
+  }, [onlyTraveling]);
 
   // ConfirmModal 상태
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -88,6 +96,13 @@ const CommunityPage = () => {
   // 현재 필터에 해당하는 지역 및 주제 이름 찾기
   const currentRegion = filters.regionId === undefined ? "전체" : regions.find(r => r.id === filters.regionId)?.nameKo ?? "전체";
   const currentTopic = filters.topic ?? "전체 주제";
+
+  // 게시글 삭제 권한 확인 함수
+  const canDeletePost = (post: any) => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return false;
+    return parseInt(userId) === post.authorId;
+  };
 
 
   // 필터 변경 핸들러
@@ -202,12 +217,13 @@ const CommunityPage = () => {
                 location: post.region,
                 topic: post.topic,
                 content: post.content,
-                avatar: post.authorProfileImg || DefaultProfileImage, // 작성자 프로필 이미지
+                avatar: post.authorProfileImg || undefined, // 작성자 프로필 이미지 (objectKey)
                 comments: 0, // 백엔드 응답에 없어 임시 처리
                 isHot: false, // 백엔드 응답에 없어 임시 처리
               }}
               onClick={() => goDetail(post.id)}
               onMenuClick={handlePostMenuClick}
+              canDelete={canDeletePost(post)}
             />
           ))}
         </PostList>
@@ -385,17 +401,17 @@ const WriteButton = styled.button`
   bottom: calc(${NAV_H}px + env(safe-area-inset-bottom) + 16px);
 
   /* 데스크톱에서도 '폰 프레임' 안쪽 오른쪽에 붙이기 */
-  left: calc(50% + ${APP_W}px / 2 - 16px - 76px); /* 프레임 오른쪽 - 여백 - 버튼폭 */
+  left: calc(50% + ${APP_W}px / 2 - 40px - 76px); /* 프레임 오른쪽 - 여백 - 버튼폭 */
   right: auto;
 
   @media (max-width: ${APP_W + 40}px) {
     left: auto; right: 16px;                   /* 작은 화면에선 일반 방식 */
   }
 
-  width: 76px;
+  width: auto;
   height: 36px;
-  padding: 0;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 0 15px; /* 좌우 패딩 추가 */
+  display: flex; align-items: center; justify-content: center; gap: 4px;
   border: none; border-radius: 20px;
   background: var(--main-pri); color: #fff;
   font-size: 13px; font-weight: 500; font-family: 'pretendard', sans-serif;
@@ -403,8 +419,8 @@ const WriteButton = styled.button`
 `;
 
 const Plus = styled.span`
-  font-size: 11px;
-  line-height: 1;
+  font-size: 20px;
+  font-weight: 400;
   font-family: 'pretendard', sans-serif;
 `;
 

@@ -1,4 +1,4 @@
-import ImageSlider from "./ImageSlider";
+import ImageSlider from "../common/ImageSlider";
 import styled, { css } from "styled-components";
 import { Star } from "lucide-react";
 import { useState, useRef } from "react";
@@ -6,6 +6,7 @@ import ActionMenu from "../common/ActionMenu";
 import Salgu from "../../assets/log/salgu.svg?react";
 import { deleteTemplates } from "../../api/logEntry/deleteTemplate";
 import ConfirmModal from "../common/ConfirmModal";
+// import PresignedImage from "../common/PresignedImage";
 
 export interface TemplateCardDoneProps {
   logId: number;
@@ -39,6 +40,7 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
   onDeleteClick,
   isOwner = false,
 }) => {
+  console.log("[TemplateCardDone images]", images);
   const [deleting, setDeleting] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [menuPos, setMenuPos] = useState<{ x: number; y: number }>({
@@ -124,7 +126,7 @@ const TemplateCardDone: React.FC<TemplateCardDoneProps> = ({
           />
         )}
 
-        <ImageSlider images={images} />
+        <ImageSlider imageKeys={images} />
 
         <Stars aria-label={`별점 ${rating}점`} data-readonly>
           {Array.from({ length: 5 }).map((_, i) => (

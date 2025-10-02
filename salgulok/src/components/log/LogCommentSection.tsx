@@ -14,9 +14,11 @@ import ConfirmModal from "../common/ConfirmModal";
 type Props = {
   logId: number;
   currentUserId?: number; // 현재 로그인한 사용자 ID
+  onCommentAdded?: () => void;
+  onCommentDeleted?: () => void;
 };
 
-const LogCommentSection: React.FC<Props> = ({ logId, currentUserId }) => {
+const LogCommentSection: React.FC<Props> = ({ logId, currentUserId, onCommentAdded, onCommentDeleted }) => {
   const queryClient = useQueryClient();
 
   // 댓글 목록 조회 (모든 댓글을 한 번에 로드)
@@ -47,6 +49,8 @@ const LogCommentSection: React.FC<Props> = ({ logId, currentUserId }) => {
       return createLogComment(logId, { content });
     },
     onSuccess: () => {
+      // 즉시 카운트 반영
+      onCommentAdded?.();
       queryClient.invalidateQueries({ queryKey: ["logComments", logId] });
     },
     onError: (error) => {
@@ -72,6 +76,7 @@ const LogCommentSection: React.FC<Props> = ({ logId, currentUserId }) => {
       return deleteLogComment(logId, commentId);
     },
     onSuccess: () => {
+      onCommentDeleted?.();
       queryClient.invalidateQueries({ queryKey: ["logComments", logId] });
       setConfirmMessage("댓글이 삭제되었습니다.");
       setOnConfirmHandler(() => () => setConfirmOpen(false));

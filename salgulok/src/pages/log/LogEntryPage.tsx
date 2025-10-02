@@ -48,6 +48,8 @@ const LogEntryPage: React.FC = () => {
     endDate: string;
     ownerId: number;
     isUpload?: boolean;
+    likes?: number;
+    isLiked?: boolean;
   } | null>(null);
 
   const isOwner = logDetail ? currentUserId === logDetail.ownerId : false;
@@ -233,6 +235,8 @@ const LogEntryPage: React.FC = () => {
       oneReview: detail.oneReview,
       ownerId: detail.ownerId,
       isUpload: detail.isUpload,
+      likes: detail.likes,
+      isLiked: detail.isLiked,
     });
   }, [numericLogId]);
 
@@ -401,7 +405,13 @@ const LogEntryPage: React.FC = () => {
               
                         {logDetail?.isUpload && (
                           <CountsWrapper>
-                            <LikeCommentCounts logId={numericLogId} commentCount={commentCount} />
+                            <LikeCommentCounts
+                              logId={numericLogId}
+                              commentCount={commentCount}
+                              disableLike={isOwner}
+                              initialLikeCount={logDetail?.likes}
+                              initialIsLiked={logDetail?.isLiked}
+                            />
                           </CountsWrapper>
                         )}
               
@@ -409,6 +419,8 @@ const LogEntryPage: React.FC = () => {
                           <LogCommentSection
                             logId={numericLogId}
                             currentUserId={currentUserId}
+                            onCommentAdded={() => setCommentCount((c) => c + 1)}
+                            onCommentDeleted={() => setCommentCount((c) => Math.max(0, c - 1))}
                           />            )}
           </BottomContainer>
         </>

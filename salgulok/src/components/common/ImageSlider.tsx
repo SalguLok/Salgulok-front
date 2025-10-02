@@ -40,7 +40,7 @@ export default ImageSlider;
 const SliderContainer = styled.div`
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
   padding: 4px 0;
   overflow-x: auto;
   -ms-overflow-style: none; /* IE and Edge */
@@ -52,8 +52,8 @@ const SliderContainer = styled.div`
 
 const IconBox = styled.div`
   flex-shrink: 0;
-  width: 88px;
-  height: 88px;
+  width: 198px;
+  height: 198px;
   border: 1px solid var(--gray-300);
   border-radius: 10px;
   display: grid;
@@ -67,8 +67,8 @@ const IconBox = styled.div`
 
 const Thumb = styled.img`
   flex-shrink: 0;
-  width: 88px;
-  height: 88px;
+  width: 198px;
+  height: 198px;
   border-radius: 10px;
   object-fit: cover;
   border: 1px solid var(--gray-300);
@@ -76,8 +76,8 @@ const Thumb = styled.img`
 
 const StyledPresignedImage = styled(PresignedImage)`
   flex-shrink: 0;
-  width: 88px;
-  height: 88px;
+  width: 132px;
+  height: 132px;
   border-radius: 10px;
   object-fit: cover;
   border: 1px solid var(--gray-300);

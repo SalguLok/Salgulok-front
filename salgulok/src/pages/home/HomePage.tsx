@@ -174,9 +174,9 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
     const fmt = (s: string) => {
       const [y, m, d] = s?.split("-") ?? ["", "", ""];
       if (!y || !m || !d) return s ?? "";
-      return `${y.slice(2)}${m}${d}`;
+      return `${y}-${m}-${d}`;
     };
-    return `${fmt(start)}-${fmt(end)}`;
+    return `${fmt(start)} - ${fmt(end)}`;
   };
 
   //인기 살구록 API 연결

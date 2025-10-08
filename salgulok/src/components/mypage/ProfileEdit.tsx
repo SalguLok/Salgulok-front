@@ -12,20 +12,17 @@ interface ProfileImageProps {
 const EditProfileImage: React.FC<ProfileImageProps> = ({ imageUrl, onChange }) => {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [actionType, setActionType] = useState<"default" | "album" | null>(null);
 
   // 수정 버튼 클릭 시 bottom sheet 열기
   const handleEditClick = () => {
     setMenuOpen(true);
-    setSelectedFile(null);
     setActionType(null);
   };
 
   // 파일 선택 시 파일을 임시 저장
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files && e.target.files[0] ? e.target.files[0] : null;
-    setSelectedFile(file);
     setActionType(file ? "album" : null);
 
     if (file) {
@@ -37,7 +34,6 @@ const EditProfileImage: React.FC<ProfileImageProps> = ({ imageUrl, onChange }) =
   // 기본 이미지 선택 시
   const handleDefaultImage = () => {
     setActionType("default");
-    setSelectedFile(null);
   };
 
   // 앨범에서 이미지 선택 클릭 시 input 열기

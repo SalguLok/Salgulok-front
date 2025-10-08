@@ -27,7 +27,7 @@ const LogPage: React.FC = () => {
   const cacheRef = useRef<Map<string, LogItem[]>>(new Map());
   const abortRef = useRef<AbortController | null>(null);
 
-  const [sort, setSort] = useState<"latest" | "view" | "like">("latest");
+  const [sort, setSort] = useState<"latest" | "like">("latest");
   const [regionId, setRegionId] = useState<number | null>(null);
   const [page, setPage] = useState(1); // UI 1-based
   const [totalPages, setTotalPages] = useState(1);
@@ -68,7 +68,7 @@ const LogPage: React.FC = () => {
   const fetchLogs = useCallback(
     async (opts: {
       q: string;
-      s: "latest" | "view" | "like";
+      s: "latest" | "like";
       r: number | null;
       p: number;
     }) => {

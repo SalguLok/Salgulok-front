@@ -151,7 +151,7 @@ const EditProfilePage: React.FC = () => {
   //     setProfileImg("");
   // };
   //
-  const handleImageChange = async (file: File) => {
+  const handleImageChange = async (file: File | null) => {
     // presigned → S3 PUT → confirm 은 그대로 수행
     // confirm 응답에서 최종 URL 추출
     // const finalUrl = confirmRes.items[0].url;
@@ -162,7 +162,12 @@ const EditProfilePage: React.FC = () => {
     // 상태에도 반영해서 미리보기 업데이트
     // setProfileImg(finalUrl);
 
-    if (!file) return;
+    if (!file) {
+      // 기본 이미지로 변경 시
+      setProfileImg(""); // 미리보기 제거 (기본 이미지 표시됨)
+      setProfileImgObjectKey(null); // 서버에 보낼 키도 초기화
+      return;
+    }
 
     try {
       const uploadResult = await uploadImagesFlow([{ file }]);

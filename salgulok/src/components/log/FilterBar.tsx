@@ -6,7 +6,6 @@ import DownIcon from "../../assets/log/down.svg?react";
 /** 정렬 키 UI 라벨 */
 const SORT_LABELS = {
     like: "인기순",
-    view: "조회순",
     latest: "최신순",
 } as const;
 type SortKey = keyof typeof SORT_LABELS;

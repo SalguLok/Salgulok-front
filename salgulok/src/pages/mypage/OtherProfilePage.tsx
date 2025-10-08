@@ -121,6 +121,8 @@ const MyPage: React.FC = () => {
             isMine={false}
           />
         )}
+        <HLine />
+        
         <CardContainer>
           <LogCardList
             items={logs}
@@ -174,6 +176,14 @@ const ContentWrapper = styled.div`
   gap: 16px;
   align-items: center;
   width: 100%;
+`;
+
+const HLine = styled.div`
+  width: 375px;
+  border: 1px solid #f1f1f1;
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin: 2px 0px 7px 0px;
 `;
 
 const FixedPagingWrapper = styled.div`

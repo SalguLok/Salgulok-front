@@ -3,7 +3,9 @@ import api from "../api";
 //키워드 지역 + 장소 검색
 export const getPlaceSearch = async (placeName: string) => {
   try {
-    const response = await api.get(`/places?keyword=${placeName}`);
+    const response = await api.get(
+      `/places?keyword=${placeName}&includeIntro=true`
+    );
     return response;
   } catch (err) {
     console.error(err);

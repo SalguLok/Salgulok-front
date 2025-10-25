@@ -19,6 +19,7 @@ type APIPlace = {
   tel?: string;
   overview?: string;
   star?: number;
+  introInfo?: Record<string, any>;
 };
 
 type PlaceSearchItem = {
@@ -31,6 +32,8 @@ type PlaceSearchItem = {
   tel?: string;
   overview?: string;
   star?: number;
+  introInfo?: Record<string, any>;
+  contentTypeId?: number;
 };
 
 type SheetTab = "log" | "place";
@@ -52,6 +55,8 @@ const normalize = (list: APIPlace[]): PlaceSearchItem[] =>
           tel: it.tel,
           overview: it.overview,
           star: it.star,
+          introInfo: it.introInfo ?? undefined,
+          contentTypeId: it.content_type_id ?? undefined,
         };
         return [item.id, item] as const;
       })
@@ -78,7 +83,6 @@ const MapPage = () => {
     }>
   >([]);
 
-  // 바텀시트에 넘길 선택된 장소 & 탭
   const [selectedPlace, setSelectedPlace] = useState<{
     title: string;
     imageUrl?: string;
@@ -86,22 +90,21 @@ const MapPage = () => {
     address?: string;
     tel?: string;
     star?: number;
+    introInfo?: Record<string, any>;
+    contentTypeId?: number;
   } | null>(null);
   const [sheetTab, setSheetTab] = useState<SheetTab>("log");
 
-  // 지도/마커 ref
   const mapDivRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<naver.maps.Map | null>(null);
   const markerRef = useRef<naver.maps.Marker | null>(null);
 
-  // 지도 정보 표시용(디버그)
   const [mapPoint, setMapPoint] = useState<{
     x: number | null;
     y: number | null;
   }>({ x: null, y: null });
   const [location, setLocation] = useState("");
 
-  // Location state
   const { state } = useLocation() as {
     state?: { q?: string; lat?: number; lng?: number; name?: string };
   };
@@ -113,10 +116,8 @@ const MapPage = () => {
   const hasDropdown =
     showResults && (loading || !!error || query.trim().length > 0);
 
-  //날짜 포맷
   const yymmdd = (iso: string | undefined) => {
     if (!iso) return "";
-    // iso: "2025-09-25"
     const [y, m, d] = iso.split("-");
     return ` ${y}-${m}-${d} `;
   };
@@ -166,14 +167,13 @@ const MapPage = () => {
     }
   };
 
-  // 디바운스 검색 (입력할 때만 리스트 보여주고, 블러 시 닫힘)
   useEffect(() => {
     if (!showResults) return;
     const t = setTimeout(() => void readPlaceSearch(query), 250);
     return () => clearTimeout(t);
   }, [query, showResults]);
 
-  // 지도 초기화 + 클릭 이벤트
+  // 지도 초기화
   useEffect(() => {
     if (!mapDivRef.current || !(window as any).naver?.maps) return;
 
@@ -222,7 +222,7 @@ const MapPage = () => {
     });
   }, []);
 
-  // 초기 진입 처리(좌표 우선 → 검색어)
+  // 초기 진입 처리
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -320,6 +320,8 @@ const MapPage = () => {
       address: r.address,
       tel: r.tel,
       star: r.star,
+      introInfo: r.introInfo,
+      contentTypeId: r.contentTypeId,
     });
     setSheetTab("place");
     setShowResults(false);
@@ -470,7 +472,7 @@ const ResultsContainer = styled.div`
 const ResultWrapper = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 6px;
   padding: 10px 12px;
   cursor: pointer;
   &:hover {

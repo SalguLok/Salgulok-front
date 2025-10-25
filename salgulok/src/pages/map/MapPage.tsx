@@ -504,24 +504,3 @@ const Star = styled.span`
 const Info = styled.div`
   padding: 8px 16px;
 `;
-
-/* ✅ intro 표시용 그리드 */
-const IntroGrid = styled.div`
-  display: grid;
-  grid-template-columns: 110px 1fr;
-  row-gap: 4px;
-  column-gap: 8px;
-  padding-top: 2px;
-`;
-const IntroRow = styled.div`
-  display: contents;
-`;
-const IntroLabel = styled.div`
-  font-size: 12px;
-  color: #888;
-`;
-const IntroValue = styled.div`
-  font-size: 12px;
-  white-space: pre-wrap;
-  color: #333;
-`;

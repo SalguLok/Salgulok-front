@@ -422,7 +422,7 @@ const BottomSheetModalMap: React.FC<Props> = ({
           {place?.imageUrl ? (
             <PlaceImage src={place.imageUrl} alt={place.title} />
           ) : (
-            <ImagePlaceholder />
+            ""
           )}
           <PlaceTitle>{place?.title ?? ""}</PlaceTitle>
           {place?.address && (
@@ -640,13 +640,6 @@ const PlaceImage = styled.img`
   background: #f2f2f2;
   align-self: center;
   margin-bottom: 10px;
-`;
-
-const ImagePlaceholder = styled.div`
-  width: 100%;
-  height: 180px;
-  border-radius: 12px;
-  background: #ffff;
 `;
 
 const PlaceTitle = styled.h3`

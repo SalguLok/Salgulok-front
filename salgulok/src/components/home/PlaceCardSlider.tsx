@@ -2,7 +2,7 @@ import styled from "styled-components";
 import type { FC, MouseEvent } from "react";
 import Star from "../../assets/common/star.svg?react";
 //import Heart from "../../assets/common/heart.svg?react";
-import Comment from "../../assets/common/comment.svg?react";
+import Log from "../../assets/common/log.svg?react";
 
 export type PlaceItem = {
   id: string;
@@ -11,6 +11,7 @@ export type PlaceItem = {
   mapx?: string;
   mapy?: string;
   starCount: number;
+  logCount: number;
   comments: number;
   star: number;
 };
@@ -47,8 +48,8 @@ const PlaceCardSlider: FC<Props> = ({ items, onClick }) => {
                 </ReactionText>
               </ReactionWrapper>
               <ReactionWrapper>
-                <Comment />
-                <ReactionText>{item.comments}</ReactionText>
+                <Log />
+                <ReactionText>{item.logCount}</ReactionText>
               </ReactionWrapper>
             </ReactionContainer>
           </DetailContainer>

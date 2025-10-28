@@ -164,6 +164,7 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
       mapy: String(p.mapy),
       image: p.image_url || undefined,
       starCount: Number(p.starCount),
+      logCount: Number(p.logCount),
       comments: Number(p.commentCount ?? 0),
       star: Number(p.star ?? 0),
     }));
@@ -235,6 +236,7 @@ const HomePage: FC<Props> = ({ defaultMode = "before", onModeChange }) => {
       mapy: String(p.mapy),
       image: p.image_url || undefined,
       starCount: Number(p.starCount),
+      logCount: Number(p.logCount),
       comments: Number(p.commentCount ?? 0),
       star: Number(p.star ?? p.avgStar ?? p.averageStar ?? p.rating ?? 0),
     }));
